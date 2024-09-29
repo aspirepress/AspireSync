@@ -2,7 +2,9 @@
     "require": {
         "guzzlehttp/guzzle": "^7.9",
         "symfony/console": "^7.1",
-        "symfony/process": "^7.1"
+        "symfony/process": "^7.1",
+        "laminas/laminas-servicemanager": "^4.2",
+        "laminas/laminas-config-aggregator": "^1.15"
     },
     "autoload": {
         "psr-4": {

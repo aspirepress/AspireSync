@@ -1,0 +1,19 @@
+#!/usr/bin/env php
+<?php
+
+use AssetGrabber\Services\PluginDownloadService;
+use AssetGrabber\Services\PluginListService;
+use Symfony\Component\Console\Application;
+
+require 'vendor/autoload.php';
+
+$config = require './config/config.php';
+
+$dependencies                       = $config['dependencies'];
+$dependencies['services']['config'] = $config;
+$container = new \Laminas\ServiceManager\ServiceManager($dependencies);
+
+$application = new Application();
+$application->add($container->get(\AssetGrabber\Commands\GrabPluginsCommand::class));
+$application->add($container->get(\AssetGrabber\Commands\DownloadPluginVersionsCommand::class));
+$application->run();

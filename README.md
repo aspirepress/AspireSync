@@ -1,7 +1,7 @@
 #AssetGrabber
 
 AssetGrabber is designed to enumerate and download the plugins and themes stored in the WordPress SVN repository and
-Content Delivery Network. 
+Content Delivery Network.
 
 ## Installation
 
@@ -12,14 +12,17 @@ Then, run the following commands:
 2. Run `make run` to see available commands.
 3. Run `make run OPTS=<your command>` to execute your desired command.
 
+You can also run `make run-base` to start a shell script into the container and load the code base as a volume, so it
+can be modified (as in a development enviornment).
+
 ## Usage
 
 This package ships with the following commands;
 
-| Command          | Description                                                                                                                                                            |
-|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| plugins:grab     | This command will grab all the plugins, or all the plugins since your last download.                                                                                   |
-| plugins:download | This command will grab all the versions of a particular plugin (provided as an argument). It is also used by the `plugins:grab` command to spin up download instances. |
+| Command            | Description                                                                                                                                                            |
+|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `plugins:grab`     | This command will grab all the plugins, or all the plugins since your last download.                                                                                   |
+| `plugins:download` | This command will grab all the versions of a particular plugin (provided as an argument). It is also used by the `plugins:grab` command to spin up download instances. |
 
 ## License
 
