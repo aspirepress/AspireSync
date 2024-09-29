@@ -1,0 +1,12 @@
+{
+    "require": {
+        "guzzlehttp/guzzle": "^7.9",
+        "symfony/console": "^7.1",
+        "symfony/process": "^7.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "AssetGrabber\\": "./src"
+        }
+    }
+}
