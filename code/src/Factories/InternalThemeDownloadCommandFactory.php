@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Factories;
 
-use AssetGrabber\Commands\InternalDownloadThemesCommand;
+use AssetGrabber\Commands\InternalThemeDownloadCommand;
 use AssetGrabber\Services\ThemeDownloadService;
 use Laminas\ServiceManager\ServiceManager;
 
 ini_set('memory_limit', '2G');
 
-class InternalDownloadThemesCommandFactory
+class InternalThemeDownloadCommandFactory
 {
-    public function __invoke(ServiceManager $serviceManager): InternalDownloadThemesCommand
+    public function __invoke(ServiceManager $serviceManager): InternalThemeDownloadCommand
     {
         $downloadService = $serviceManager->get(ThemeDownloadService::class);
-        return new InternalDownloadThemesCommand($downloadService);
+        return new InternalThemeDownloadCommand($downloadService);
     }
 }

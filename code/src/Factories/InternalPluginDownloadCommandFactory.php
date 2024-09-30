@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Factories;
 
-use AssetGrabber\Commands\InternalDownloadPluginsCommand;
-use AssetGrabber\Commands\GrabPluginsCommand;
+use AssetGrabber\Commands\InternalPluginDownloadCommand;
+use AssetGrabber\Commands\PluginsGrabCommand;
 use AssetGrabber\Services\PluginDownloadService;
 use AssetGrabber\Services\PluginListService;
 use Laminas\ServiceManager\ServiceManager;
 
 ini_set('memory_limit', '2G');
 
-class InternalDownloadPluginsCommandFactory
+class InternalPluginDownloadCommandFactory
 {
-    public function __invoke(ServiceManager $serviceManager): InternalDownloadPluginsCommand
+    public function __invoke(ServiceManager $serviceManager): InternalPluginDownloadCommand
     {
         $downloadService = $serviceManager->get(PluginDownloadService::class);
-        return new InternalDownloadPluginsCommand($downloadService);
+        return new InternalPluginDownloadCommand($downloadService);
     }
 }

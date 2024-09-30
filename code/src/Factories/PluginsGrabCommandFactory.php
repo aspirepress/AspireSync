@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Factories;
 
-use AssetGrabber\Commands\GrabPluginsCommand;
+use AssetGrabber\Commands\PluginsGrabCommand;
 use AssetGrabber\Services\PluginDownloadService;
 use AssetGrabber\Services\PluginListService;
 use Laminas\ServiceManager\ServiceManager;
 
-class GrabPluginsCommandFactory
+class PluginsGrabCommandFactory
 {
-    public function __invoke(ServiceManager $serviceManager): GrabPluginsCommand
+    public function __invoke(ServiceManager $serviceManager): PluginsGrabCommand
     {
         $pluginService = $serviceManager->get(PluginListService::class);
-        return new GrabPluginsCommand($pluginService);
+        return new PluginsGrabCommand($pluginService);
     }
 }

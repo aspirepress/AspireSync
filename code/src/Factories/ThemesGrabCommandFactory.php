@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Factories;
 
-use AssetGrabber\Commands\GrabPluginsCommand;
+use AssetGrabber\Commands\PluginsGrabCommand;
 use AssetGrabber\Commands\ThemesGrabCommand;
 use AssetGrabber\Services\PluginDownloadService;
 use AssetGrabber\Services\PluginListService;

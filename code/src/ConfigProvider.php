@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace AssetGrabber;
 
-use AssetGrabber\Commands\InternalDownloadPluginsCommand;
-use AssetGrabber\Commands\GrabPluginsCommand;
-use AssetGrabber\Commands\InternalDownloadThemesCommand;
-use AssetGrabber\Commands\PluginsPullPartialCommand;
+use AssetGrabber\Commands\InternalPluginDownloadCommand;
+use AssetGrabber\Commands\PluginsGrabCommand;
+use AssetGrabber\Commands\InternalThemeDownloadCommand;
+use AssetGrabber\Commands\PluginsPartialCommand;
 use AssetGrabber\Commands\ThemesGrabCommand;
 use AssetGrabber\Commands\ThemesPartialCommand;
-use AssetGrabber\Factories\InternalDownloadPluginsCommandFactory;
-use AssetGrabber\Factories\GrabPluginsCommandFactory;
-use AssetGrabber\Factories\InternalDownloadThemesCommandFactory;
-use AssetGrabber\Factories\PluginsPullPartialCommandFactory;
+use AssetGrabber\Factories\InternalPluginDownloadCommandFactory;
+use AssetGrabber\Factories\PluginsGrabCommandFactory;
+use AssetGrabber\Factories\InternalThemeDownloadCommandFactory;
+use AssetGrabber\Factories\PluginsPartialCommandFactory;
 use AssetGrabber\Factories\ThemesGrabCommandFactory;
 use AssetGrabber\Factories\ThemesPartialCommandFactory;
 use AssetGrabber\Services\PluginDownloadService;
@@ -43,11 +43,11 @@ class ConfigProvider
                 // Services
 
                 // Commands
-                GrabPluginsCommand::class => GrabPluginsCommandFactory::class,
+                PluginsGrabCommand::class => PluginsGrabCommandFactory::class,
                 ThemesGrabCommand::class => ThemesGrabCommandFactory::class,
-                InternalDownloadThemesCommand::class => InternalDownloadThemesCommandFactory::class,
-                InternalDownloadPluginsCommand::class => InternalDownloadPluginsCommandFactory::class,
-                PluginsPullPartialCommand::class => PluginsPullPartialCommandFactory::class,
+                InternalThemeDownloadCommand::class => InternalThemeDownloadCommandFactory::class,
+                InternalPluginDownloadCommand::class => InternalPluginDownloadCommandFactory::class,
+                PluginsPartialCommand::class => PluginsPartialCommandFactory::class,
                 ThemesPartialCommand::class => ThemesPartialCommandFactory::class,
             ]
         ];

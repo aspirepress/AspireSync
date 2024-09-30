@@ -71,7 +71,7 @@ class ThemesPartialCommand extends Command
 
             $command = [
                 './assetgrabber',
-                'internal:download',
+                'internal:plugin-download',
                 $theme,
                 $versionList,
                 $numVersions

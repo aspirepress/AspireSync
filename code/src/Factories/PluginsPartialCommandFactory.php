@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Factories;
 
-use AssetGrabber\Commands\PluginsPullPartialCommand;
+use AssetGrabber\Commands\PluginsPartialCommand;
 use AssetGrabber\Services\PluginListService;
 use Laminas\ServiceManager\ServiceManager;
 
-class PluginsPullPartialCommandFactory
+class PluginsPartialCommandFactory
 {
-    public function __invoke(ServiceManager $serviceManager): PluginsPullPartialCommand
+    public function __invoke(ServiceManager $serviceManager): PluginsPartialCommand
     {
         $listService = $serviceManager->get(PluginListService::class);
-        return new PluginsPullPartialCommand($listService);
+        return new PluginsPartialCommand($listService);
     }
 }
