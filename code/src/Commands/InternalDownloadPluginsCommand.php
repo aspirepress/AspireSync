@@ -39,8 +39,8 @@ class InternalDownloadPluginsCommand extends Command
         $versionsToDownload = $this->determineDownloadedVersions($versions, $numVersions);
         $output->writeln('Downloading ' . $versionsToDownload. ' versions...');
         $responses = $this->service->download($plugin, $versions, $numVersions, $input->getOption('force'));
-        foreach ($responses as $v => $response) {
-            $output->writeln("$plugin v$v: $response");
+        foreach ($responses as $responseCode => $versions) {
+            $output->writeln($plugin . ' ' . $responseCode . ': ' . count($versions));
         }
 
         return Command::SUCCESS;

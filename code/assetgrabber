@@ -14,6 +14,13 @@ $dependencies['services']['config'] = $config;
 $container = new \Laminas\ServiceManager\ServiceManager($dependencies);
 
 $application = new Application();
-$application->add($container->get(\AssetGrabber\Commands\GrabPluginsCommand::class));
-$application->add($container->get(\AssetGrabber\Commands\InternalDownloadPluginsCommand::class));
+
+$commands = scandir('./src/Commands');
+
+foreach ($commands as $command) {
+    if (strpos($command, 'Command.php') !== false) {
+        $command = str_replace('.php', '', $command);
+        $application->add($container->get('AssetGrabber\\Commands\\' . $command));
+    }
+}
 $application->run();

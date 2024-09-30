@@ -6,8 +6,10 @@ namespace AssetGrabber;
 
 use AssetGrabber\Commands\InternalDownloadPluginsCommand;
 use AssetGrabber\Commands\GrabPluginsCommand;
+use AssetGrabber\Commands\PluginsPullPartialCommand;
 use AssetGrabber\Factories\InternalDownloadPluginsCommandFactory;
 use AssetGrabber\Factories\GrabPluginsCommandFactory;
+use AssetGrabber\Factories\PluginsPullPartialCommandFactory;
 use AssetGrabber\Services\PluginDownloadService;
 use AssetGrabber\Services\PluginListService;
 
@@ -33,6 +35,7 @@ class ConfigProvider
                 // Commands
                 GrabPluginsCommand::class => GrabPluginsCommandFactory::class,
                 InternalDownloadPluginsCommand::class => InternalDownloadPluginsCommandFactory::class,
+                PluginsPullPartialCommand::class => PluginsPullPartialCommandFactory::class,
             ]
         ];
     }

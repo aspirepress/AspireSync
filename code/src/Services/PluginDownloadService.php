@@ -41,18 +41,23 @@ class PluginDownloadService
             $filePath = sprintf($downloadFile, $plugin, $version);
 
             if (file_exists($filePath) && !$force) {
-                $outcomes[$version] = 'File already exists, skipping...';
+                $outcomes['304 Not Modified'][] = $version;
                 continue;
             }
             try {
                 $response = $client->request('GET', $url, ['headers' => ['User-Agent' => 'AssetGrabber'], 'allow_redirects' => true, 'sink' => $filePath]);
-                $outcomes[$version] = $response->getStatusCode();
+                $outcomes[$response->getStatusCode() . ' ' . $response->getReasonPhrase()][] = $version;
                 if (filesize($filePath) === 0) {
                     unlink($filePath);
                     $outcomes[$version] = 'File was zero length; removed.';
                 }
             } catch (ClientException $e) {
-                $outcomes[$version] = $e->getMessage();
+                if (method_exists($e, 'getResponse')) {
+                    $response = $e->getResponse();
+                    $outcomes[$response->getStatusCode() . ' ' . $response->getReasonPhrase()][] = $version;
+                } else {
+                    $outcomes[$e->getMessage()][] = $version;
+                }
                 unlink($filePath);
             }
         }
