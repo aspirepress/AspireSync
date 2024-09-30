@@ -10,7 +10,7 @@ use GuzzleHttp\Exception\ClientException;
 
 class PluginDownloadService
 {
-    public function download($plugin, $versions, int|string $numToDownload = 'all')
+    public function download($plugin, $versions, int|string $numToDownload = 'all', bool $force = false)
     {
         $client = new Client();
         $downloadUrl = 'https://downloads.wordpress.org/plugin/%s.%s.zip?nostats=1';
@@ -39,6 +39,11 @@ class PluginDownloadService
         foreach ($download as $version) {
             $url = sprintf($downloadUrl, $plugin, $version);
             $filePath = sprintf($downloadFile, $plugin, $version);
+
+            if (file_exists($filePath) && !$force) {
+                $outcomes[$version] = 'File already exists, skipping...';
+                continue;
+            }
             try {
                 $response = $client->request('GET', $url, ['headers' => ['User-Agent' => 'AssetGrabber'], 'allow_redirects' => true, 'sink' => $filePath]);
                 $outcomes[$version] = $response->getStatusCode();

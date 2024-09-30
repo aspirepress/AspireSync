@@ -18,8 +18,11 @@ class PluginListService
 
     public function getPluginList(?array $filter = []): array
     {
+        if (!$filter) {
+            $filter = [];
+        }
+
         $this->currentRevision = $this->identifyCurrentRevision();
-        $oldPluginData = [];
         if (file_exists('/opt/plugin-slurp/data/plugin-data.json')) {
             $json = file_get_contents('/opt/plugin-slurp/data/plugin-data.json');
             $this->oldPluginData = json_decode($json, true);
@@ -40,6 +43,9 @@ class PluginListService
         if (file_exists('/opt/plugin-slurp/data/plugin-raw-data/' . $plugin . '.json') && filemtime('/opt/plugin-slurp/data/plugin-raw-data/' . $plugin . '.json') > time() - 3600) {
             $json = file_get_contents('/opt/plugin-slurp/data/plugin-raw-data/' . $plugin . '.json');
             $data = json_decode($json, true);
+            if (!isset($data['versions'])) {
+                return [];
+            }
             $pluginData = array_keys($data['versions']);
 
         } else {

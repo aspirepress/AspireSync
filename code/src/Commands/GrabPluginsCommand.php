@@ -24,7 +24,8 @@ class GrabPluginsCommand extends Command
         $this->setName('plugins:grab')
             ->setDescription('Grabs plugins (with number of specified versions or explicitly specified plugins) from the origin repo')
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'all')
-            ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins to request');
+            ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins to request')
+            ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -34,6 +35,9 @@ class GrabPluginsCommand extends Command
 
         if ($pluginList) {
             $pluginList = explode(',', $pluginList);
+            foreach($pluginList as $k => $plugin) {
+                $pluginList[$k] = trim($plugin);
+            }
         }
 
         $output->writeln('Getting list of plugins...');
@@ -62,13 +66,19 @@ class GrabPluginsCommand extends Command
                 continue;
             }
 
-            $process = new Process([
+            $command = [
                 './assetgrabber',
                 'internal:download',
                 $plugin,
                 $versionList,
                 $numVersions
-            ]);
+            ];
+
+            if ($input->getOption('force-download')) {
+                $command[] = '-f';
+            }
+
+            $process = new Process($command);
             $process->start(function ($type, $buffer) use ($output) { $output->write($buffer); });
             $processes[] = $process;
 

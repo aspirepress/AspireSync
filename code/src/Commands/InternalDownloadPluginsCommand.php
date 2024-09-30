@@ -9,6 +9,7 @@ use AssetGrabber\Services\PluginListService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class InternalDownloadPluginsCommand extends Command
@@ -24,7 +25,8 @@ class InternalDownloadPluginsCommand extends Command
             ->setHidden(true)
             ->addArgument('plugin', InputArgument::REQUIRED, 'Plugin name')
             ->addArgument('version-list', InputArgument::REQUIRED, 'List of versions to download')
-        ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to download', 'all');
+            ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to download', 'all')
+            ->addOption('force', 'f', InputOption::VALUE_NONE, 'Force download even if file exists');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -36,7 +38,7 @@ class InternalDownloadPluginsCommand extends Command
         $versions = explode(',', $input->getArgument('version-list'));
         $versionsToDownload = $this->determineDownloadedVersions($versions, $numVersions);
         $output->writeln('Downloading ' . $versionsToDownload. ' versions...');
-        $responses = $this->service->download($plugin, $versions, $numVersions);
+        $responses = $this->service->download($plugin, $versions, $numVersions, $input->getOption('force'));
         foreach ($responses as $v => $response) {
             $output->writeln("$plugin v$v: $response");
         }
