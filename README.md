@@ -12,17 +12,16 @@ Then, run the following commands:
 2. Run `make run` to see available commands.
 3. Run `make run OPTS=<your command>` to execute your desired command.
 
-You can also run `make run-base` to start a shell script into the container and load the code base as a volume, so it
+You can also run `make run-dev` to start a shell script into the container and load the code base as a volume, so it
 can be modified (as in a development enviornment).
 
 ## Usage
 
 This package ships with the following commands;
 
-| Command            | Description                                                                                                                                                            |
-|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `plugins:grab`     | This command will grab all the plugins, or all the plugins since your last download.                                                                                   |
-| `plugins:download` | This command will grab all the versions of a particular plugin (provided as an argument). It is also used by the `plugins:grab` command to spin up download instances. |
+| Command            | Arguments          | Options             | Description                                                                                                                                                                                                    |
+|--------------------|--------------------|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `plugins:grab`     | \[ num-versions \] | \[ --plugin-list \] | This command will grab all the plugins, or all the plugins since your last download. Optionally, specify a number of versions to download, or a comma-separated list of plugins you wish to explicitly update. |
 
 ## License
 

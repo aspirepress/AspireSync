@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace AssetGrabber;
 
-use AssetGrabber\Commands\DownloadPluginVersionsCommand;
+use AssetGrabber\Commands\InternalDownloadPluginsCommand;
 use AssetGrabber\Commands\GrabPluginsCommand;
-use AssetGrabber\Factories\DownloadPluginVersionsCommandFactory;
+use AssetGrabber\Factories\InternalDownloadPluginsCommandFactory;
 use AssetGrabber\Factories\GrabPluginsCommandFactory;
 use AssetGrabber\Services\PluginDownloadService;
 use AssetGrabber\Services\PluginListService;
@@ -32,7 +32,7 @@ class ConfigProvider
 
                 // Commands
                 GrabPluginsCommand::class => GrabPluginsCommandFactory::class,
-                DownloadPluginVersionsCommand::class => DownloadPluginVersionsCommandFactory::class,
+                InternalDownloadPluginsCommand::class => InternalDownloadPluginsCommandFactory::class,
             ]
         ];
     }

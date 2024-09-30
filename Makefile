@@ -9,5 +9,11 @@ build:
 run:
 	docker run -it plugin-slurp ${OPTS}
 
-run-base:
+dev-install-composer:
+	docker run -it -v ./code:/opt/plugin-slurp plugin-slurp-base composer install
+
+dev-update-composer:
+	docker run -it -v ./code:/opt/plugin-slurp plugin-slurp-base composer update
+
+run-dev:
 	docker run -it -v ./code:/opt/plugin-slurp plugin-slurp-base sh
