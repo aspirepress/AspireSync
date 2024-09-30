@@ -10,5 +10,15 @@
         "psr-4": {
             "AssetGrabber\\": "./src"
         }
+    },
+    "autoload-dev":{
+        "psr-4": {
+            "AssertGrabber\\Tests\\Unit\\": "./tests/unit",
+            "AssertGrabber\\Tests\\Functional\\": "./tests/functional",
+            "AssertGrabber\\Tests\\Helpers\\": "./tests/helpers"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.3"
     }
 }

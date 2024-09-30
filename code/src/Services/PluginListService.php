@@ -14,10 +14,6 @@ class PluginListService
 
     private array $oldPluginData = [];
 
-    public function __construct()
-    {
-        ini_set( 'user_agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:80.0) Gecko/20100101 Firefox/80.0' );
-    }
     public function getPluginList(): array
     {
         $this->currentRevision = $this->identifyCurrentRevision();
@@ -49,23 +45,25 @@ class PluginListService
 
     private function identifyCurrentRevision(): int
     {
-        $changelog = file_get_contents( 'https://plugins.trac.wordpress.org/log/?format=changelog&stop_rev=HEAD' );
+        $client = new Client();
+        $changelog = $client->get('https://plugins.trac.wordpress.org/log/?format=changelog&stop_rev=HEAD', ['headers' => ['User-Agent' => 'AssetGrabber']]);
         if (!$changelog) {
             throw new \RuntimeException('Unable to read last revision');
         }
-        preg_match( '#\[([0-9]+)\]#', $changelog, $matches );
+        preg_match( '#\[([0-9]+)\]#', $changelog->getBody()->getContents(), $matches );
         return (int) $matches[1] ?? throw new \RuntimeException('Unable to parse last revision');
 
     }
 
     private function pullWholePluginList(): array
     {
-        $plugins = file_get_contents( 'https://plugins.svn.wordpress.org/' );
+        $client = new Client();
+        $plugins = $client->get( 'https://plugins.svn.wordpress.org/', ['headers' => ['User-Agent' => 'AssetGrabber']] );
         if (! $plugins) {
             throw new \RuntimeException('Unable to download list of plugins');
         }
 
-        preg_match_all( '#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $plugins, $matches );
+        preg_match_all( '#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $plugins->getBody()->getContents(), $matches );
         $plugins = $matches[1];
 
         $pluginsToReturn = [];

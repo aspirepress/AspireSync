@@ -7,24 +7,27 @@ namespace AssetGrabber\Commands;
 use AssetGrabber\Services\PluginDownloadService;
 use AssetGrabber\Services\PluginListService;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
 class GrabPluginsCommand extends Command
 {
-    public function __construct(private PluginListService $pluginListService, private PluginDownloadService  $downloadService)
+    public function __construct(private PluginListService $pluginListService)
     {
         parent::__construct();
     }
     protected function configure(): void
     {
         $this->setName('plugins:grab')
-            ->setDescription('Grabs all plugins from the origin repo');
+            ->setDescription('Grabs all plugins from the origin repo')
+            ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'all');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $numVersions = $input->getArgument('num-versions');
         $output->writeln('Getting list of plugins...');
         $pluginsToUpdate = $this->pluginListService->getPluginList();
         $output->writeln(count($pluginsToUpdate).' plugins to assetgrabber...');
@@ -33,7 +36,8 @@ class GrabPluginsCommand extends Command
             $process = new Process([
                 './assetgrabber',
                 'plugins:download',
-                $plugin
+                $plugin,
+                $numVersions
             ]);
             $process->start(function ($type, $buffer) use ($output) { $output->write($buffer); });
             $processes[] = $process;

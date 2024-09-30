@@ -14,7 +14,6 @@ class GrabPluginsCommandFactory
     public function __invoke(ServiceManager $serviceManager): GrabPluginsCommand
     {
         $pluginService = $serviceManager->get(PluginListService::class);
-        $downloadService = $serviceManager->get(PluginDownloadService::class);
-        return new GrabPluginsCommand($pluginService, $downloadService);
+        return new GrabPluginsCommand($pluginService);
     }
 }
