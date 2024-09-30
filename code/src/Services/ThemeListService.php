@@ -49,10 +49,15 @@ class ThemeListService
             $themeData = array_keys($data['versions']);
 
         } else {
-            $url    = 'https://api.wordpress.org/themes/info/1.0/' . $theme . '.json';
+            $url    = 'https://api.wordpress.org/themes/info/1.2/';
+            $queryParams = [
+                'action' => 'theme_information',
+                'slug' => $theme,
+                'fields[]' => 'versions',
+            ];
             $client = new Client();
             try {
-                $response = $client->get($url);
+                $response = $client->get($url, ['query' => $queryParams]);
                 $data     = json_decode($response->getBody()->getContents(), true);
                 file_put_contents(
                     '/opt/asset-grabber/data/theme-raw-data/' . $theme . '.json',

@@ -16,8 +16,7 @@ class InternalDownloadPluginsCommandFactory
 {
     public function __invoke(ServiceManager $serviceManager): InternalDownloadPluginsCommand
     {
-        $pluginService = $serviceManager->get(PluginListService::class);
         $downloadService = $serviceManager->get(PluginDownloadService::class);
-        return new InternalDownloadPluginsCommand($pluginService, $downloadService);
+        return new InternalDownloadPluginsCommand($downloadService);
     }
 }

@@ -13,7 +13,7 @@ class ThemeDownloadService
     public function download($theme, $versions, int|string $numToDownload = 'all', bool $force = false)
     {
         $client = new Client();
-        $downloadUrl = 'https://downloads.wordpress.org/themes/%s.%s.zip?nostats=1';
+        $downloadUrl = 'https://downloads.wordpress.org/theme/%s.%s.zip?nostats=1';
         $downloadFile = '/opt/asset-grabber/data/themes/%s.%s.zip';
 
         if (!file_exists('/opt/asset-grabber/data/themes')) {
