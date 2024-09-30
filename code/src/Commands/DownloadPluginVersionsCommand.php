@@ -19,8 +19,9 @@ class DownloadPluginVersionsCommand extends Command
     }
     protected function configure(): void
     {
-        $this->setName('plugins:download')
+        $this->setName('internal:download')
             ->setDescription('Download all versions of a given plugin')
+            ->setHidden(true)
             ->addArgument('plugin', InputArgument::REQUIRED, 'Plugin name')
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to download', 'all');
     }

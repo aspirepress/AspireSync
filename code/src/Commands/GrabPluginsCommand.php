@@ -9,6 +9,7 @@ use AssetGrabber\Services\PluginListService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
@@ -22,12 +23,19 @@ class GrabPluginsCommand extends Command
     {
         $this->setName('plugins:grab')
             ->setDescription('Grabs all plugins from the origin repo')
-            ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'all');
+            ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'all')
+            ->addOption('plugin-list', null, InputOption::VALUE_OPTIONAL, 'List of plugins to request');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $numVersions = $input->getArgument('num-versions');
+        $pluginList = $input->getOption('plugin-list');
+
+        if ($pluginList) {
+            $pluginList = explode(',', $pluginList);
+        }
+
         $output->writeln('Getting list of plugins...');
         $pluginsToUpdate = $this->pluginListService->getPluginList();
         $output->writeln(count($pluginsToUpdate).' plugins to download...');
@@ -35,7 +43,7 @@ class GrabPluginsCommand extends Command
         foreach ($pluginsToUpdate as $plugin => $versions) {
             $process = new Process([
                 './assetgrabber',
-                'plugins:download',
+                'internal:download',
                 $plugin,
                 $numVersions
             ]);
