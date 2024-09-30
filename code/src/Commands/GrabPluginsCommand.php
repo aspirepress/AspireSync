@@ -39,12 +39,34 @@ class GrabPluginsCommand extends Command
         $output->writeln('Getting list of plugins...');
         $pluginsToUpdate = $this->pluginListService->getPluginList($pluginList);
         $output->writeln(count($pluginsToUpdate).' plugins to download...');
+
+        if (count($pluginsToUpdate) === 0) {
+            $output->writeln('No plugins to download...exiting...');
+            return Command::SUCCESS;
+        }
+
         $processes = [];
+
         foreach ($pluginsToUpdate as $plugin => $versions) {
+            if (!empty($versions)) {
+                $versionList = implode(',', $versions);
+            } else {
+                $updatedVersionList = $this->pluginListService->getVersionsForPlugin($plugin);
+                $versionList = implode(',', $updatedVersionList);
+                $pluginsToUpdate[$plugin] = $updatedVersionList;
+
+            }
+
+            if (empty($versionList)) {
+                $output->writeln('No versions found for '.$plugin.'...skipping...');
+                continue;
+            }
+
             $process = new Process([
                 './assetgrabber',
                 'internal:download',
                 $plugin,
+                $versionList,
                 $numVersions
             ]);
             $process->start(function ($type, $buffer) use ($output) { $output->write($buffer); });
@@ -65,6 +87,17 @@ class GrabPluginsCommand extends Command
                 $loopCount++;
             }
         }
+
+        $output->writeln('Waiting for all processes to finish...');
+
+        while(count($processes) > 0) {
+            foreach ($processes as $k => $process) {
+                if (!$process->isRunning()) {
+                    unset($processes[$k]);}
+            }
+        }
+
+        $output->writeln('All processes finished...');
 
         $this->pluginListService->preservePluginList($pluginsToUpdate);
 

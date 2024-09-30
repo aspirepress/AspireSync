@@ -34,8 +34,6 @@ class PluginDownloadService
                 $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), $numToDownload);
         }
 
-        var_dump($download); die;
-
         $outcomes = [];
 
         foreach ($download as $version) {
@@ -44,8 +42,13 @@ class PluginDownloadService
             try {
                 $response = $client->request('GET', $url, ['headers' => ['User-Agent' => 'AssetGrabber'], 'allow_redirects' => true, 'sink' => $filePath]);
                 $outcomes[$version] = $response->getStatusCode();
+                if (filesize($filePath) === 0) {
+                    unlink($filePath);
+                    $outcomes[$version] = 'File was zero length; removed.';
+                }
             } catch (ClientException $e) {
                 $outcomes[$version] = $e->getMessage();
+                unlink($filePath);
             }
         }
 

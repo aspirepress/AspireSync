@@ -23,7 +23,8 @@ class InternalDownloadPluginsCommand extends Command
             ->setDescription('Download all versions of a given plugin')
             ->setHidden(true)
             ->addArgument('plugin', InputArgument::REQUIRED, 'Plugin name')
-            ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to download', 'all');
+            ->addArgument('version-list', InputArgument::REQUIRED, 'List of versions to download')
+        ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to download', 'all');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -32,13 +33,27 @@ class InternalDownloadPluginsCommand extends Command
         $numVersions = $input->getArgument('num-versions');
 
         $output->writeln('Determining versions of ' . $plugin . '...');
-        $versions = $this->listService->getVersionsForPlugin($plugin);
-        $output->writeln('Downloading ' . count($versions) . ' versions...');
+        $versions = explode(',', $input->getArgument('version-list'));
+        $versionsToDownload = $this->determineDownloadedVersions($versions, $numVersions);
+        $output->writeln('Downloading ' . $versionsToDownload. ' versions...');
         $responses = $this->service->download($plugin, $versions, $numVersions);
         foreach ($responses as $v => $response) {
             $output->writeln("$plugin v$v: $response");
         }
 
         return Command::SUCCESS;
+    }
+
+    private function determineDownloadedVersions(array $versions, string|int $numToDownload): int
+    {
+        switch ($numToDownload)
+        {
+            case 'all':
+                return count($versions);
+            case 'latest':
+                return 1;
+            default:
+                return (count($versions) > $numToDownload) ? (int) $numToDownload : count($versions);
+        }
     }
 }

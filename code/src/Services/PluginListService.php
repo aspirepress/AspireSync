@@ -10,6 +10,8 @@ use Symfony\Component\Process\Process;
 
 class PluginListService
 {
+    private int $prevRevision = 0;
+
     private int $currentRevision;
 
     private array $oldPluginData = [];
@@ -21,59 +23,99 @@ class PluginListService
         if (file_exists('/opt/plugin-slurp/data/plugin-data.json')) {
             $json = file_get_contents('/opt/plugin-slurp/data/plugin-data.json');
             $this->oldPluginData = json_decode($json, true);
+            $this->prevRevision = $this->oldPluginData['meta']['my_revision'];
             return $this->filter($this->getPluginsToUpdate(), $filter);
         }
 
         $pluginList = $this->pullWholePluginList();
-        file_put_contents('/opt/plugin-slurp/data/raw-plugin-list', implode(PHP_EOL, array_keys($pluginList)));
         return $this->filter($pluginList, $filter);
     }
 
     public function getVersionsForPlugin($plugin): array
     {
-        $url = 'https://plugins.svn.wordpress.org/' . $plugin . '/tags/';
-        $client = new Client();
-        try {
-            $response = $client->get($url);
-            $versions = $response->getBody()->getContents();
-            preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $versions, $matches);
-            return $matches[1];
-        } catch (ClientException $e) {
-            return [];
+        if (!file_exists('/opt/plugin-slurp/data/plugin-raw-data')) {
+            mkdir('/opt/plugin-slurp/data/plugin-raw-data');
         }
+
+        if (file_exists('/opt/plugin-slurp/data/plugin-raw-data/' . $plugin . '.json') && filemtime('/opt/plugin-slurp/data/plugin-raw-data/' . $plugin . '.json') > time() - 3600) {
+            $json = file_get_contents('/opt/plugin-slurp/data/plugin-raw-data/' . $plugin . '.json');
+            $data = json_decode($json, true);
+            $pluginData = array_keys($data['versions']);
+
+        } else {
+            $url    = 'https://api.wordpress.org/plugins/info/1.0/' . $plugin . '.json';
+            $client = new Client();
+            try {
+                $response = $client->get($url);
+                $data     = json_decode($response->getBody()->getContents(), true);
+                file_put_contents(
+                    '/opt/plugin-slurp/data/plugin-raw-data/' . $plugin . '.json',
+                    json_encode($data, JSON_PRETTY_PRINT)
+                );
+                $pluginData = array_keys($data['versions']);
+            } catch (ClientException $e) {
+                if ($e->getCode() === 404) {
+                    $content    = $e->getResponse()->getBody()->getContents();
+                    file_put_contents('/opt/plugin-slurp/data/plugin-raw-data/' . $plugin . '.json', $content);
+                }
+
+                return [];
+            }
+        }
+
+        if (in_array('trunk', $pluginData)) {
+            $pluginData = array_diff($pluginData, ['trunk']);
+        }
+
+        return $pluginData;
     }
 
     private function identifyCurrentRevision(): int
     {
-        try {
-            $client = new Client();
-            $changelog = $client->get(
-                'https://plugins.trac.wordpress.org/log/?format=changelog&stop_rev=HEAD',
-                ['headers' => ['User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36']]
-            );
-        } catch (\Exception $e) {
-            throw new \RuntimeException('Unable to download changelog: ' . $e->getMessage());
+    if (file_exists('/opt/plugin-slurp/data/raw-changelog') && filemtime('/opt/plugin-slurp/data/raw-changelog') > time() - 3600) {
+        $changelog = file_get_contents('/opt/plugin-slurp/data/raw-changelog');
+    } else {
+            try {
+                $client = new Client();
+                $changelog = $client->get(
+                    'https://plugins.trac.wordpress.org/log/?format=changelog&stop_rev=HEAD',
+                    ['headers' => ['User-Agent' => 'AssetGrabber']]
+                );
+                $changelog = $changelog->getBody()->getContents();
+                file_put_contents('/opt/plugin-slurp/data/raw-changelog', $changelog);
+            } catch (\Exception $e) {
+                throw new \RuntimeException('Unable to download changelog: ' . $e->getMessage());
+            }
         }
-        preg_match( '#\[([0-9]+)\]#', $changelog->getBody()->getContents(), $matches );
+        preg_match( '#\[([0-9]+)\]#', $changelog, $matches );
         return (int) $matches[1] ?? throw new \RuntimeException('Unable to parse last revision');
 
     }
 
     private function pullWholePluginList(): array
     {
-        $client = new Client();
-        $plugins = $client->get( 'https://plugins.svn.wordpress.org/', ['headers' => ['User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36']] );
-        if (! $plugins) {
-            throw new \RuntimeException('Unable to download list of plugins');
+        if (file_exists('/opt/plugin-slurp/data/raw-svn-plugin-list') && filemtime('/opt/plugin-slurp/data/raw-svn-plugin-list') > time() - 3600) {
+            $plugins = file_get_contents('/opt/plugin-slurp/data/raw-svn-plugin-list');
+        } else {
+            try {
+                $client  = new Client();
+                $plugins = $client->get('https://plugins.svn.wordpress.org/', ['headers' => ['AssetGrabber']]);
+                $contents = $plugins->getBody()->getContents();
+                file_put_contents('/opt/plugin-slurp/data/raw-svn-plugin-list', $contents);
+                $plugins = $contents;
+            } catch (ClientException $e) {
+                throw new \RuntimeException('Unable to download plugin list: ' . $e->getMessage());
+            }
         }
-
-        preg_match_all( '#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $plugins->getBody()->getContents(), $matches );
+        preg_match_all( '#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $plugins, $matches );
         $plugins = $matches[1];
 
         $pluginsToReturn = [];
         foreach ($plugins as $plugin) {
             $pluginsToReturn[$plugin] = [];
         }
+
+        file_put_contents('/opt/plugin-slurp/data/raw-plugin-list', implode(PHP_EOL, $plugins));
 
         return $pluginsToReturn;
     }
@@ -84,23 +126,64 @@ class PluginListService
         $targetRev = $lastRev + 1;
         $currentRev = $this->currentRevision;
 
-        $command = [
-            'svn',
-            'log',
-            '-vq',
-            'https://plugins.svn.wordpress.org',
-            "-r $currentRev:$targetRev"
-        ];
+        if ($this->currentRevision === $this->prevRevision) {
+            return $this->mergePluginsToUpdate([]);
+        }
 
-        $process = new Process($command);
-        $process->run();
-        $output = explode(PHP_EOL, $process->getOutput());
+        if (file_exists('/opt/plugin-slurp/data/revision-' . $currentRev)) {
+            $output = file('/opt/plugin-slurp/data/revision-' . $currentRev);
+        } else {
+            $command = [
+                'svn',
+                'log',
+                '-v',
+                '-q',
+                'https://plugins.svn.wordpress.org',
+                "-r",
+                "$targetRev:$currentRev"
+            ];
+
+            $process = new Process($command);
+            $process->run();
+
+            if (! $process->isSuccessful()) {
+                throw new \RuntimeException('Unable to get list of plugins to update' . $process->getErrorOutput());
+            }
+
+            $output = explode(PHP_EOL, $process->getOutput());
+            file_put_contents('/opt/plugin-slurp/data/revision-' . $currentRev, $process->getOutput());
+        }
+
         $pluginsToUpdate = [];
         foreach ($output as $line) {
-            preg_match('#^   [ADMR] /([^/(]+)/([^/(]+)/#', $line, $matches);
-            $plugin = trim($matches[1]);
-            if (trim($matches[2]) === 'tags') {
-                $pluginsToUpdate[$plugin] = [];
+            preg_match('#^   [ADMR] /([^/(]+)/([^/(]+)/([^/(]+)/#', $line, $matches);
+            if ($matches) {
+                $plugin = trim($matches[1]);
+                if (trim($matches[2]) === 'tags' && ! empty($matches[3])) {
+                    if (!isset($pluginsToUpdate[$plugin])) {
+                        $pluginsToUpdate[$plugin] = [];
+                    }
+
+                    if (!in_array($matches[3], $pluginsToUpdate[$plugin])) {
+                        $pluginsToUpdate[$plugin][] = $matches[3];
+                    }
+                }
+            }
+        }
+
+        $pluginsToUpdate = $this->mergePluginsToUpdate($pluginsToUpdate);
+
+        return $pluginsToUpdate;
+    }
+
+    private function mergePluginsToUpdate(array $pluginsToUpdate = []): array
+    {
+        $allPlugins = $this->pullWholePluginList();
+
+        foreach ($allPlugins as $pluginName => $pluginVersions) {
+            // Is this the first time we've seen the plugin?
+            if (!isset($this->oldPluginData['plugins'][$pluginName])) {
+                $pluginsToUpdate[$pluginName] = [];
             }
         }
 
@@ -110,8 +193,12 @@ class PluginListService
     public function preservePluginList(array $plugins): int|bool
     {
         if ($this->oldPluginData) {
-            $toSave = array_merge($this->oldPluginData['plugins'], $plugins);
-            $tosave['meta']['my_revision'] = $this->currentRevision;
+            $toSave = [
+                'meta' => [],
+                'plugins' => $this->oldPluginData['plugins'],
+            ];
+            $toSave['plugins'] = array_merge($toSave['plugins'], $plugins);
+            $toSave['meta']['my_revision'] = $this->currentRevision;
         } else {
             $toSave = [
                 'meta' => [
@@ -120,10 +207,10 @@ class PluginListService
                 'plugins' => [],
             ];
 
-            $toSave = array_merge($toSave['plugins'], $plugins);
+            $toSave['plugins'] = array_merge($toSave['plugins'], $plugins);
         }
 
-        return file_put_contents('/opt/plugin-slurp/data/plugin-data.json', json_encode($toSave));
+        return file_put_contents('/opt/plugin-slurp/data/plugin-data.json', json_encode($toSave, JSON_PRETTY_PRINT));
     }
 
     private function filter(array $plugins, ?array $filter): array
