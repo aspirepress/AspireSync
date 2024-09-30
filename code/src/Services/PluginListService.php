@@ -24,7 +24,7 @@ class PluginListService
             $json = file_get_contents('/opt/plugin-slurp/data/plugin-data.json');
             $this->oldPluginData = json_decode($json, true);
             $this->prevRevision = $this->oldPluginData['meta']['my_revision'];
-            return $this->filter($this->getPluginsToUpdate(), $filter);
+            return $this->filter($this->getPluginsToUpdate($filter), $filter);
         }
 
         $pluginList = $this->pullWholePluginList();
@@ -120,14 +120,14 @@ class PluginListService
         return $pluginsToReturn;
     }
 
-    private function getPluginsToUpdate(): array
+    private function getPluginsToUpdate(array $explicitlyRequested = []): array
     {
         $lastRev = $this->oldPluginData['meta']['my_revision'];
         $targetRev = $lastRev + 1;
         $currentRev = $this->currentRevision;
 
         if ($this->currentRevision === $this->prevRevision) {
-            return $this->mergePluginsToUpdate([]);
+            return $this->mergePluginsToUpdate([], $explicitlyRequested);
         }
 
         if (file_exists('/opt/plugin-slurp/data/revision-' . $currentRev)) {
@@ -171,18 +171,22 @@ class PluginListService
             }
         }
 
-        $pluginsToUpdate = $this->mergePluginsToUpdate($pluginsToUpdate);
+        $pluginsToUpdate = $this->mergePluginsToUpdate($pluginsToUpdate, $explicitlyRequested);
 
         return $pluginsToUpdate;
     }
 
-    private function mergePluginsToUpdate(array $pluginsToUpdate = []): array
+    private function mergePluginsToUpdate(array $pluginsToUpdate = [], array $explicitlyRequested = []): array
     {
         $allPlugins = $this->pullWholePluginList();
 
         foreach ($allPlugins as $pluginName => $pluginVersions) {
             // Is this the first time we've seen the plugin?
             if (!isset($this->oldPluginData['plugins'][$pluginName])) {
+                $pluginsToUpdate[$pluginName] = [];
+            }
+
+            if (in_array($pluginName, $explicitlyRequested)) {
                 $pluginsToUpdate[$pluginName] = [];
             }
         }
@@ -213,6 +217,13 @@ class PluginListService
         return file_put_contents('/opt/plugin-slurp/data/plugin-data.json', json_encode($toSave, JSON_PRETTY_PRINT));
     }
 
+    /**
+     * Reduces the plugins slated for update to only those specified in the filter.
+     *
+     * @param  array  $plugins
+     * @param  array|null  $filter
+     * @return array
+     */
     private function filter(array $plugins, ?array $filter): array
     {
         if (! $filter) {
