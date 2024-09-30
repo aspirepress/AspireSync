@@ -3,13 +3,13 @@ FROM php:8.3-cli-alpine AS basebuild
 RUN apk update && apk upgrade \
     && apk add subversion
 
-COPY ./code /opt/plugin-slurp
+COPY ./code /opt/asset-grabber
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN composer install --no-dev --no-interaction --no-progress --working-dir=/opt/plugin-slurp
+RUN composer install --no-dev --no-interaction --no-progress --working-dir=/opt/asset-grabber
 
-WORKDIR /opt/plugin-slurp
+WORKDIR /opt/asset-grabber
 
 FROM basebuild AS prodbuild
 
-ENTRYPOINT ["php", "/opt/plugin-slurp/assetgrabber"]
+ENTRYPOINT ["php", "/opt/asset-grabber/assetgrabber"]

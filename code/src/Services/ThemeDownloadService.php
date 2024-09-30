@@ -8,16 +8,16 @@ use AssetGrabber\Utilities\VersionUtil;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
-class PluginDownloadService
+class ThemeDownloadService
 {
-    public function download($plugin, $versions, int|string $numToDownload = 'all', bool $force = false)
+    public function download($theme, $versions, int|string $numToDownload = 'all', bool $force = false)
     {
         $client = new Client();
-        $downloadUrl = 'https://downloads.wordpress.org/plugin/%s.%s.zip?nostats=1';
-        $downloadFile = '/opt/asset-grabber/data/plugins/%s.%s.zip';
+        $downloadUrl = 'https://downloads.wordpress.org/themes/%s.%s.zip?nostats=1';
+        $downloadFile = '/opt/asset-grabber/data/themes/%s.%s.zip';
 
-        if (!file_exists('/opt/asset-grabber/data/plugins')) {
-            mkdir('/opt/asset-grabber/data/plugins');
+        if (!file_exists('/opt/asset-grabber/data/themes')) {
+            mkdir('/opt/asset-grabber/data/themes');
         }
 
         switch ($numToDownload)
@@ -37,8 +37,8 @@ class PluginDownloadService
         $outcomes = [];
 
         foreach ($download as $version) {
-            $url = sprintf($downloadUrl, $plugin, $version);
-            $filePath = sprintf($downloadFile, $plugin, $version);
+            $url = sprintf($downloadUrl, $theme, $version);
+            $filePath = sprintf($downloadFile, $theme, $version);
 
             if (file_exists($filePath) && !$force) {
                 $outcomes['304 Not Modified'][] = $version;

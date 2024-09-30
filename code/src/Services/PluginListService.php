@@ -23,8 +23,8 @@ class PluginListService
         }
 
         $this->currentRevision = $this->identifyCurrentRevision();
-        if (file_exists('/opt/plugin-slurp/data/plugin-data.json')) {
-            $json = file_get_contents('/opt/plugin-slurp/data/plugin-data.json');
+        if (file_exists('/opt/asset-grabber/data/plugin-data.json')) {
+            $json = file_get_contents('/opt/asset-grabber/data/plugin-data.json');
             $this->oldPluginData = json_decode($json, true);
             $this->prevRevision = $this->oldPluginData['meta']['my_revision'];
             return $this->filter($this->getPluginsToUpdate($filter), $filter);
@@ -36,12 +36,12 @@ class PluginListService
 
     public function getVersionsForPlugin($plugin): array
     {
-        if (!file_exists('/opt/plugin-slurp/data/plugin-raw-data')) {
-            mkdir('/opt/plugin-slurp/data/plugin-raw-data');
+        if (!file_exists('/opt/asset-grabber/data/plugin-raw-data')) {
+            mkdir('/opt/asset-grabber/data/plugin-raw-data');
         }
 
-        if (file_exists('/opt/plugin-slurp/data/plugin-raw-data/' . $plugin . '.json') && filemtime('/opt/plugin-slurp/data/plugin-raw-data/' . $plugin . '.json') > time() - 3600) {
-            $json = file_get_contents('/opt/plugin-slurp/data/plugin-raw-data/' . $plugin . '.json');
+        if (file_exists('/opt/asset-grabber/data/plugin-raw-data/' . $plugin . '.json') && filemtime('/opt/asset-grabber/data/plugin-raw-data/' . $plugin . '.json') > time() - 3600) {
+            $json = file_get_contents('/opt/asset-grabber/data/plugin-raw-data/' . $plugin . '.json');
             $data = json_decode($json, true);
             if (!isset($data['versions'])) {
                 return [];
@@ -55,14 +55,14 @@ class PluginListService
                 $response = $client->get($url);
                 $data     = json_decode($response->getBody()->getContents(), true);
                 file_put_contents(
-                    '/opt/plugin-slurp/data/plugin-raw-data/' . $plugin . '.json',
+                    '/opt/asset-grabber/data/plugin-raw-data/' . $plugin . '.json',
                     json_encode($data, JSON_PRETTY_PRINT)
                 );
                 $pluginData = array_keys($data['versions']);
             } catch (ClientException $e) {
                 if ($e->getCode() === 404) {
                     $content    = $e->getResponse()->getBody()->getContents();
-                    file_put_contents('/opt/plugin-slurp/data/plugin-raw-data/' . $plugin . '.json', $content);
+                    file_put_contents('/opt/asset-grabber/data/plugin-raw-data/' . $plugin . '.json', $content);
                 }
 
                 return [];
@@ -78,8 +78,8 @@ class PluginListService
 
     private function identifyCurrentRevision(): int
     {
-    if (file_exists('/opt/plugin-slurp/data/raw-changelog') && filemtime('/opt/plugin-slurp/data/raw-changelog') > time() - 3600) {
-        $changelog = file_get_contents('/opt/plugin-slurp/data/raw-changelog');
+    if (file_exists('/opt/asset-grabber/data/raw-changelog') && filemtime('/opt/asset-grabber/data/raw-changelog') > time() - 3600) {
+        $changelog = file_get_contents('/opt/asset-grabber/data/raw-changelog');
     } else {
             try {
                 $client = new Client();
@@ -88,7 +88,7 @@ class PluginListService
                     ['headers' => ['User-Agent' => 'AssetGrabber']]
                 );
                 $changelog = $changelog->getBody()->getContents();
-                file_put_contents('/opt/plugin-slurp/data/raw-changelog', $changelog);
+                file_put_contents('/opt/asset-grabber/data/raw-changelog', $changelog);
             } catch (\Exception $e) {
                 throw new \RuntimeException('Unable to download changelog: ' . $e->getMessage());
             }
@@ -100,14 +100,14 @@ class PluginListService
 
     private function pullWholePluginList(): array
     {
-        if (file_exists('/opt/plugin-slurp/data/raw-svn-plugin-list') && filemtime('/opt/plugin-slurp/data/raw-svn-plugin-list') > time() - 3600) {
-            $plugins = file_get_contents('/opt/plugin-slurp/data/raw-svn-plugin-list');
+        if (file_exists('/opt/asset-grabber/data/raw-svn-plugin-list') && filemtime('/opt/asset-grabber/data/raw-svn-plugin-list') > time() - 3600) {
+            $plugins = file_get_contents('/opt/asset-grabber/data/raw-svn-plugin-list');
         } else {
             try {
                 $client  = new Client();
                 $plugins = $client->get('https://plugins.svn.wordpress.org/', ['headers' => ['AssetGrabber']]);
                 $contents = $plugins->getBody()->getContents();
-                file_put_contents('/opt/plugin-slurp/data/raw-svn-plugin-list', $contents);
+                file_put_contents('/opt/asset-grabber/data/raw-svn-plugin-list', $contents);
                 $plugins = $contents;
             } catch (ClientException $e) {
                 throw new \RuntimeException('Unable to download plugin list: ' . $e->getMessage());
@@ -121,7 +121,7 @@ class PluginListService
             $pluginsToReturn[$plugin] = [];
         }
 
-        file_put_contents('/opt/plugin-slurp/data/raw-plugin-list', implode(PHP_EOL, $plugins));
+        file_put_contents('/opt/asset-grabber/data/raw-plugin-list', implode(PHP_EOL, $plugins));
 
         return $pluginsToReturn;
     }
@@ -136,8 +136,8 @@ class PluginListService
             return $this->mergePluginsToUpdate([], $explicitlyRequested);
         }
 
-        if (file_exists('/opt/plugin-slurp/data/revision-' . $currentRev)) {
-            $output = file('/opt/plugin-slurp/data/revision-' . $currentRev);
+        if (file_exists('/opt/asset-grabber/data/revision-' . $currentRev)) {
+            $output = file('/opt/asset-grabber/data/revision-' . $currentRev);
         } else {
             $command = [
                 'svn',
@@ -157,7 +157,7 @@ class PluginListService
             }
 
             $output = explode(PHP_EOL, $process->getOutput());
-            file_put_contents('/opt/plugin-slurp/data/revision-' . $currentRev, $process->getOutput());
+            file_put_contents('/opt/asset-grabber/data/revision-' . $currentRev, $process->getOutput());
         }
 
         $pluginsToUpdate = [];
@@ -220,7 +220,7 @@ class PluginListService
             $toSave['plugins'] = array_merge($toSave['plugins'], $plugins);
         }
 
-        return file_put_contents('/opt/plugin-slurp/data/plugin-data.json', json_encode($toSave, JSON_PRETTY_PRINT));
+        return file_put_contents('/opt/asset-grabber/data/plugin-data.json', json_encode($toSave, JSON_PRETTY_PRINT));
     }
 
     /**
