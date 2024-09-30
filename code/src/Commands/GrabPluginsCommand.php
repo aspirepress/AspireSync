@@ -30,7 +30,7 @@ class GrabPluginsCommand extends Command
         $numVersions = $input->getArgument('num-versions');
         $output->writeln('Getting list of plugins...');
         $pluginsToUpdate = $this->pluginListService->getPluginList();
-        $output->writeln(count($pluginsToUpdate).' plugins to assetgrabber...');
+        $output->writeln(count($pluginsToUpdate).' plugins to download...');
         $processes = [];
         foreach ($pluginsToUpdate as $plugin => $versions) {
             $process = new Process([
