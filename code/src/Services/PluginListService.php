@@ -14,19 +14,19 @@ class PluginListService
 
     private array $oldPluginData = [];
 
-    public function getPluginList(): array
+    public function getPluginList(?array $filter = []): array
     {
         $this->currentRevision = $this->identifyCurrentRevision();
         $oldPluginData = [];
         if (file_exists('/opt/plugin-slurp/data/plugin-data.json')) {
             $json = file_get_contents('/opt/plugin-slurp/data/plugin-data.json');
             $this->oldPluginData = json_decode($json, true);
-            return $this->getPluginsToUpdate();
+            return $this->filter($this->getPluginsToUpdate(), $filter);
         }
 
         $pluginList = $this->pullWholePluginList();
         file_put_contents('/opt/plugin-slurp/data/raw-plugin-list', implode(PHP_EOL, array_keys($pluginList)));
-        return $pluginList;
+        return $this->filter($pluginList, $filter);
     }
 
     public function getVersionsForPlugin($plugin): array
@@ -45,10 +45,14 @@ class PluginListService
 
     private function identifyCurrentRevision(): int
     {
-        $client = new Client();
-        $changelog = $client->get('https://plugins.trac.wordpress.org/log/?format=changelog&stop_rev=HEAD', ['headers' => ['User-Agent' => 'AssetGrabber']]);
-        if (!$changelog) {
-            throw new \RuntimeException('Unable to read last revision');
+        try {
+            $client = new Client();
+            $changelog = $client->get(
+                'https://plugins.trac.wordpress.org/log/?format=changelog&stop_rev=HEAD',
+                ['headers' => ['User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36']]
+            );
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Unable to download changelog: ' . $e->getMessage());
         }
         preg_match( '#\[([0-9]+)\]#', $changelog->getBody()->getContents(), $matches );
         return (int) $matches[1] ?? throw new \RuntimeException('Unable to parse last revision');
@@ -58,7 +62,7 @@ class PluginListService
     private function pullWholePluginList(): array
     {
         $client = new Client();
-        $plugins = $client->get( 'https://plugins.svn.wordpress.org/', ['headers' => ['User-Agent' => 'AssetGrabber']] );
+        $plugins = $client->get( 'https://plugins.svn.wordpress.org/', ['headers' => ['User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36']] );
         if (! $plugins) {
             throw new \RuntimeException('Unable to download list of plugins');
         }
@@ -120,5 +124,21 @@ class PluginListService
         }
 
         return file_put_contents('/opt/plugin-slurp/data/plugin-data.json', json_encode($toSave));
+    }
+
+    private function filter(array $plugins, ?array $filter): array
+    {
+        if (! $filter) {
+            return $plugins;
+        }
+
+        $filtered = [];
+        foreach ($filter as $plugin) {
+            if (array_key_exists($plugin, $plugins)) {
+                $filtered[$plugin] = $plugins[$plugin];
+            }
+        }
+
+        return $filtered;
     }
 }

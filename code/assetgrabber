@@ -15,5 +15,5 @@ $container = new \Laminas\ServiceManager\ServiceManager($dependencies);
 
 $application = new Application();
 $application->add($container->get(\AssetGrabber\Commands\GrabPluginsCommand::class));
-$application->add($container->get(\AssetGrabber\Commands\DownloadPluginVersionsCommand::class));
+$application->add($container->get(\AssetGrabber\Commands\InternalDownloadPluginsCommand::class));
 $application->run();

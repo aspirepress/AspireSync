@@ -22,6 +22,7 @@ This package ships with the following commands;
 | Command            | Arguments          | Options             | Description                                                                                                                                                                                                    |
 |--------------------|--------------------|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `plugins:grab`     | \[ num-versions \] | \[ --plugin-list \] | This command will grab all the plugins, or all the plugins since your last download. Optionally, specify a number of versions to download, or a comma-separated list of plugins you wish to explicitly update. |
+
 ## License
 
 The AssetGrabber tool is licensed under the MIT license. You may use and distribute it freely.

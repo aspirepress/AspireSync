@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class DownloadPluginVersionsCommand extends Command
+class InternalDownloadPluginsCommand extends Command
 {
     public function __construct(private PluginListService $listService, private PluginDownloadService $service)
     {

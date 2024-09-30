@@ -22,22 +22,22 @@ class GrabPluginsCommand extends Command
     protected function configure(): void
     {
         $this->setName('plugins:grab')
-            ->setDescription('Grabs all plugins from the origin repo')
+            ->setDescription('Grabs plugins (with number of specified versions or explicitly specified plugins) from the origin repo')
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'all')
-            ->addOption('plugin-list', null, InputOption::VALUE_OPTIONAL, 'List of plugins to request');
+            ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins to request');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $numVersions = $input->getArgument('num-versions');
-        $pluginList = $input->getOption('plugin-list');
+        $pluginList = $input->getOption('plugins');
 
         if ($pluginList) {
             $pluginList = explode(',', $pluginList);
         }
 
         $output->writeln('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getPluginList();
+        $pluginsToUpdate = $this->pluginListService->getPluginList($pluginList);
         $output->writeln(count($pluginsToUpdate).' plugins to download...');
         $processes = [];
         foreach ($pluginsToUpdate as $plugin => $versions) {

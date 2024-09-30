@@ -34,7 +34,8 @@ class PluginDownloadService
                 $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), $numToDownload);
         }
 
-        $promises = [];
+        var_dump($download); die;
+
         $outcomes = [];
 
         foreach ($download as $version) {
