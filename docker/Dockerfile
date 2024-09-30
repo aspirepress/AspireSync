@@ -6,8 +6,10 @@ RUN apk update && apk upgrade \
 COPY ./code /opt/plugin-slurp
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+RUN composer install --no-dev --no-interaction --no-progress --working-dir=/opt/plugin-slurp
+
 WORKDIR /opt/plugin-slurp
 
 FROM basebuild AS prodbuild
 
-ENTRYPOINT ["php", "/opt/plugin-slurp/update"]
+ENTRYPOINT ["php", "/opt/plugin-slurp/assetgrabber"]
