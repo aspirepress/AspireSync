@@ -1,6 +1,6 @@
 FROM php:8.3-cli-alpine AS basebuild
 
-RUN apk assetgrabber && apk upgrade \
+RUN apk update && apk upgrade \
     && apk add subversion
 
 COPY ./code /opt/plugin-slurp
