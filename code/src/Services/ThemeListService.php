@@ -16,14 +16,12 @@ class ThemeListService
 
     private int $currentRevision;
 
-    /**
-     * @var array<string, string>
-     */
+    /** @var array<string, string[]> */
     private array $oldThemeData = [];
 
     /**
      * @param string[]|null $filter
-     * @return array<string, string>|array<string, array<string>>
+     * @return array<string, string[]>
      */
     public function getThemeList(?array $filter = []): array
     {
@@ -146,11 +144,11 @@ class ThemeListService
 
     /**
      * @param array<string, string> $explicitlyRequested
-     * @return array<string, string>
+     * @return array<string, string[]>
      */
     private function getThemesToUpdate(array $explicitlyRequested = []): array
     {
-        $lastRev    = $this->oldThemeData['meta']['my_revision'];
+        $lastRev    = (int) $this->oldThemeData['meta']['my_revision'];
         $targetRev  = $lastRev + 1;
         $currentRev = $this->currentRevision;
 
@@ -205,9 +203,9 @@ class ThemeListService
     }
 
     /**
-     * @param array<string, string> $themesToUpdate
+     * @param array<string, string[]> $themesToUpdate
      * @param array<string, string> $explicitlyRequested
-     * @return array<string, string>
+     * @return array<string, string[]>
      */
     private function mergeThemesToUpdate(array $themesToUpdate = [], array $explicitlyRequested = []): array
     {
@@ -228,7 +226,7 @@ class ThemeListService
     }
 
     /**
-     * @param array<string, string> $themes
+     * @param array<string, string[]> $themes
      */
     public function preserveThemeList(array $themes): int|bool
     {
@@ -256,9 +254,9 @@ class ThemeListService
     /**
      * Reduces the themes slated for update to only those specified in the filter.
      *
-     * @param  array<string, string>  $themes
+     * @param  array<string, string[]>  $themes
      * @param  array<string, string>|null  $filter
-     * @return array<string, string>
+     * @return array<string, string[]>
      */
     private function filter(array $themes, ?array $filter): array
     {

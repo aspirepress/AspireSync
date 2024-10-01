@@ -10,6 +10,10 @@ use GuzzleHttp\Exception\ClientException;
 
 class PluginDownloadService
 {
+    /**
+     * @param string[] $versions
+     * @return array<string, string[]>
+     */
     public function download(string $plugin, array $versions, int|string $numToDownload = 'all', bool $force = false): array
     {
         $client       = new Client();

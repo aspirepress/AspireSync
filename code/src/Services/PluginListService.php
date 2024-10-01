@@ -16,8 +16,13 @@ class PluginListService
 
     private int $currentRevision;
 
+    /** @var array <string, string[]> */
     private array $oldPluginData = [];
 
+    /**
+     * @param string[]|null $filter
+     * @return array<string, string[]>
+     */
     public function getPluginList(?array $filter = []): array
     {
         if (! $filter) {
@@ -36,6 +41,9 @@ class PluginListService
         return $this->filter($pluginList, $filter);
     }
 
+    /**
+     * @return string[]
+     */
     public function getVersionsForPlugin(string $plugin): array
     {
         if (! file_exists('/opt/asset-grabber/data/plugin-raw-data')) {
@@ -95,9 +103,12 @@ class PluginListService
             }
         }
         preg_match('#\[([0-9]+)\]#', $changelog, $matches);
-        return (int) $matches[1] ?? throw new RuntimeException('Unable to parse last revision');
+        return (int) $matches[1];
     }
 
+    /**
+     * @return array<string, string[]>
+     */
     private function pullWholePluginList(): array
     {
         if (file_exists('/opt/asset-grabber/data/raw-svn-plugin-list') && filemtime('/opt/asset-grabber/data/raw-svn-plugin-list') > time() - 3600) {
@@ -126,9 +137,13 @@ class PluginListService
         return $pluginsToReturn;
     }
 
+    /**
+     * @param string[] $explicitlyRequested
+     * @return array<string, string[]>
+     */
     private function getPluginsToUpdate(array $explicitlyRequested = []): array
     {
-        $lastRev    = $this->oldPluginData['meta']['my_revision'];
+        $lastRev    = (int) $this->oldPluginData['meta']['my_revision'];
         $targetRev  = $lastRev + 1;
         $currentRev = $this->currentRevision;
 
@@ -182,6 +197,11 @@ class PluginListService
         return $pluginsToUpdate;
     }
 
+    /**
+     * @param array<string, string[]> $pluginsToUpdate
+     * @param string[] $explicitlyRequested
+     * @return array<string, string[]>
+     */
     private function mergePluginsToUpdate(array $pluginsToUpdate = [], array $explicitlyRequested = []): array
     {
         $allPlugins = $this->pullWholePluginList();
@@ -200,6 +220,9 @@ class PluginListService
         return $pluginsToUpdate;
     }
 
+    /**
+     * @param array<string, string[]> $plugins
+     */
     public function preservePluginList(array $plugins): int|bool
     {
         if ($this->oldPluginData) {
@@ -226,9 +249,9 @@ class PluginListService
     /**
      * Reduces the plugins slated for update to only those specified in the filter.
      *
-     * @param  array  $plugins
-     * @param  array|null  $filter
-     * @return array
+     * @param  array<string, string[]>  $plugins
+     * @param  array<int, string>|null  $filter
+     * @return array<string, string[]>
      */
     private function filter(array $plugins, ?array $filter): array
     {

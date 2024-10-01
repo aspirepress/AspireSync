@@ -46,6 +46,9 @@ class InternalThemeDownloadCommand extends Command
         return Command::SUCCESS;
     }
 
+    /**
+     * @param string[] $versions
+     */
     private function determineDownloadedVersions(array $versions, string|int $numToDownload): int
     {
         switch ($numToDownload) {

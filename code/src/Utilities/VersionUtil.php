@@ -16,7 +16,7 @@ abstract class VersionUtil
     }
 
     /**
-     * @param array<int, string> $versions
+     * @param string[] $versions
      * @return array<int, string>
      */
     public static function limitVersions(array $versions, int $limit): array
@@ -34,7 +34,7 @@ abstract class VersionUtil
     }
 
     /**
-     * @param array<int, string> $versions
+     * @param string[] $versions
      * @return array<int, string>
      */
     public static function sortVersionsAsc(array $versions): array

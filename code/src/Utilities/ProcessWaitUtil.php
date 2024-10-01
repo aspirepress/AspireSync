@@ -10,7 +10,6 @@ abstract class ProcessWaitUtil
 {
     /**
      * @param Process[] $processes
-     * @return string
      */
     public static function wait(array &$processes): string
     {

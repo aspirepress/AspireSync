@@ -23,6 +23,9 @@ use AssetGrabber\Services\ThemeListService;
 
 class ConfigProvider
 {
+    /**
+     * @return array<string, array<string, string[]>>
+     */
     public function __invoke(): array
     {
         return [
@@ -30,6 +33,9 @@ class ConfigProvider
         ];
     }
 
+    /**
+     * @return array<string, string[]>
+     */
     private function getDependencies(): array
     {
         return [

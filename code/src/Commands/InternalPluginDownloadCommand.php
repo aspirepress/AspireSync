@@ -46,6 +46,9 @@ class InternalPluginDownloadCommand extends Command
         return Command::SUCCESS;
     }
 
+    /**
+     * @param array<int, string> $versions
+     */
     private function determineDownloadedVersions(array $versions, string|int $numToDownload): int
     {
         switch ($numToDownload) {
