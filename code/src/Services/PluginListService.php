@@ -53,10 +53,7 @@ class PluginListService
         return $this->filter($pluginList, $filter);
     }
 
-    /**
-     * @return string[]
-     */
-    public function getVersionsForPlugin(string $plugin): array
+    public function getPluginMetadata(string $plugin): array
     {
         if (! file_exists('/opt/assetgrabber/data/plugin-raw-data')) {
             mkdir('/opt/assetgrabber/data/plugin-raw-data');
@@ -65,10 +62,7 @@ class PluginListService
         if (file_exists('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json') && filemtime('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json') > time() - 3600) {
             $json = file_get_contents('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json');
             $data = json_decode($json, true);
-            if (! isset($data['versions'])) {
-                return [];
-            }
-            $pluginData = array_keys($data['versions']);
+            return $data;
         } else {
             $url    = 'https://api.wordpress.org/plugins/info/1.0/' . $plugin . '.json';
             $client = new Client();
@@ -79,16 +73,30 @@ class PluginListService
                     '/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json',
                     json_encode($data, JSON_PRETTY_PRINT)
                 );
-                $pluginData = array_keys($data['versions']);
+                return $data;
             } catch (ClientException $e) {
                 if ($e->getCode() === 404) {
                     $content = $e->getResponse()->getBody()->getContents();
                     file_put_contents('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json', $content);
                 }
-
-                return [];
             }
         }
+
+        return [];
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getVersionsForPlugin(string $plugin): array
+    {
+        $data = $this->getPluginMetadata($plugin);
+
+        if (! isset($data['versions'])) {
+            return [];
+        }
+
+        $pluginData = array_keys($data['versions']);
 
         if (in_array('trunk', $pluginData)) {
             $pluginData = array_diff($pluginData, ['trunk']);

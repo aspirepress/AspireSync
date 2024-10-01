@@ -7,6 +7,7 @@ namespace AssetGrabber;
 use AssetGrabber\Commands\InternalPluginDownloadCommand;
 use AssetGrabber\Commands\InternalThemeDownloadCommand;
 use AssetGrabber\Commands\PluginsGrabCommand;
+use AssetGrabber\Commands\PluginsMetaCommand;
 use AssetGrabber\Commands\PluginsPartialCommand;
 use AssetGrabber\Commands\PluginsPullLatestRevCommand;
 use AssetGrabber\Commands\ThemesGrabCommand;
@@ -17,6 +18,7 @@ use AssetGrabber\Factories\GenericServiceFactory;
 use AssetGrabber\Factories\InternalPluginDownloadCommandFactory;
 use AssetGrabber\Factories\InternalThemeDownloadCommandFactory;
 use AssetGrabber\Factories\PluginsGrabCommandFactory;
+use AssetGrabber\Factories\PluginsMetaCommandFactory;
 use AssetGrabber\Factories\PluginsPartialCommandFactory;
 use AssetGrabber\Factories\PluginsPullLatestRevCommandFactory;
 use AssetGrabber\Factories\ThemesGrabCommandFactory;
@@ -64,6 +66,7 @@ class ConfigProvider
                 PluginsPartialCommand::class         => PluginsPartialCommandFactory::class,
                 ThemesPartialCommand::class          => ThemesPartialCommandFactory::class,
                 ThemesPullLatestRevCommand::class    => ThemesPullLatestRevCommandFactory::class,
+                PluginsMetaCommand::class            => PluginsMetaCommandFactory::class,
             ],
         ];
     }
