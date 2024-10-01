@@ -20,6 +20,14 @@ class ThemeListService
     private array $oldThemeData = [];
 
     /**
+     * @param array<string> $userAgents
+     */
+    public function __construct(private array $userAgents)
+    {
+        shuffle($this->userAgents);
+    }
+
+    /**
      * @param string[]|null $filter
      * @return array<string, string[]>
      */

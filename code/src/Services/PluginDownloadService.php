@@ -11,6 +11,14 @@ use GuzzleHttp\Exception\ClientException;
 class PluginDownloadService
 {
     /**
+     * @param array<int, string> $userAgents
+     */
+    public function __construct(private array $userAgents)
+    {
+        shuffle($this->userAgents);
+    }
+
+    /**
      * @param string[] $versions
      * @return array<string, string[]>
      */
@@ -48,7 +56,7 @@ class PluginDownloadService
                 continue;
             }
             try {
-                $response = $client->request('GET', $url, ['headers' => ['User-Agent' => 'AssetGrabber'], 'allow_redirects' => true, 'sink' => $filePath]);
+                $response = $client->request('GET', $url, ['headers' => ['User-Agent' => $this->userAgents[0]], 'allow_redirects' => true, 'sink' => $filePath]);
                 $outcomes[$response->getStatusCode() . ' ' . $response->getReasonPhrase()][] = $version;
                 if (filesize($filePath) === 0) {
                     unlink($filePath);

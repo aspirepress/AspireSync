@@ -8,13 +8,16 @@ use AssetGrabber\Commands\InternalPluginDownloadCommand;
 use AssetGrabber\Commands\InternalThemeDownloadCommand;
 use AssetGrabber\Commands\PluginsGrabCommand;
 use AssetGrabber\Commands\PluginsPartialCommand;
+use AssetGrabber\Commands\PluginsPullLatestRevCommand;
 use AssetGrabber\Commands\ThemesGrabCommand;
 use AssetGrabber\Commands\ThemesPartialCommand;
 use AssetGrabber\Commands\UtilCleanDataCommand;
+use AssetGrabber\Factories\GenericServiceFactory;
 use AssetGrabber\Factories\InternalPluginDownloadCommandFactory;
 use AssetGrabber\Factories\InternalThemeDownloadCommandFactory;
 use AssetGrabber\Factories\PluginsGrabCommandFactory;
 use AssetGrabber\Factories\PluginsPartialCommandFactory;
+use AssetGrabber\Factories\PluginsPullLatestRevCommandFactory;
 use AssetGrabber\Factories\ThemesGrabCommandFactory;
 use AssetGrabber\Factories\ThemesPartialCommandFactory;
 use AssetGrabber\Services\PluginDownloadService;
@@ -41,17 +44,18 @@ class ConfigProvider
     {
         return [
             'invokables' => [
-                PluginDownloadService::class => PluginDownloadService::class,
-                PluginListService::class     => PluginListService::class,
-                ThemeListService::class      => ThemeListService::class,
-                ThemeDownloadService::class  => ThemeDownloadService::class,
                 UtilCleanDataCommand::class  => UtilCleanDataCommand::class,
             ],
             'factories'  => [
                 // Services
+                PluginDownloadService::class => GenericServiceFactory::class,
+                PluginListService::class     => GenericServiceFactory::class,
+                ThemeListService::class      => GenericServiceFactory::class,
+                ThemeDownloadService::class  => GenericServiceFactory::class,
 
                 // Commands
                 PluginsGrabCommand::class            => PluginsGrabCommandFactory::class,
+                PluginsPullLatestRevCommand::class => PluginsPullLatestRevCommandFactory::class,
                 ThemesGrabCommand::class             => ThemesGrabCommandFactory::class,
                 InternalThemeDownloadCommand::class  => InternalThemeDownloadCommandFactory::class,
                 InternalPluginDownloadCommand::class => InternalPluginDownloadCommandFactory::class,
