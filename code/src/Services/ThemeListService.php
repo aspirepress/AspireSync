@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Services;
 
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
@@ -98,24 +97,35 @@ class ThemeListService
         return $themeData;
     }
 
-    private function identifyCurrentRevision(): int
+    public function identifyCurrentRevision(bool $force = false): int
     {
-        if (file_exists('/opt/assetgrabber/data/raw-changelog') && filemtime('/opt/assetgrabber/data/theme-raw-changelog') > time() - 3600) {
-            $changelog = file_get_contents('/opt/assetgrabber/data/theme-raw-changelog');
+        if (! $force && file_exists('/opt/assetgrabber/data/theme-raw-changelog') && filemtime('/opt/assetgrabber/data/theme-raw-changelog') > time() - 3600) {
+            $output = file_get_contents('/opt/assetgrabber/data/raw-changelog');
         } else {
-            try {
-                $client    = new Client();
-                $changelog = $client->get(
-                    'https://themes.trac.wordpress.org/log/?format=changelog&stop_rev=HEAD',
-                    ['headers' => ['User-Agent' => 'AssetGrabber']]
-                );
-                $changelog = $changelog->getBody()->getContents();
-                file_put_contents('/opt/assetgrabber/data/theme-raw-changelog', $changelog);
-            } catch (Exception $e) {
-                throw new RuntimeException('Unable to download changelog: ' . $e->getMessage());
+            $command = [
+                'svn',
+                'log',
+                '-v',
+                '-q',
+                'https://themes.svn.wordpress.org',
+                "-r",
+                "HEAD",
+            ];
+
+            $process = new Process($command);
+            $process->run();
+
+            if (! $process->isSuccessful()) {
+                throw new RuntimeException('Unable to get list of themes to update' . $process->getErrorOutput());
             }
+
+            $output = $process->getOutput();
+            file_put_contents('/opt/assetgrabber/data/theme-raw-changelog', $output);
         }
-        preg_match('#\[([0-9]+)\]#', $changelog, $matches);
+
+        $output = explode(PHP_EOL, $output);
+        preg_match('/([0-9]+) \|/', $output[1], $matches);
+        $this->prevRevision = (int) $matches[1];
         return (int) $matches[1];
     }
 

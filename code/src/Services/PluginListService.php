@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Services;
 
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
@@ -32,6 +31,10 @@ class PluginListService
         shuffle($this->userAgents);
     }
 
+    /**
+     * @param array<int, string>|null $filter
+     * @return array<string, string[]>
+     */
     public function getPluginList(?array $filter = []): array
     {
         if (! $filter) {
@@ -96,28 +99,33 @@ class PluginListService
 
     public function identifyCurrentRevision(bool $force = false): int
     {
-        if (!$force && file_exists('/opt/assetgrabber/data/raw-changelog') && filemtime('/opt/assetgrabber/data/raw-changelog') > time() - 3600) {
-            $changelog = file_get_contents('/opt/assetgrabber/data/raw-changelog');
+        if (! $force && file_exists('/opt/assetgrabber/data/raw-changelog') && filemtime('/opt/assetgrabber/data/raw-changelog') > time() - 3600) {
+            $output = file_get_contents('/opt/assetgrabber/data/raw-changelog');
         } else {
-            try {
-                $client    = new Client();
-                $changelog = $client->get(
-                    'https://plugins.trac.wordpress.org/log/?format=changelog&stop_rev=HEAD',
-                    [
-                        'headers' => [
-                            'User-Agent' => $this->userAgents[0],
-                            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-                            'Accept-Encoding' => 'gzip, deflate, br',
-                        ]
-                    ]
-                );
-                $changelog = $changelog->getBody()->getContents();
-                file_put_contents('/opt/assetgrabber/data/raw-changelog', $changelog);
-            } catch (Exception $e) {
-                throw new RuntimeException('Unable to download changelog: ' . $e->getMessage());
+            $command = [
+                'svn',
+                'log',
+                '-v',
+                '-q',
+                'https://plugins.svn.wordpress.org',
+                "-r",
+                "HEAD",
+            ];
+
+            $process = new Process($command);
+            $process->run();
+
+            if (! $process->isSuccessful()) {
+                throw new RuntimeException('Unable to get list of plugins to update' . $process->getErrorOutput());
             }
+
+            $output = $process->getOutput();
+            file_put_contents('/opt/assetgrabber/data/raw-changelog', $output);
         }
-        preg_match('#\[([0-9]+)\]#', $changelog, $matches);
+
+        $output = explode(PHP_EOL, $output);
+        preg_match('/([0-9]+) \|/', $output[1], $matches);
+        $this->prevRevision = (int) $matches[1];
         return (int) $matches[1];
     }
 
@@ -153,7 +161,7 @@ class PluginListService
     }
 
     /**
-     * @param string[] $explicitlyRequested
+     * @param array<int, string> $explicitlyRequested
      * @return array<string, string[]>
      */
     private function getPluginsToUpdate(array $explicitlyRequested = []): array
@@ -214,7 +222,7 @@ class PluginListService
 
     /**
      * @param array<string, string[]> $pluginsToUpdate
-     * @param string[] $explicitlyRequested
+     * @param array<int, string> $explicitlyRequested
      * @return array<string, string[]>
      */
     private function mergePluginsToUpdate(array $pluginsToUpdate = [], array $explicitlyRequested = []): array

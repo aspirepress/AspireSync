@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 return [
-    'paths' => [
+    'paths'       => [
         'basePath'     => '/opt/assetgrabber',
         'downloadPath' => '/opt/assetgrabber/data/plugins',
     ],
-    'urls'  => [
+    'urls'        => [
         'pluginUrl' => 'https://downloads.wordpress.org/plugin/%s.%s.zip',
         'themeUrl'  => '',
     ],

@@ -11,6 +11,7 @@ use AssetGrabber\Commands\PluginsPartialCommand;
 use AssetGrabber\Commands\PluginsPullLatestRevCommand;
 use AssetGrabber\Commands\ThemesGrabCommand;
 use AssetGrabber\Commands\ThemesPartialCommand;
+use AssetGrabber\Commands\ThemesPullLatestRevCommand;
 use AssetGrabber\Commands\UtilCleanDataCommand;
 use AssetGrabber\Factories\GenericServiceFactory;
 use AssetGrabber\Factories\InternalPluginDownloadCommandFactory;
@@ -20,6 +21,7 @@ use AssetGrabber\Factories\PluginsPartialCommandFactory;
 use AssetGrabber\Factories\PluginsPullLatestRevCommandFactory;
 use AssetGrabber\Factories\ThemesGrabCommandFactory;
 use AssetGrabber\Factories\ThemesPartialCommandFactory;
+use AssetGrabber\Factories\ThemesPullLatestRevCommandFactory;
 use AssetGrabber\Services\PluginDownloadService;
 use AssetGrabber\Services\PluginListService;
 use AssetGrabber\Services\ThemeDownloadService;
@@ -44,7 +46,7 @@ class ConfigProvider
     {
         return [
             'invokables' => [
-                UtilCleanDataCommand::class  => UtilCleanDataCommand::class,
+                UtilCleanDataCommand::class => UtilCleanDataCommand::class,
             ],
             'factories'  => [
                 // Services
@@ -55,12 +57,13 @@ class ConfigProvider
 
                 // Commands
                 PluginsGrabCommand::class            => PluginsGrabCommandFactory::class,
-                PluginsPullLatestRevCommand::class => PluginsPullLatestRevCommandFactory::class,
+                PluginsPullLatestRevCommand::class   => PluginsPullLatestRevCommandFactory::class,
                 ThemesGrabCommand::class             => ThemesGrabCommandFactory::class,
                 InternalThemeDownloadCommand::class  => InternalThemeDownloadCommandFactory::class,
                 InternalPluginDownloadCommand::class => InternalPluginDownloadCommandFactory::class,
                 PluginsPartialCommand::class         => PluginsPartialCommandFactory::class,
                 ThemesPartialCommand::class          => ThemesPartialCommandFactory::class,
+                ThemesPullLatestRevCommand::class    => ThemesPullLatestRevCommandFactory::class,
             ],
         ];
     }
