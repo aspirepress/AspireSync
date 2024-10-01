@@ -40,8 +40,10 @@ class PluginsMetaCommand extends Command
         foreach ($pluginsToUpdate as $plugin => $versions) {
             $data = $this->pluginListService->getPluginMetadata($plugin);
 
-            if (isset($data['versions'])) {
+            if (isset($data['versions']) && !empty($data['versions'])) {
                 $output->writeln("Plugin $plugin has " . count($data['versions']) . ' versions');
+            } else if (isset($data['version'])) {
+                $output->writeln("Plugin $plugin has 1 version");
             } else if (isset($data['error'])) {
                 $output->writeln("Error fetching metadata for plugin $plugin: " . $data['error']);
             } else {

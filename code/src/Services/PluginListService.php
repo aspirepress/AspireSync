@@ -78,6 +78,7 @@ class PluginListService
                 if ($e->getCode() === 404) {
                     $content = $e->getResponse()->getBody()->getContents();
                     file_put_contents('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json', $content);
+                    return json_decode($content, true);
                 }
             }
         }
@@ -92,11 +93,13 @@ class PluginListService
     {
         $data = $this->getPluginMetadata($plugin);
 
-        if (! isset($data['versions'])) {
+        if (isset($data['versions'])) {
+            $pluginData = array_keys($data['versions']);
+        } else if (isset($data['version'])) {
+            $pluginData = [$data['version']];
+        } else {
             return [];
         }
-
-        $pluginData = array_keys($data['versions']);
 
         if (in_array('trunk', $pluginData)) {
             $pluginData = array_diff($pluginData, ['trunk']);
