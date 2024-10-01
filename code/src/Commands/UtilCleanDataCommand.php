@@ -40,7 +40,7 @@ class UtilCleanDataCommand extends Command
             if (is_dir($dir . '/' . $file)) {
                 $status = $this->deleteFilesAndDirectories($dir . '/' . $file);
                 @rmdir($dir . '/' . $file);
-                if (!$status || file_exists($dir . '/' . $file)) {
+                if (! $status || file_exists($dir . '/' . $file)) {
                     return false;
                 }
             } else {
