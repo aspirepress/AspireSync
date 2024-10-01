@@ -87,22 +87,22 @@ class PluginListService
     }
 
     /**
-     * @return string[]
+     * @return array<string, string>
      */
     public function getVersionsForPlugin(string $plugin): array
     {
         $data = $this->getPluginMetadata($plugin);
 
         if (isset($data['versions'])) {
-            $pluginData = array_keys($data['versions']);
+            $pluginData = $data['versions'];
         } else if (isset($data['version'])) {
-            $pluginData = [$data['version']];
+            $pluginData = [$data['version'] => $data['download_link']];
         } else {
             return [];
         }
 
-        if (in_array('trunk', $pluginData)) {
-            $pluginData = array_diff($pluginData, ['trunk']);
+        if (isset($pluginData['trunk'])) {
+            unset($pluginData['trunk']);
         }
 
         return $pluginData;

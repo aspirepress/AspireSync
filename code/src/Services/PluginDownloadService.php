@@ -34,21 +34,24 @@ class PluginDownloadService
 
         switch ($numToDownload) {
             case 'all':
-                $download = $versions;
+                $download = array_keys($versions);
                 break;
 
             case 'latest':
-                $download = [VersionUtil::getLatestVersion($versions)];
+                $download = [VersionUtil::getLatestVersion(array_keys($versions))];
                 break;
 
             default:
-                $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
+                $download = VersionUtil::limitVersions(VersionUtil::sortVersions(array_keys($versions)), (int) $numToDownload);
         }
 
         $outcomes = [];
 
-        foreach ($download as $version) {
-            $url      = sprintf($downloadUrl, $plugin, $version);
+        foreach ($versions as $version => $url) {
+            if (! in_array($version, $download)) {
+                continue;
+            }
+
             $filePath = sprintf($downloadFile, $plugin, $version);
 
             if (file_exists($filePath) && ! $force) {

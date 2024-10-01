@@ -57,7 +57,7 @@ class PluginsGrabCommand extends Command
                 $versionList = implode(',', $versions);
             } else {
                 $updatedVersionList       = $this->pluginListService->getVersionsForPlugin($plugin);
-                $versionList              = implode(',', $updatedVersionList);
+                $versionList              = json_encode($updatedVersionList);
                 $pluginsToUpdate[$plugin] = $updatedVersionList;
             }
 

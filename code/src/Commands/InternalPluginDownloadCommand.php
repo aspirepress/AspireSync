@@ -35,7 +35,7 @@ class InternalPluginDownloadCommand extends Command
         $numVersions = $input->getArgument('num-versions');
 
         $output->writeln('Determining versions of ' . $plugin . '...');
-        $versions           = explode(',', $input->getArgument('version-list'));
+        $versions           = json_decode($input->getArgument('version-list'), true);
         $versionsToDownload = $this->determineDownloadedVersions($versions, $numVersions);
         $output->writeln('Downloading ' . $versionsToDownload . ' versions...');
         $responses = $this->service->download($plugin, $versions, $numVersions, $input->getOption('force'));
