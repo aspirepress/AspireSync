@@ -17,4 +17,11 @@ return [
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/535.36",
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/534.36",
     ],
+    'database' => [
+        'host' => $_ENV['DB_HOST'],
+        'name' => $_ENV['DB_NAME'],
+        'user' => $_ENV['DB_USER'],
+        'pass' => $_ENV['DB_PASS'],
+        'schema' => $_ENV['DB_SCHEMA'],
+    ]
 ];

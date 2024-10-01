@@ -13,7 +13,11 @@ else
     TAG_NAME=${TAGNAME}
 endif
 
-DOCKER_DEV_RUN=docker run -it -v ./code:/opt/assetgrabber -v ./data:/opt/assetgrabber/data assetgrabber-dev
+ifdef NETWORK
+	NETWORK_STR=--network=${NETWORK}
+endif
+
+DOCKER_DEV_RUN=docker run -it -v ./code:/opt/assetgrabber -v ./data:/opt/assetgrabber/data $(NETWORK_STR) --env-file ./.env assetgrabber-dev
 
 build:
 	mkdir -p ./build && \
@@ -22,7 +26,7 @@ build:
 	docker build --target prodbuild -t assetgrabber -t ${AWS_ECR_REGISTRY}:$(TAG_NAME) -t ${AWS_ECR_REGISTRY}:latest -f ./docker/Dockerfile .
 
 run:
-	docker run -it assetgrabber ${OPTS}
+	docker run -it assetgrabber sh
 
 dev-install-composer:
 	${DOCKER_DEV_RUN} composer install

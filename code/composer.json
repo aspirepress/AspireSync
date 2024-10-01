@@ -5,7 +5,9 @@
         "symfony/process": "^7.1",
         "laminas/laminas-servicemanager": "^4.2",
         "laminas/laminas-config-aggregator": "^1.15",
-        "laminas/laminas-coding-standard": "^2.5"
+        "laminas/laminas-coding-standard": "^2.5",
+        "aura/sql": "^5.0",
+        "ramsey/uuid": "^4.7"
     },
     "autoload": {
         "psr-4": {

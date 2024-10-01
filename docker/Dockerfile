@@ -4,7 +4,8 @@ COPY ./build /opt/assetgrabber
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 RUN apk update && apk upgrade \
-    && apk add subversion \
+    && apk add subversion postgresql-dev $PHP_DEPS \
+    && docker-php-ext-install pdo pdo_pgsql \
     && mkdir -p /opt/assetgrabber/data \
     && addgroup -g 1000 -S assetgrabber \
     && adduser -u 1000 -S assetgrabber -G assetgrabber && \
