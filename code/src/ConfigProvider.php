@@ -10,6 +10,7 @@ use AssetGrabber\Commands\PluginsGrabCommand;
 use AssetGrabber\Commands\PluginsPartialCommand;
 use AssetGrabber\Commands\ThemesGrabCommand;
 use AssetGrabber\Commands\ThemesPartialCommand;
+use AssetGrabber\Commands\UtilCleanDataCommand;
 use AssetGrabber\Factories\InternalPluginDownloadCommandFactory;
 use AssetGrabber\Factories\InternalThemeDownloadCommandFactory;
 use AssetGrabber\Factories\PluginsGrabCommandFactory;
@@ -44,6 +45,7 @@ class ConfigProvider
                 PluginListService::class     => PluginListService::class,
                 ThemeListService::class      => ThemeListService::class,
                 ThemeDownloadService::class  => ThemeDownloadService::class,
+                UtilCleanDataCommand::class  => UtilCleanDataCommand::class,
             ],
             'factories'  => [
                 // Services
