@@ -18,10 +18,10 @@ class ThemeDownloadService
     {
         $client       = new Client();
         $downloadUrl  = 'https://downloads.wordpress.org/theme/%s.%s.zip?nostats=1';
-        $downloadFile = '/opt/asset-grabber/data/themes/%s.%s.zip';
+        $downloadFile = '/opt/assetgrabber/data/themes/%s.%s.zip';
 
-        if (! file_exists('/opt/asset-grabber/data/themes')) {
-            mkdir('/opt/asset-grabber/data/themes');
+        if (! file_exists('/opt/assetgrabber/data/themes')) {
+            mkdir('/opt/assetgrabber/data/themes');
         }
 
         switch ($numToDownload) {

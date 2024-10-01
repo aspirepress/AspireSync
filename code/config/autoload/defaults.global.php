@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 return [
     'paths' => [
-        'basePath'     => '/opt/asset-grabber',
-        'downloadPath' => '/opt/asset-grabber/data/plugins',
+        'basePath'     => '/opt/assetgrabber',
+        'downloadPath' => '/opt/assetgrabber/data/plugins',
     ],
     'urls'  => [
         'pluginUrl' => 'https://downloads.wordpress.org/plugin/%s.%s.zip',

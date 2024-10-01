@@ -30,8 +30,8 @@ class ThemeListService
         }
 
         $this->currentRevision = $this->identifyCurrentRevision();
-        if (file_exists('/opt/asset-grabber/data/theme-data.json')) {
-            $json               = file_get_contents('/opt/asset-grabber/data/theme-data.json');
+        if (file_exists('/opt/assetgrabber/data/theme-data.json')) {
+            $json               = file_get_contents('/opt/assetgrabber/data/theme-data.json');
             $this->oldThemeData = json_decode($json, true);
             $this->prevRevision = $this->oldThemeData['meta']['my_revision'];
             return $this->filter($this->getThemesToUpdate($filter), $filter);
@@ -46,12 +46,12 @@ class ThemeListService
      */
     public function getVersionsForTheme(string $theme): array
     {
-        if (! file_exists('/opt/asset-grabber/data/theme-raw-data')) {
-            mkdir('/opt/asset-grabber/data/theme-raw-data');
+        if (! file_exists('/opt/assetgrabber/data/theme-raw-data')) {
+            mkdir('/opt/assetgrabber/data/theme-raw-data');
         }
 
-        if (file_exists('/opt/asset-grabber/data/theme-raw-data/' . $theme . '.json') && filemtime('/opt/asset-grabber/data/theme-raw-data/' . $theme . '.json') > time() - 3600) {
-            $json = file_get_contents('/opt/asset-grabber/data/theme-raw-data/' . $theme . '.json');
+        if (file_exists('/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json') && filemtime('/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json') > time() - 3600) {
+            $json = file_get_contents('/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json');
             $data = json_decode($json, true);
             if (! isset($data['versions'])) {
                 return [];
@@ -69,14 +69,14 @@ class ThemeListService
                 $response = $client->get($url, ['query' => $queryParams]);
                 $data     = json_decode($response->getBody()->getContents(), true);
                 file_put_contents(
-                    '/opt/asset-grabber/data/theme-raw-data/' . $theme . '.json',
+                    '/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json',
                     json_encode($data, JSON_PRETTY_PRINT)
                 );
                 $themeData = array_keys($data['versions']);
             } catch (ClientException $e) {
                 if ($e->getCode() === 404) {
                     $content = $e->getResponse()->getBody()->getContents();
-                    file_put_contents('/opt/asset-grabber/data/theme-raw-data/' . $theme . '.json', $content);
+                    file_put_contents('/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json', $content);
                 }
 
                 return [];
@@ -92,8 +92,8 @@ class ThemeListService
 
     private function identifyCurrentRevision(): int
     {
-        if (file_exists('/opt/asset-grabber/data/raw-changelog') && filemtime('/opt/asset-grabber/data/theme-raw-changelog') > time() - 3600) {
-            $changelog = file_get_contents('/opt/asset-grabber/data/theme-raw-changelog');
+        if (file_exists('/opt/assetgrabber/data/raw-changelog') && filemtime('/opt/assetgrabber/data/theme-raw-changelog') > time() - 3600) {
+            $changelog = file_get_contents('/opt/assetgrabber/data/theme-raw-changelog');
         } else {
             try {
                 $client    = new Client();
@@ -102,7 +102,7 @@ class ThemeListService
                     ['headers' => ['User-Agent' => 'AssetGrabber']]
                 );
                 $changelog = $changelog->getBody()->getContents();
-                file_put_contents('/opt/asset-grabber/data/theme-raw-changelog', $changelog);
+                file_put_contents('/opt/assetgrabber/data/theme-raw-changelog', $changelog);
             } catch (Exception $e) {
                 throw new RuntimeException('Unable to download changelog: ' . $e->getMessage());
             }
@@ -116,14 +116,14 @@ class ThemeListService
      */
     private function pullWholeThemeList(): array
     {
-        if (file_exists('/opt/asset-grabber/data/raw-svn-theme-list') && filemtime('/opt/asset-grabber/data/raw-svn-theme-list') > time() - 3600) {
-            $themes = file_get_contents('/opt/asset-grabber/data/raw-svn-theme-list');
+        if (file_exists('/opt/assetgrabber/data/raw-svn-theme-list') && filemtime('/opt/assetgrabber/data/raw-svn-theme-list') > time() - 3600) {
+            $themes = file_get_contents('/opt/assetgrabber/data/raw-svn-theme-list');
         } else {
             try {
                 $client   = new Client();
                 $themes   = $client->get('https://themes.svn.wordpress.org/', ['headers' => ['AssetGrabber']]);
                 $contents = $themes->getBody()->getContents();
-                file_put_contents('/opt/asset-grabber/data/raw-svn-theme-list', $contents);
+                file_put_contents('/opt/assetgrabber/data/raw-svn-theme-list', $contents);
                 $themes = $contents;
             } catch (ClientException $e) {
                 throw new RuntimeException('Unable to download theme list: ' . $e->getMessage());
@@ -137,7 +137,7 @@ class ThemeListService
             $themesToReturn[$theme] = [];
         }
 
-        file_put_contents('/opt/asset-grabber/data/raw-theme-list', implode(PHP_EOL, $themes));
+        file_put_contents('/opt/assetgrabber/data/raw-theme-list', implode(PHP_EOL, $themes));
 
         return $themesToReturn;
     }
@@ -156,8 +156,8 @@ class ThemeListService
             return $this->mergeThemesToUpdate([], $explicitlyRequested);
         }
 
-        if (file_exists('/opt/asset-grabber/data/theme-revision-' . $currentRev)) {
-            $output = file('/opt/asset-grabber/data/theme-revision-' . $currentRev);
+        if (file_exists('/opt/assetgrabber/data/theme-revision-' . $currentRev)) {
+            $output = file('/opt/assetgrabber/data/theme-revision-' . $currentRev);
         } else {
             $command = [
                 'svn',
@@ -177,7 +177,7 @@ class ThemeListService
             }
 
             $output = explode(PHP_EOL, $process->getOutput());
-            file_put_contents('/opt/asset-grabber/data/revision-' . $currentRev, $process->getOutput());
+            file_put_contents('/opt/assetgrabber/data/revision-' . $currentRev, $process->getOutput());
         }
 
         $themesToUpdate = [];
@@ -248,7 +248,7 @@ class ThemeListService
             $toSave['themes'] = array_merge($toSave['themes'], $themes);
         }
 
-        return file_put_contents('/opt/asset-grabber/data/theme-data.json', json_encode($toSave, JSON_PRETTY_PRINT));
+        return file_put_contents('/opt/assetgrabber/data/theme-data.json', json_encode($toSave, JSON_PRETTY_PRINT));
     }
 
     /**

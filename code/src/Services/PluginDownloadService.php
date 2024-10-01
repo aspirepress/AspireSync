@@ -18,10 +18,10 @@ class PluginDownloadService
     {
         $client       = new Client();
         $downloadUrl  = 'https://downloads.wordpress.org/plugin/%s.%s.zip?nostats=1';
-        $downloadFile = '/opt/asset-grabber/data/plugins/%s.%s.zip';
+        $downloadFile = '/opt/assetgrabber/data/plugins/%s.%s.zip';
 
-        if (! file_exists('/opt/asset-grabber/data/plugins')) {
-            mkdir('/opt/asset-grabber/data/plugins');
+        if (! file_exists('/opt/assetgrabber/data/plugins')) {
+            mkdir('/opt/assetgrabber/data/plugins');
         }
 
         switch ($numToDownload) {
