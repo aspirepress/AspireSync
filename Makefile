@@ -17,3 +17,17 @@ dev-update-composer:
 
 run-dev:
 	docker run -it -v ./code:/opt/asset-grabber asset-grabber-base sh
+
+check: csfix cs quality test
+
+quality:
+	docker run -it -v ./code:/opt/asset-grabber asset-grabber-base sh -c "./vendor/bin/phpstan"
+
+test:
+	docker run -it -v ./code:/opt/asset-grabber asset-grabber-base sh -c "./vendor/bin/phpunit"
+
+cs:
+	docker run -it -v ./code:/opt/asset-grabber asset-grabber-base sh -c "./vendor/bin/phpcs"
+
+csfix:
+	docker run -it -v ./code:/opt/asset-grabber asset-grabber-base sh -c "./vendor/bin/phpcbf"
