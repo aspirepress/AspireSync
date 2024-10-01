@@ -2,11 +2,24 @@
 
 OPTS=list
 
-DOCKER_DEV_RUN=docker run -it -v ./code:/opt/assetgrabber -v ./data:/opt/assetgrabber/data assetgrabber-base
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
+ifeq ($(origin TAGNAME),undefined)
+	TAG_NAME=`date '+%Y-%m-%d'`
+else
+    TAG_NAME=${TAGNAME}
+endif
+
+DOCKER_DEV_RUN=docker run -it -v ./code:/opt/assetgrabber -v ./data:/opt/assetgrabber/data assetgrabber-dev
 
 build:
-	docker build --target basebuild -t assetgrabber-base -f ./docker/Dockerfile .
-	docker build --target prodbuild -t assetgrabber -f ./docker/Dockerfile .
+	mkdir -p ./build && \
+	cp -r ./code/config ./code/src ./code/assetgrabber ./code/composer.* ./build && \
+	docker build --target basebuild -t assetgrabber-dev -f ./docker/Dockerfile . && \
+	docker build --target prodbuild -t assetgrabber -t ${AWS_ECR_REGISTRY}:$(TAG_NAME) -t ${AWS_ECR_REGISTRY}:latest -f ./docker/Dockerfile .
 
 run:
 	docker run -it assetgrabber ${OPTS}
@@ -27,7 +40,7 @@ check: csfix cs quality test
 quality:
 	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpstan"
 
-test:
+test:e
 	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpunit"
 
 cs:
@@ -35,3 +48,17 @@ cs:
 
 csfix:
 	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpcbf"
+
+authenticate: authenticate-aws docker-login-aws
+
+reauthenticate: authenticate
+
+authenticate-aws:
+	aws sso login --profile ${AWS_PROFILE}
+
+docker-login-aws:
+	aws ecr get-login-password --region us-east-2 --profile ${AWS_PROFILE} | docker login --username AWS --password-stdin ${AWS_ECR_ENDPOINT}
+
+push:
+	docker push -a ${AWS_ECR_REGISTRY}
+
