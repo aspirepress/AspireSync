@@ -100,7 +100,7 @@ class ThemeListService
     public function identifyCurrentRevision(bool $force = false): int
     {
         if (! $force && file_exists('/opt/assetgrabber/data/theme-raw-changelog') && filemtime('/opt/assetgrabber/data/theme-raw-changelog') > time() - 3600) {
-            $output = file_get_contents('/opt/assetgrabber/data/raw-changelog');
+            $output = file_get_contents('/opt/assetgrabber/data/theme-raw-changelog');
         } else {
             $command = [
                 'svn',
