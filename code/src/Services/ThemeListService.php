@@ -57,7 +57,7 @@ class ThemeListService
             mkdir('/opt/assetgrabber/data/theme-raw-data');
         }
 
-        if (file_exists('/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json') && filemtime('/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json') > time() - 3600) {
+        if (file_exists('/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json') && filemtime('/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json') > time() - 86400) {
             $json = file_get_contents('/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json');
             $data = json_decode($json, true);
             if (! isset($data['versions'])) {
@@ -99,7 +99,7 @@ class ThemeListService
 
     public function identifyCurrentRevision(bool $force = false): int
     {
-        if (! $force && file_exists('/opt/assetgrabber/data/theme-raw-changelog') && filemtime('/opt/assetgrabber/data/theme-raw-changelog') > time() - 3600) {
+        if (! $force && file_exists('/opt/assetgrabber/data/theme-raw-changelog') && filemtime('/opt/assetgrabber/data/theme-raw-changelog') > time() - 86400) {
             $output = file_get_contents('/opt/assetgrabber/data/theme-raw-changelog');
         } else {
             $command = [
@@ -134,7 +134,7 @@ class ThemeListService
      */
     private function pullWholeThemeList(): array
     {
-        if (file_exists('/opt/assetgrabber/data/raw-svn-theme-list') && filemtime('/opt/assetgrabber/data/raw-svn-theme-list') > time() - 3600) {
+        if (file_exists('/opt/assetgrabber/data/raw-svn-theme-list') && filemtime('/opt/assetgrabber/data/raw-svn-theme-list') > time() - 86400) {
             $themes = file_get_contents('/opt/assetgrabber/data/raw-svn-theme-list');
         } else {
             try {

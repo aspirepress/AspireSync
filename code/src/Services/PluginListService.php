@@ -59,7 +59,7 @@ class PluginListService
             mkdir('/opt/assetgrabber/data/plugin-raw-data');
         }
 
-        if (file_exists('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json') && filemtime('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json') > time() - 3600) {
+        if (file_exists('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json') && filemtime('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json') > time() - 86400) {
             $json = file_get_contents('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json');
             $data = json_decode($json, true);
             return $data;
@@ -110,7 +110,7 @@ class PluginListService
 
     public function identifyCurrentRevision(bool $force = false): int
     {
-        if (! $force && file_exists('/opt/assetgrabber/data/raw-changelog') && filemtime('/opt/assetgrabber/data/raw-changelog') > time() - 3600) {
+        if (! $force && file_exists('/opt/assetgrabber/data/raw-changelog') && filemtime('/opt/assetgrabber/data/raw-changelog') > time() - 86400) {
             $output = file_get_contents('/opt/assetgrabber/data/raw-changelog');
         } else {
             $command = [
@@ -145,7 +145,7 @@ class PluginListService
      */
     private function pullWholePluginList(): array
     {
-        if (file_exists('/opt/assetgrabber/data/raw-svn-plugin-list') && filemtime('/opt/assetgrabber/data/raw-svn-plugin-list') > time() - 3600) {
+        if (file_exists('/opt/assetgrabber/data/raw-svn-plugin-list') && filemtime('/opt/assetgrabber/data/raw-svn-plugin-list') > time() - 86400) {
             $plugins = file_get_contents('/opt/assetgrabber/data/raw-svn-plugin-list');
         } else {
             try {
