@@ -17,7 +17,7 @@ class PluginDownloadService
         $downloadFile = '/opt/asset-grabber/data/plugins/%s.%s.zip';
 
         if (!file_exists('/opt/asset-grabber/data/plugins')) {
-            die('here');
+            mkdir('/opt/asset-grabber/data/plugins');
         }
 
         switch ($numToDownload)

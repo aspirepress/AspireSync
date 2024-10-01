@@ -6,6 +6,7 @@ namespace AssetGrabber\Commands;
 
 use AssetGrabber\Services\PluginDownloadService;
 use AssetGrabber\Services\PluginListService;
+use AssetGrabber\Utilities\ProcessWaitUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -82,30 +83,17 @@ class PluginsGrabCommand extends Command
             $process->start(function ($type, $buffer) use ($output) { $output->write($buffer); });
             $processes[] = $process;
 
-            $loopCount = 0;
-            while (count($processes) >= 24) {
-                if (($loopCount % 1000000) === 0 || $loopCount === 0) {
-                    $output->writeln('Max processes reached...waiting for space...');
-                }
-                foreach ($processes as $k => $process) {
-                    if (!$process->isRunning()) {
-                        unset($processes[$k]);
-                        $output->writeln('Process ended, starting another...');
-                        $loopCount = 0;
-                    }
-                }
-                $loopCount++;
+            if (count($processes) >= 24) {
+                $output->writeln('Max processes reached...waiting for space...');
+                $output->writeln(ProcessWaitUtil::wait($processes));
+                $output->writeln('Process ended; starting another...');
             }
+
         }
 
         $output->writeln('Waiting for all processes to finish...');
 
-        while(count($processes) > 0) {
-            foreach ($processes as $k => $process) {
-                if (!$process->isRunning()) {
-                    unset($processes[$k]);}
-            }
-        }
+        ProcessWaitUtil::waitAtEndOfScript($processes);
 
         $output->writeln('All processes finished...');
 

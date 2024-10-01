@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands;
 
 use AssetGrabber\Services\ThemeListService;
+use AssetGrabber\Utilities\ProcessWaitUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -87,31 +88,14 @@ class ThemesPartialCommand extends Command
 
             if (count($processes) >= 24) {
                 $output->writeln('Max processes reached...waiting for space...');
-            }
-            while (count($processes) >= 24) {
-                foreach ($processes as $k => $process) {
-                    if (!$process->isRunning()) {
-                        $processOutput = $process->getOutput();
-                        $output->writeln($processOutput);
-                        unset($processes[$k]);
-                        $output->writeln('Process ended, starting another...');
-                    }
-                }
+                $output->writeln(ProcessWaitUtil::wait($processes));
+                $output->writeln('Process ended; starting another...');
             }
         }
 
         $output->writeln('Waiting for all processes to finish...');
 
-        while(count($processes) > 0) {
-            foreach ($processes as $k => $process) {
-                if (!$process->isRunning()) {
-                    $processOutput = $process->getOutput();
-                    $output->writeln($processOutput);
-                    unset($processes[$k]);
-                    $output->writeln(count($processes) . ' remaining to finish...');
-                }
-            }
-        }
+        ProcessWaitUtil::waitAtEndOfScript($processes);
 
         $output->writeln('All processes finished...');
 
