@@ -14,7 +14,7 @@ class PluginDownloadService
      * @param string[] $versions
      * @return array<string, string[]>
      */
-    public function download(string $plugin, array $versions, int|string $numToDownload = 'all', bool $force = false): array
+    public function download(string $plugin, array $versions, string $numToDownload = 'all', bool $force = false): array
     {
         $client       = new Client();
         $downloadUrl  = 'https://downloads.wordpress.org/plugin/%s.%s.zip?nostats=1';
@@ -34,7 +34,7 @@ class PluginDownloadService
                 break;
 
             default:
-                $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), $numToDownload);
+                $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
         }
 
         $outcomes = [];

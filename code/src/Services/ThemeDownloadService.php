@@ -34,7 +34,7 @@ class ThemeDownloadService
                 break;
 
             default:
-                $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), $numToDownload);
+                $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
         }
 
         $outcomes = [];
