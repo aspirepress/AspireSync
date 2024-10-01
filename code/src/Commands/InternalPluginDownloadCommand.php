@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands;
 
 use AssetGrabber\Services\PluginDownloadService;
-use AssetGrabber\Services\PluginListService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,6 +17,7 @@ class InternalPluginDownloadCommand extends Command
     {
         parent::__construct();
     }
+
     protected function configure(): void
     {
         $this->setName('internal:plugin-download')
@@ -31,13 +31,13 @@ class InternalPluginDownloadCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $plugin = $input->getArgument('plugin');
+        $plugin      = $input->getArgument('plugin');
         $numVersions = $input->getArgument('num-versions');
 
         $output->writeln('Determining versions of ' . $plugin . '...');
-        $versions = explode(',', $input->getArgument('version-list'));
+        $versions           = explode(',', $input->getArgument('version-list'));
         $versionsToDownload = $this->determineDownloadedVersions($versions, $numVersions);
-        $output->writeln('Downloading ' . $versionsToDownload. ' versions...');
+        $output->writeln('Downloading ' . $versionsToDownload . ' versions...');
         $responses = $this->service->download($plugin, $versions, $numVersions, $input->getOption('force'));
         foreach ($responses as $responseCode => $versions) {
             $output->writeln($plugin . ' ' . $responseCode . ': ' . count($versions));
@@ -48,14 +48,13 @@ class InternalPluginDownloadCommand extends Command
 
     private function determineDownloadedVersions(array $versions, string|int $numToDownload): int
     {
-        switch ($numToDownload)
-        {
+        switch ($numToDownload) {
             case 'all':
                 return count($versions);
             case 'latest':
                 return 1;
             default:
-                return (count($versions) > $numToDownload) ? (int) $numToDownload : count($versions);
+                return count($versions) > $numToDownload ? (int) $numToDownload : count($versions);
         }
     }
 }

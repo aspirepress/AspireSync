@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Commands;
 
-use AssetGrabber\Services\PluginDownloadService;
 use AssetGrabber\Services\PluginListService;
 use AssetGrabber\Utilities\ProcessWaitUtil;
 use Symfony\Component\Console\Command\Command;
@@ -20,6 +19,7 @@ class PluginsGrabCommand extends Command
     {
         parent::__construct();
     }
+
     protected function configure(): void
     {
         $this->setName('plugins:grab')
@@ -32,18 +32,18 @@ class PluginsGrabCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $numVersions = $input->getArgument('num-versions');
-        $pluginList = $input->getOption('plugins');
+        $pluginList  = $input->getOption('plugins');
 
         if ($pluginList) {
             $pluginList = explode(',', $pluginList);
-            foreach($pluginList as $k => $plugin) {
+            foreach ($pluginList as $k => $plugin) {
                 $pluginList[$k] = trim($plugin);
             }
         }
 
         $output->writeln('Getting list of plugins...');
         $pluginsToUpdate = $this->pluginListService->getPluginList($pluginList);
-        $output->writeln(count($pluginsToUpdate).' plugins to download...');
+        $output->writeln(count($pluginsToUpdate) . ' plugins to download...');
 
         if (count($pluginsToUpdate) === 0) {
             $output->writeln('No plugins to download...exiting...');
@@ -53,17 +53,16 @@ class PluginsGrabCommand extends Command
         $processes = [];
 
         foreach ($pluginsToUpdate as $plugin => $versions) {
-            if (!empty($versions)) {
+            if (! empty($versions)) {
                 $versionList = implode(',', $versions);
             } else {
-                $updatedVersionList = $this->pluginListService->getVersionsForPlugin($plugin);
-                $versionList = implode(',', $updatedVersionList);
+                $updatedVersionList       = $this->pluginListService->getVersionsForPlugin($plugin);
+                $versionList              = implode(',', $updatedVersionList);
                 $pluginsToUpdate[$plugin] = $updatedVersionList;
-
             }
 
             if (empty($versionList)) {
-                $output->writeln('No versions found for '.$plugin.'...skipping...');
+                $output->writeln('No versions found for ' . $plugin . '...skipping...');
                 continue;
             }
 
@@ -72,7 +71,7 @@ class PluginsGrabCommand extends Command
                 'internal:plugin-download',
                 $plugin,
                 $versionList,
-                $numVersions
+                $numVersions,
             ];
 
             if ($input->getOption('force-download')) {
@@ -80,7 +79,9 @@ class PluginsGrabCommand extends Command
             }
 
             $process = new Process($command);
-            $process->start(function ($type, $buffer) use ($output) { $output->write($buffer); });
+            $process->start(function ($type, $buffer) use ($output) {
+                $output->write($buffer);
+            });
             $processes[] = $process;
 
             if (count($processes) >= 24) {
@@ -88,7 +89,6 @@ class PluginsGrabCommand extends Command
                 $output->writeln(ProcessWaitUtil::wait($processes));
                 $output->writeln('Process ended; starting another...');
             }
-
         }
 
         $output->writeln('Waiting for all processes to finish...');

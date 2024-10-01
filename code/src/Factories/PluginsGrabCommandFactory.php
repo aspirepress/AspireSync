@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace AssetGrabber\Factories;
 
 use AssetGrabber\Commands\PluginsGrabCommand;
-use AssetGrabber\Services\PluginDownloadService;
 use AssetGrabber\Services\PluginListService;
 use Laminas\ServiceManager\ServiceManager;
 

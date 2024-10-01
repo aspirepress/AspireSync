@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Services;
 
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use RuntimeException;
 use Symfony\Component\Process\Process;
 
 class PluginListService
@@ -18,15 +20,15 @@ class PluginListService
 
     public function getPluginList(?array $filter = []): array
     {
-        if (!$filter) {
+        if (! $filter) {
             $filter = [];
         }
 
         $this->currentRevision = $this->identifyCurrentRevision();
         if (file_exists('/opt/asset-grabber/data/plugin-data.json')) {
-            $json = file_get_contents('/opt/asset-grabber/data/plugin-data.json');
+            $json                = file_get_contents('/opt/asset-grabber/data/plugin-data.json');
             $this->oldPluginData = json_decode($json, true);
-            $this->prevRevision = $this->oldPluginData['meta']['my_revision'];
+            $this->prevRevision  = $this->oldPluginData['meta']['my_revision'];
             return $this->filter($this->getPluginsToUpdate($filter), $filter);
         }
 
@@ -34,20 +36,19 @@ class PluginListService
         return $this->filter($pluginList, $filter);
     }
 
-    public function getVersionsForPlugin($plugin): array
+    public function getVersionsForPlugin(string $plugin): array
     {
-        if (!file_exists('/opt/asset-grabber/data/plugin-raw-data')) {
+        if (! file_exists('/opt/asset-grabber/data/plugin-raw-data')) {
             mkdir('/opt/asset-grabber/data/plugin-raw-data');
         }
 
         if (file_exists('/opt/asset-grabber/data/plugin-raw-data/' . $plugin . '.json') && filemtime('/opt/asset-grabber/data/plugin-raw-data/' . $plugin . '.json') > time() - 3600) {
             $json = file_get_contents('/opt/asset-grabber/data/plugin-raw-data/' . $plugin . '.json');
             $data = json_decode($json, true);
-            if (!isset($data['versions'])) {
+            if (! isset($data['versions'])) {
                 return [];
             }
             $pluginData = array_keys($data['versions']);
-
         } else {
             $url    = 'https://api.wordpress.org/plugins/info/1.0/' . $plugin . '.json';
             $client = new Client();
@@ -61,7 +62,7 @@ class PluginListService
                 $pluginData = array_keys($data['versions']);
             } catch (ClientException $e) {
                 if ($e->getCode() === 404) {
-                    $content    = $e->getResponse()->getBody()->getContents();
+                    $content = $e->getResponse()->getBody()->getContents();
                     file_put_contents('/opt/asset-grabber/data/plugin-raw-data/' . $plugin . '.json', $content);
                 }
 
@@ -78,24 +79,23 @@ class PluginListService
 
     private function identifyCurrentRevision(): int
     {
-    if (file_exists('/opt/asset-grabber/data/raw-changelog') && filemtime('/opt/asset-grabber/data/raw-changelog') > time() - 3600) {
-        $changelog = file_get_contents('/opt/asset-grabber/data/raw-changelog');
-    } else {
+        if (file_exists('/opt/asset-grabber/data/raw-changelog') && filemtime('/opt/asset-grabber/data/raw-changelog') > time() - 3600) {
+            $changelog = file_get_contents('/opt/asset-grabber/data/raw-changelog');
+        } else {
             try {
-                $client = new Client();
+                $client    = new Client();
                 $changelog = $client->get(
                     'https://plugins.trac.wordpress.org/log/?format=changelog&stop_rev=HEAD',
                     ['headers' => ['User-Agent' => 'AssetGrabber']]
                 );
                 $changelog = $changelog->getBody()->getContents();
                 file_put_contents('/opt/asset-grabber/data/raw-changelog', $changelog);
-            } catch (\Exception $e) {
-                throw new \RuntimeException('Unable to download changelog: ' . $e->getMessage());
+            } catch (Exception $e) {
+                throw new RuntimeException('Unable to download changelog: ' . $e->getMessage());
             }
         }
-        preg_match( '#\[([0-9]+)\]#', $changelog, $matches );
-        return (int) $matches[1] ?? throw new \RuntimeException('Unable to parse last revision');
-
+        preg_match('#\[([0-9]+)\]#', $changelog, $matches);
+        return (int) $matches[1] ?? throw new RuntimeException('Unable to parse last revision');
     }
 
     private function pullWholePluginList(): array
@@ -104,16 +104,16 @@ class PluginListService
             $plugins = file_get_contents('/opt/asset-grabber/data/raw-svn-plugin-list');
         } else {
             try {
-                $client  = new Client();
-                $plugins = $client->get('https://plugins.svn.wordpress.org/', ['headers' => ['AssetGrabber']]);
+                $client   = new Client();
+                $plugins  = $client->get('https://plugins.svn.wordpress.org/', ['headers' => ['AssetGrabber']]);
                 $contents = $plugins->getBody()->getContents();
                 file_put_contents('/opt/asset-grabber/data/raw-svn-plugin-list', $contents);
                 $plugins = $contents;
             } catch (ClientException $e) {
-                throw new \RuntimeException('Unable to download plugin list: ' . $e->getMessage());
+                throw new RuntimeException('Unable to download plugin list: ' . $e->getMessage());
             }
         }
-        preg_match_all( '#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $plugins, $matches );
+        preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $plugins, $matches);
         $plugins = $matches[1];
 
         $pluginsToReturn = [];
@@ -128,8 +128,8 @@ class PluginListService
 
     private function getPluginsToUpdate(array $explicitlyRequested = []): array
     {
-        $lastRev = $this->oldPluginData['meta']['my_revision'];
-        $targetRev = $lastRev + 1;
+        $lastRev    = $this->oldPluginData['meta']['my_revision'];
+        $targetRev  = $lastRev + 1;
         $currentRev = $this->currentRevision;
 
         if ($this->currentRevision === $this->prevRevision) {
@@ -146,14 +146,14 @@ class PluginListService
                 '-q',
                 'https://plugins.svn.wordpress.org',
                 "-r",
-                "$targetRev:$currentRev"
+                "$targetRev:$currentRev",
             ];
 
             $process = new Process($command);
             $process->run();
 
             if (! $process->isSuccessful()) {
-                throw new \RuntimeException('Unable to get list of plugins to update' . $process->getErrorOutput());
+                throw new RuntimeException('Unable to get list of plugins to update' . $process->getErrorOutput());
             }
 
             $output = explode(PHP_EOL, $process->getOutput());
@@ -166,11 +166,11 @@ class PluginListService
             if ($matches) {
                 $plugin = trim($matches[1]);
                 if (trim($matches[2]) === 'tags' && ! empty($matches[3])) {
-                    if (!isset($pluginsToUpdate[$plugin])) {
+                    if (! isset($pluginsToUpdate[$plugin])) {
                         $pluginsToUpdate[$plugin] = [];
                     }
 
-                    if (!in_array($matches[3], $pluginsToUpdate[$plugin])) {
+                    if (! in_array($matches[3], $pluginsToUpdate[$plugin])) {
                         $pluginsToUpdate[$plugin][] = $matches[3];
                     }
                 }
@@ -188,7 +188,7 @@ class PluginListService
 
         foreach ($allPlugins as $pluginName => $pluginVersions) {
             // Is this the first time we've seen the plugin?
-            if (!isset($this->oldPluginData['plugins'][$pluginName])) {
+            if (! isset($this->oldPluginData['plugins'][$pluginName])) {
                 $pluginsToUpdate[$pluginName] = [];
             }
 
@@ -203,15 +203,15 @@ class PluginListService
     public function preservePluginList(array $plugins): int|bool
     {
         if ($this->oldPluginData) {
-            $toSave = [
-                'meta' => [],
+            $toSave                        = [
+                'meta'    => [],
                 'plugins' => $this->oldPluginData['plugins'],
             ];
-            $toSave['plugins'] = array_merge($toSave['plugins'], $plugins);
+            $toSave['plugins']             = array_merge($toSave['plugins'], $plugins);
             $toSave['meta']['my_revision'] = $this->currentRevision;
         } else {
             $toSave = [
-                'meta' => [
+                'meta'    => [
                     'my_revision' => $this->currentRevision,
                 ],
                 'plugins' => [],

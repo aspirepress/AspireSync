@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'paths' => [
-        'basePath' => '/opt/asset-grabber',
+        'basePath'     => '/opt/asset-grabber',
         'downloadPath' => '/opt/asset-grabber/data/plugins',
     ],
-    'urls' => [
+    'urls'  => [
         'pluginUrl' => 'https://downloads.wordpress.org/plugin/%s.%s.zip',
-        'themeUrl' => '',
+        'themeUrl'  => '',
     ],
 ];

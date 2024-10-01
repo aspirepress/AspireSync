@@ -4,7 +4,8 @@
         "symfony/console": "^7.1",
         "symfony/process": "^7.1",
         "laminas/laminas-servicemanager": "^4.2",
-        "laminas/laminas-config-aggregator": "^1.15"
+        "laminas/laminas-config-aggregator": "^1.15",
+        "laminas/laminas-coding-standard": "^2.5"
     },
     "autoload": {
         "psr-4": {
@@ -19,6 +20,12 @@
         }
     },
     "require-dev": {
-        "phpunit/phpunit": "^11.3"
+        "phpunit/phpunit": "^11.3",
+        "phpstan/phpstan": "^1.12"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
 }

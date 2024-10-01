@@ -17,6 +17,7 @@ class InternalThemeDownloadCommand extends Command
     {
         parent::__construct();
     }
+
     protected function configure(): void
     {
         $this->setName('internal:theme-download')
@@ -30,13 +31,13 @@ class InternalThemeDownloadCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $theme = $input->getArgument('theme');
+        $theme       = $input->getArgument('theme');
         $numVersions = $input->getArgument('num-versions');
 
         $output->writeln('Determining versions of ' . $theme . '...');
-        $versions = explode(',', $input->getArgument('version-list'));
+        $versions           = explode(',', $input->getArgument('version-list'));
         $versionsToDownload = $this->determineDownloadedVersions($versions, $numVersions);
-        $output->writeln('Downloading ' . $versionsToDownload. ' versions...');
+        $output->writeln('Downloading ' . $versionsToDownload . ' versions...');
         $responses = $this->service->download($theme, $versions, $numVersions, $input->getOption('force'));
         foreach ($responses as $responseCode => $versions) {
             $output->writeln($theme . ' ' . $responseCode . ': ' . count($versions));
@@ -47,14 +48,13 @@ class InternalThemeDownloadCommand extends Command
 
     private function determineDownloadedVersions(array $versions, string|int $numToDownload): int
     {
-        switch ($numToDownload)
-        {
+        switch ($numToDownload) {
             case 'all':
                 return count($versions);
             case 'latest':
                 return 1;
             default:
-                return (count($versions) > $numToDownload) ? (int) $numToDownload : count($versions);
+                return count($versions) > $numToDownload ? (int) $numToDownload : count($versions);
         }
     }
 }

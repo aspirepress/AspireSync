@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Services;
 
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use RuntimeException;
 use Symfony\Component\Process\Process;
 
 class ThemeListService
@@ -14,17 +16,24 @@ class ThemeListService
 
     private int $currentRevision;
 
+    /**
+     * @var array<string, string>
+     */
     private array $oldThemeData = [];
 
+    /**
+     * @param string[]|null $filter
+     * @return array<string, string>|array<string, array<string>>
+     */
     public function getThemeList(?array $filter = []): array
     {
-        if (!$filter) {
+        if (! $filter) {
             $filter = [];
         }
 
         $this->currentRevision = $this->identifyCurrentRevision();
         if (file_exists('/opt/asset-grabber/data/theme-data.json')) {
-            $json = file_get_contents('/opt/asset-grabber/data/theme-data.json');
+            $json               = file_get_contents('/opt/asset-grabber/data/theme-data.json');
             $this->oldThemeData = json_decode($json, true);
             $this->prevRevision = $this->oldThemeData['meta']['my_revision'];
             return $this->filter($this->getThemesToUpdate($filter), $filter);
@@ -34,28 +43,30 @@ class ThemeListService
         return $this->filter($themeList, $filter);
     }
 
-    public function getVersionsForTheme($theme): array
+    /**
+     * @return string[]
+     */
+    public function getVersionsForTheme(string $theme): array
     {
-        if (!file_exists('/opt/asset-grabber/data/theme-raw-data')) {
+        if (! file_exists('/opt/asset-grabber/data/theme-raw-data')) {
             mkdir('/opt/asset-grabber/data/theme-raw-data');
         }
 
         if (file_exists('/opt/asset-grabber/data/theme-raw-data/' . $theme . '.json') && filemtime('/opt/asset-grabber/data/theme-raw-data/' . $theme . '.json') > time() - 3600) {
             $json = file_get_contents('/opt/asset-grabber/data/theme-raw-data/' . $theme . '.json');
             $data = json_decode($json, true);
-            if (!isset($data['versions'])) {
+            if (! isset($data['versions'])) {
                 return [];
             }
             $themeData = array_keys($data['versions']);
-
         } else {
-            $url    = 'https://api.wordpress.org/themes/info/1.2/';
+            $url         = 'https://api.wordpress.org/themes/info/1.2/';
             $queryParams = [
-                'action' => 'theme_information',
-                'slug' => $theme,
+                'action'   => 'theme_information',
+                'slug'     => $theme,
                 'fields[]' => 'versions',
             ];
-            $client = new Client();
+            $client      = new Client();
             try {
                 $response = $client->get($url, ['query' => $queryParams]);
                 $data     = json_decode($response->getBody()->getContents(), true);
@@ -66,7 +77,7 @@ class ThemeListService
                 $themeData = array_keys($data['versions']);
             } catch (ClientException $e) {
                 if ($e->getCode() === 404) {
-                    $content    = $e->getResponse()->getBody()->getContents();
+                    $content = $e->getResponse()->getBody()->getContents();
                     file_put_contents('/opt/asset-grabber/data/theme-raw-data/' . $theme . '.json', $content);
                 }
 
@@ -83,42 +94,44 @@ class ThemeListService
 
     private function identifyCurrentRevision(): int
     {
-    if (file_exists('/opt/asset-grabber/data/raw-changelog') && filemtime('/opt/asset-grabber/data/theme-raw-changelog') > time() - 3600) {
-        $changelog = file_get_contents('/opt/asset-grabber/data/theme-raw-changelog');
-    } else {
+        if (file_exists('/opt/asset-grabber/data/raw-changelog') && filemtime('/opt/asset-grabber/data/theme-raw-changelog') > time() - 3600) {
+            $changelog = file_get_contents('/opt/asset-grabber/data/theme-raw-changelog');
+        } else {
             try {
-                $client = new Client();
+                $client    = new Client();
                 $changelog = $client->get(
                     'https://themes.trac.wordpress.org/log/?format=changelog&stop_rev=HEAD',
                     ['headers' => ['User-Agent' => 'AssetGrabber']]
                 );
                 $changelog = $changelog->getBody()->getContents();
                 file_put_contents('/opt/asset-grabber/data/theme-raw-changelog', $changelog);
-            } catch (\Exception $e) {
-                throw new \RuntimeException('Unable to download changelog: ' . $e->getMessage());
+            } catch (Exception $e) {
+                throw new RuntimeException('Unable to download changelog: ' . $e->getMessage());
             }
         }
-        preg_match( '#\[([0-9]+)\]#', $changelog, $matches );
-        return (int) $matches[1] ?? throw new \RuntimeException('Unable to parse last revision');
-
+        preg_match('#\[([0-9]+)\]#', $changelog, $matches);
+        return (int) $matches[1];
     }
 
+    /**
+     * @return array<string, string[]>
+     */
     private function pullWholeThemeList(): array
     {
         if (file_exists('/opt/asset-grabber/data/raw-svn-theme-list') && filemtime('/opt/asset-grabber/data/raw-svn-theme-list') > time() - 3600) {
             $themes = file_get_contents('/opt/asset-grabber/data/raw-svn-theme-list');
         } else {
             try {
-                $client  = new Client();
-                $themes = $client->get('https://themes.svn.wordpress.org/', ['headers' => ['AssetGrabber']]);
+                $client   = new Client();
+                $themes   = $client->get('https://themes.svn.wordpress.org/', ['headers' => ['AssetGrabber']]);
                 $contents = $themes->getBody()->getContents();
                 file_put_contents('/opt/asset-grabber/data/raw-svn-theme-list', $contents);
                 $themes = $contents;
             } catch (ClientException $e) {
-                throw new \RuntimeException('Unable to download theme list: ' . $e->getMessage());
+                throw new RuntimeException('Unable to download theme list: ' . $e->getMessage());
             }
         }
-        preg_match_all( '#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $themes, $matches );
+        preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $themes, $matches);
         $themes = $matches[1];
 
         $themesToReturn = [];
@@ -131,10 +144,14 @@ class ThemeListService
         return $themesToReturn;
     }
 
+    /**
+     * @param array<string, string> $explicitlyRequested
+     * @return array<string, string>
+     */
     private function getThemesToUpdate(array $explicitlyRequested = []): array
     {
-        $lastRev = $this->oldThemeData['meta']['my_revision'];
-        $targetRev = $lastRev + 1;
+        $lastRev    = $this->oldThemeData['meta']['my_revision'];
+        $targetRev  = $lastRev + 1;
         $currentRev = $this->currentRevision;
 
         if ($this->currentRevision === $this->prevRevision) {
@@ -151,14 +168,14 @@ class ThemeListService
                 '-q',
                 'https://themes.svn.wordpress.org',
                 "-r",
-                "$targetRev:$currentRev"
+                "$targetRev:$currentRev",
             ];
 
             $process = new Process($command);
             $process->run();
 
             if (! $process->isSuccessful()) {
-                throw new \RuntimeException('Unable to get list of themes to update' . $process->getErrorOutput());
+                throw new RuntimeException('Unable to get list of themes to update' . $process->getErrorOutput());
             }
 
             $output = explode(PHP_EOL, $process->getOutput());
@@ -171,11 +188,11 @@ class ThemeListService
             if ($matches) {
                 $theme = trim($matches[1]);
                 if (trim($matches[2]) === 'tags' && ! empty($matches[3])) {
-                    if (!isset($themesToUpdate[$theme])) {
+                    if (! isset($themesToUpdate[$theme])) {
                         $themesToUpdate[$theme] = [];
                     }
 
-                    if (!in_array($matches[3], $themesToUpdate[$theme])) {
+                    if (! in_array($matches[3], $themesToUpdate[$theme])) {
                         $themesToUpdate[$theme][] = $matches[3];
                     }
                 }
@@ -187,13 +204,18 @@ class ThemeListService
         return $themesToUpdate;
     }
 
+    /**
+     * @param array<string, string> $themesToUpdate
+     * @param array<string, string> $explicitlyRequested
+     * @return array<string, string>
+     */
     private function mergeThemesToUpdate(array $themesToUpdate = [], array $explicitlyRequested = []): array
     {
         $allThemes = $this->pullWholeThemeList();
 
         foreach ($allThemes as $themeName => $themeVersion) {
             // Is this the first time we've seen the theme?
-            if (!isset($this->oldThemeData['themes'][$themeName])) {
+            if (! isset($this->oldThemeData['themes'][$themeName])) {
                 $themesToUpdate[$themeName] = [];
             }
 
@@ -205,18 +227,21 @@ class ThemeListService
         return $themesToUpdate;
     }
 
+    /**
+     * @param array<string, string> $themes
+     */
     public function preserveThemeList(array $themes): int|bool
     {
         if ($this->oldThemeData) {
-            $toSave = [
-                'meta' => [],
+            $toSave                        = [
+                'meta'   => [],
                 'themes' => $this->oldThemeData['themes'],
             ];
-            $toSave['themes'] = array_merge($toSave['themes'], $themes);
+            $toSave['themes']              = array_merge($toSave['themes'], $themes);
             $toSave['meta']['my_revision'] = $this->currentRevision;
         } else {
             $toSave = [
-                'meta' => [
+                'meta'   => [
                     'my_revision' => $this->currentRevision,
                 ],
                 'themes' => [],
@@ -231,9 +256,9 @@ class ThemeListService
     /**
      * Reduces the themes slated for update to only those specified in the filter.
      *
-     * @param  array  $themes
-     * @param  array|null  $filter
-     * @return array
+     * @param  array<string, string>  $themes
+     * @param  array<string, string>|null  $filter
+     * @return array<string, string>
      */
     private function filter(array $themes, ?array $filter): array
     {

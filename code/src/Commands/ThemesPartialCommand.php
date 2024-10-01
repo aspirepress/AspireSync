@@ -33,15 +33,15 @@ class ThemesPartialCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $numVersions = $input->getOption('versions');
-        $numToPull = (int)$input->getArgument('num-to-pull');
-        $offset = (int)$input->getArgument('offset');
+        $numToPull   = (int) $input->getArgument('num-to-pull');
+        $offset      = (int) $input->getArgument('offset');
 
         $output->writeln('Getting list of themes...');
         $themesToUpdate = $this->themeListService->getThemeList();
 
         $totalThemes = count($themesToUpdate);
 
-        $output->writeln($totalThemes.' themes to download...');
+        $output->writeln($totalThemes . ' themes to download...');
 
         if ($totalThemes === 0) {
             $output->writeln('No themes to download...exiting...');
@@ -49,24 +49,23 @@ class ThemesPartialCommand extends Command
         }
 
         if ($totalThemes > $numToPull) {
-            $output->writeln('Limiting theme download to '.$numToPull.' themes... (offset by ' . $offset . ')');
+            $output->writeln('Limiting theme download to ' . $numToPull . ' themes... (offset by ' . $offset . ')');
             $themesToUpdate = array_slice($themesToUpdate, $offset, $numToPull);
         }
 
         $processes = [];
 
         foreach ($themesToUpdate as $theme => $versions) {
-            if (!empty($versions)) {
+            if (! empty($versions)) {
                 $versionList = implode(',', $versions);
             } else {
-                $updatedVersionList = $this->themeListService->getVersionsForTheme($theme);
-                $versionList = implode(',', $updatedVersionList);
+                $updatedVersionList     = $this->themeListService->getVersionsForTheme($theme);
+                $versionList            = implode(',', $updatedVersionList);
                 $themesToUpdate[$theme] = $updatedVersionList;
-
             }
 
             if (empty($versionList)) {
-                $output->writeln('No versions found for '.$theme.'...skipping...');
+                $output->writeln('No versions found for ' . $theme . '...skipping...');
                 continue;
             }
 
@@ -75,7 +74,7 @@ class ThemesPartialCommand extends Command
                 'internal:plugin-download',
                 $theme,
                 $versionList,
-                $numVersions
+                $numVersions,
             ];
 
             if ($input->getOption('force-download')) {

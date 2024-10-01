@@ -8,8 +8,6 @@ use AssetGrabber\Commands\InternalThemeDownloadCommand;
 use AssetGrabber\Services\ThemeDownloadService;
 use Laminas\ServiceManager\ServiceManager;
 
-ini_set('memory_limit', '2G');
-
 class InternalThemeDownloadCommandFactory
 {
     public function __invoke(ServiceManager $serviceManager): InternalThemeDownloadCommand

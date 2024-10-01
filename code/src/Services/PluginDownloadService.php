@@ -10,18 +10,17 @@ use GuzzleHttp\Exception\ClientException;
 
 class PluginDownloadService
 {
-    public function download($plugin, $versions, int|string $numToDownload = 'all', bool $force = false)
+    public function download(string $plugin, array $versions, int|string $numToDownload = 'all', bool $force = false): array
     {
-        $client = new Client();
-        $downloadUrl = 'https://downloads.wordpress.org/plugin/%s.%s.zip?nostats=1';
+        $client       = new Client();
+        $downloadUrl  = 'https://downloads.wordpress.org/plugin/%s.%s.zip?nostats=1';
         $downloadFile = '/opt/asset-grabber/data/plugins/%s.%s.zip';
 
-        if (!file_exists('/opt/asset-grabber/data/plugins')) {
+        if (! file_exists('/opt/asset-grabber/data/plugins')) {
             mkdir('/opt/asset-grabber/data/plugins');
         }
 
-        switch ($numToDownload)
-        {
+        switch ($numToDownload) {
             case 'all':
                 $download = $versions;
                 break;
@@ -37,10 +36,10 @@ class PluginDownloadService
         $outcomes = [];
 
         foreach ($download as $version) {
-            $url = sprintf($downloadUrl, $plugin, $version);
+            $url      = sprintf($downloadUrl, $plugin, $version);
             $filePath = sprintf($downloadFile, $plugin, $version);
 
-            if (file_exists($filePath) && !$force) {
+            if (file_exists($filePath) && ! $force) {
                 $outcomes['304 Not Modified'][] = $version;
                 continue;
             }

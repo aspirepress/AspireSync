@@ -10,18 +10,17 @@ use GuzzleHttp\Exception\ClientException;
 
 class ThemeDownloadService
 {
-    public function download($theme, $versions, int|string $numToDownload = 'all', bool $force = false)
+    public function download(string $theme, array $versions, int|string $numToDownload = 'all', bool $force = false): array
     {
-        $client = new Client();
-        $downloadUrl = 'https://downloads.wordpress.org/theme/%s.%s.zip?nostats=1';
+        $client       = new Client();
+        $downloadUrl  = 'https://downloads.wordpress.org/theme/%s.%s.zip?nostats=1';
         $downloadFile = '/opt/asset-grabber/data/themes/%s.%s.zip';
 
-        if (!file_exists('/opt/asset-grabber/data/themes')) {
+        if (! file_exists('/opt/asset-grabber/data/themes')) {
             mkdir('/opt/asset-grabber/data/themes');
         }
 
-        switch ($numToDownload)
-        {
+        switch ($numToDownload) {
             case 'all':
                 $download = $versions;
                 break;
@@ -37,10 +36,10 @@ class ThemeDownloadService
         $outcomes = [];
 
         foreach ($download as $version) {
-            $url = sprintf($downloadUrl, $theme, $version);
+            $url      = sprintf($downloadUrl, $theme, $version);
             $filePath = sprintf($downloadFile, $theme, $version);
 
-            if (file_exists($filePath) && !$force) {
+            if (file_exists($filePath) && ! $force) {
                 $outcomes['304 Not Modified'][] = $version;
                 continue;
             }

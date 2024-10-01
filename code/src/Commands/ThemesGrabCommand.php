@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Commands;
 
-use AssetGrabber\Services\PluginListService;
 use AssetGrabber\Services\ThemeListService;
 use AssetGrabber\Utilities\ProcessWaitUtil;
 use Symfony\Component\Console\Command\Command;
@@ -20,6 +19,7 @@ class ThemesGrabCommand extends Command
     {
         parent::__construct();
     }
+
     protected function configure(): void
     {
         $this->setName('themes:grab')
@@ -32,18 +32,18 @@ class ThemesGrabCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $numVersions = $input->getArgument('num-versions');
-        $themes = $input->getOption('themes');
+        $themes      = $input->getOption('themes');
 
         if ($themes) {
             $themes = explode(',', $themes);
-            foreach($themes as $k => $theme) {
+            foreach ($themes as $k => $theme) {
                 $themes[$k] = trim($theme);
             }
         }
 
         $output->writeln('Getting list of themes...');
         $themesToUpdate = $this->themeListService->getThemeList($themes);
-        $output->writeln(count($themesToUpdate).' themes to download...');
+        $output->writeln(count($themesToUpdate) . ' themes to download...');
 
         if (count($themesToUpdate) === 0) {
             $output->writeln('No themes to download...exiting...');
@@ -53,16 +53,16 @@ class ThemesGrabCommand extends Command
         $processes = [];
 
         foreach ($themesToUpdate as $theme => $versions) {
-            if (!empty($versions)) {
+            if (! empty($versions)) {
                 $versionList = implode(',', $versions);
             } else {
-                $updatedVersionList = $this->themeListService->getVersionsForTheme($theme);
-                $versionList = implode(',', $updatedVersionList);
+                $updatedVersionList     = $this->themeListService->getVersionsForTheme($theme);
+                $versionList            = implode(',', $updatedVersionList);
                 $themesToUpdate[$theme] = $updatedVersionList;
             }
 
             if (empty($versionList)) {
-                $output->writeln('No versions found for '.$theme.'...skipping...');
+                $output->writeln('No versions found for ' . $theme . '...skipping...');
                 continue;
             }
 
@@ -71,7 +71,7 @@ class ThemesGrabCommand extends Command
                 'internal:theme-download',
                 $theme,
                 $versionList,
-                $numVersions
+                $numVersions,
             ];
 
             if ($input->getOption('force-download')) {

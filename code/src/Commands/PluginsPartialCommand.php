@@ -33,15 +33,15 @@ class PluginsPartialCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $numVersions = $input->getOption('versions');
-        $numToPull = (int)$input->getArgument('num-to-pull');
-        $offset = (int)$input->getArgument('offset');
+        $numToPull   = (int) $input->getArgument('num-to-pull');
+        $offset      = (int) $input->getArgument('offset');
 
         $output->writeln('Getting list of plugins...');
         $pluginsToUpdate = $this->pluginListService->getPluginList();
 
         $totalPlugins = count($pluginsToUpdate);
 
-        $output->writeln($totalPlugins.' plugins to download...');
+        $output->writeln($totalPlugins . ' plugins to download...');
 
         if ($totalPlugins === 0) {
             $output->writeln('No plugins to download...exiting...');
@@ -49,24 +49,23 @@ class PluginsPartialCommand extends Command
         }
 
         if ($totalPlugins > $numToPull) {
-            $output->writeln('Limiting plugin download to '.$numToPull.' plugins... (offset by ' . $offset . ')');
+            $output->writeln('Limiting plugin download to ' . $numToPull . ' plugins... (offset by ' . $offset . ')');
             $pluginsToUpdate = array_slice($pluginsToUpdate, $offset, $numToPull);
         }
 
         $processes = [];
 
         foreach ($pluginsToUpdate as $plugin => $versions) {
-            if (!empty($versions)) {
+            if (! empty($versions)) {
                 $versionList = implode(',', $versions);
             } else {
-                $updatedVersionList = $this->pluginListService->getVersionsForPlugin($plugin);
-                $versionList = implode(',', $updatedVersionList);
+                $updatedVersionList       = $this->pluginListService->getVersionsForPlugin($plugin);
+                $versionList              = implode(',', $updatedVersionList);
                 $pluginsToUpdate[$plugin] = $updatedVersionList;
-
             }
 
             if (empty($versionList)) {
-                $output->writeln('No versions found for '.$plugin.'...skipping...');
+                $output->writeln('No versions found for ' . $plugin . '...skipping...');
                 continue;
             }
 
@@ -75,7 +74,7 @@ class PluginsPartialCommand extends Command
                 'internal:plugin-download',
                 $plugin,
                 $versionList,
-                $numVersions
+                $numVersions,
             ];
 
             if ($input->getOption('force-download')) {

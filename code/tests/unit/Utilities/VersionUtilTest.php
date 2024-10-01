@@ -10,6 +10,10 @@ use PHPUnit\Framework\TestCase;
 
 class VersionUtilTest extends TestCase
 {
+    /**
+     * @param array<int, string> $versions
+     * @param array<int, string> $correctOrder
+     */
     #[DataProvider('versionSortData')]
     public function testVersionSort(array $versions, array $correctOrder): void
     {
@@ -17,6 +21,10 @@ class VersionUtilTest extends TestCase
         $this->assertEquals($correctOrder, $result);
     }
 
+    /**
+     * @param array<int, string> $versions
+     * @param array<int, string> $correctOrder
+     */
     #[DataProvider('versionSortAscDataProvider')]
     public function testVersionSortAsc(array $versions, array $correctOrder): void
     {
@@ -27,7 +35,7 @@ class VersionUtilTest extends TestCase
     public function testLimitVersions(): void
     {
         $versions = ['1.2.3', '1.2.1', '1.1.1', '1.1.0.1', '1.1', '1.0.1'];
-        $result = VersionUtil::limitVersions($versions, 2);
+        $result   = VersionUtil::limitVersions($versions, 2);
         $this->assertEquals(['1.2.3', '1.2.1'], $result);
 
         $result = VersionUtil::limitVersions($versions, 4);
@@ -40,26 +48,32 @@ class VersionUtilTest extends TestCase
     public function testGetLatestVersion(): void
     {
         $versions = ['1.0.1', '1.2.1', '1.1', '1.2.3', '1.1.1', '1.1.0.1'];
-        $result = VersionUtil::getLatestVersion($versions);
+        $result   = VersionUtil::getLatestVersion($versions);
         $this->assertEquals('1.2.3', $result);
     }
 
+    /**
+     * @return array<int, array<int, array<int, string>>>
+     */
     public static function versionSortData(): array
     {
         return [
             [
                 ['1.2.3', '1.0.1', '1.2.1', '1.1', '1.1.1', '1.12.1', '1.1.0.1'],
-                ['1.12.1', '1.2.3', '1.2.1', '1.1.1', '1.1.0.1', '1.1', '1.0.1']
+                ['1.12.1', '1.2.3', '1.2.1', '1.1.1', '1.1.0.1', '1.1', '1.0.1'],
             ],
         ];
     }
 
+    /**
+     * @return array<int, array<int, array<int, string>>>
+     */
     public static function versionSortAscDataProvider(): array
     {
         return [
             [
                 ['1.2.3', '1.0.1', '1.2.1', '1.1', '1.1.1', '1.1.0.1'],
-                ['1.0.1', '1.1', '1.1.0.1', '1.1.1', '1.2.1', '1.2.3']
+                ['1.0.1', '1.1', '1.1.0.1', '1.1.1', '1.2.1', '1.2.3'],
             ],
         ];
     }
