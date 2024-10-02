@@ -75,7 +75,7 @@ class PluginsImportMetaCommand extends Command
                     try {
                         $this->pdo->perform($sql, [
                             'id'          => Uuid::uuid7()->toString(),
-                            'name'        => $fileContents['name'],
+                            'name'        => substr($fileContents['name'], 0, 255),
                             'slug'        => $fileContents['slug'],
                             'closed_date' => $closedDate,
                             'pulled_at'   => $pulledAt,
@@ -89,7 +89,7 @@ class PluginsImportMetaCommand extends Command
                     }
                 } else {
                     try {
-                        $name           = $fileContents['name'];
+                        $name           = substr($fileContents['name'], 0, 255);
                         $slug           = $fileContents['slug'];
                         $currentVersion = $fileContents['version'];
                         $versions       = $fileContents['versions'];
