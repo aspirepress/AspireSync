@@ -27,7 +27,7 @@ class PluginsMetaCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getPluginList();
+        $pluginsToUpdate = $this->pluginListService->getPluginListForAction(null, 'plugins:meta');
         $output->writeln(count($pluginsToUpdate) . ' plugins to download metadata for...');
 
         if (count($pluginsToUpdate) === 0) {
@@ -50,6 +50,8 @@ class PluginsMetaCommand extends Command
                 $output->writeln("No versions found for plugin $plugin");
             }
         }
+
+        $this->pluginListService->preserveRevision('plugins:meta');
 
         return Command::SUCCESS;
     }

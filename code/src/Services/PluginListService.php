@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Services;
 
+use Aura\Sql\ExtendedPdoInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
@@ -11,9 +12,15 @@ use Symfony\Component\Process\Process;
 
 class PluginListService
 {
+    /** @var array<string, string[]> */
+    private array $revisionData = [];
+
     private int $prevRevision = 0;
 
-    private int $currentRevision;
+    /**
+     * @var array<string, string[]>
+     */
+    private array $currentRevision = [];
 
     /** @var array <string, string[]> */
     private array $oldPluginData = [];
@@ -26,14 +33,36 @@ class PluginListService
     /**
      * @param array<int, string> $userAgents
      */
-    public function __construct(private array $userAgents)
+    public function __construct(private array $userAgents, private ExtendedPdoInterface $pdo)
     {
         shuffle($this->userAgents);
+        $this->loadRevisionData();
+    }
+
+    /**
+     * @param  array<int, string>|null  $filter
+     * * @return array<string, string[]>
+     * @return \string[][]
+     */
+    public function getPluginListForAction(?array $filter, string $action): array
+    {
+        $lastRevision = 0;
+        if (isset($this->revisionData[$action])) {
+            $lastRevision = $this->revisionData[$action]['revision'];
+            return $this->filter($this->getPluginsToUpdate([], $lastRevision, $action), $filter);
+        }
+
+
+        return $this->filter($this->pullWholePluginList(), $filter);
+
+
+
     }
 
     /**
      * @param array<int, string>|null $filter
      * @return array<string, string[]>
+     * @deprecated Use getPluginListForAction instead
      */
     public function getPluginList(?array $filter = []): array
     {
@@ -41,12 +70,11 @@ class PluginListService
             $filter = [];
         }
 
-        $this->currentRevision = $this->identifyCurrentRevision();
         if (file_exists('/opt/assetgrabber/data/plugin-data.json')) {
             $json                = file_get_contents('/opt/assetgrabber/data/plugin-data.json');
             $this->oldPluginData = json_decode($json, true);
             $this->prevRevision  = $this->oldPluginData['meta']['my_revision'];
-            return $this->filter($this->getPluginsToUpdate($filter), $filter);
+            return $this->filter($this->getPluginsToUpdate($filter, $this->prevRevision, $action), $filter);
         }
 
         $pluginList = $this->pullWholePluginList();
@@ -177,58 +205,52 @@ class PluginListService
      * @param array<int, string> $explicitlyRequested
      * @return array<string, string[]>
      */
-    private function getPluginsToUpdate(array $explicitlyRequested = []): array
+    private function getPluginsToUpdate(?array $explicitlyRequested, string $lastRevision, string $action = 'default'): array
     {
-        $lastRev    = (int) $this->oldPluginData['meta']['my_revision'];
+        $lastRev    = (int) $lastRevision;
         $targetRev  = $lastRev + 1;
-        $currentRev = $this->currentRevision;
+        $currentRev = 'HEAD';
 
         if ($this->currentRevision === $this->prevRevision) {
             return $this->mergePluginsToUpdate([], $explicitlyRequested);
         }
 
-        if (file_exists('/opt/assetgrabber/data/revision-' . $currentRev)) {
-            $output = file('/opt/assetgrabber/data/revision-' . $currentRev);
-        } else {
-            $command = [
-                'svn',
-                'log',
-                '-v',
-                '-q',
-                'https://plugins.svn.wordpress.org',
-                "-r",
-                "$targetRev:$currentRev",
-            ];
 
-            $process = new Process($command);
-            $process->run();
+        $command = [
+            'svn',
+            'log',
+            '-v',
+            '-q',
+            'https://plugins.svn.wordpress.org',
+            "-r",
+            "$targetRev:$currentRev",
+        ];
 
-            if (! $process->isSuccessful()) {
-                throw new RuntimeException('Unable to get list of plugins to update' . $process->getErrorOutput());
-            }
+        $process = new Process($command);
+        $process->run();
 
-            $output = explode(PHP_EOL, $process->getOutput());
-            file_put_contents('/opt/assetgrabber/data/revision-' . $currentRev, $process->getOutput());
+        if (! $process->isSuccessful()) {
+            throw new RuntimeException('Unable to get list of plugins to update' . $process->getErrorOutput());
         }
+
+        $output = explode(PHP_EOL, $process->getOutput());
 
         $pluginsToUpdate = [];
         foreach ($output as $line) {
-            preg_match('#^   [ADMR] /([^/(]+)/([^/(]+)/([^/(]+)/#', $line, $matches);
+            preg_match('#^   [ADMR] /([A-z]+)/#', $line, $matches);
             if ($matches) {
                 $plugin = trim($matches[1]);
-                if (trim($matches[2]) === 'tags' && ! empty($matches[3])) {
-                    if (! isset($pluginsToUpdate[$plugin])) {
-                        $pluginsToUpdate[$plugin] = [];
-                    }
+            }
 
-                    if (! in_array($matches[3], $pluginsToUpdate[$plugin])) {
-                        $pluginsToUpdate[$plugin][] = $matches[3];
-                    }
-                }
+            preg_match('#^r([0-9]+) \|#', $line, $matches);
+            if ($matches) {
+                $revision = (int) $matches[1];
             }
         }
 
-        $pluginsToUpdate = $this->mergePluginsToUpdate($pluginsToUpdate, $explicitlyRequested);
+        var_dump($pluginsToUpdate); die;
+        $this->currentRevision[$action] = ['revision' => $revision];
+        //$pluginsToUpdate = $this->mergePluginsToUpdate($pluginsToUpdate, $explicitlyRequested);
 
         return $pluginsToUpdate;
     }
@@ -303,5 +325,32 @@ class PluginListService
         }
 
         return $filtered;
+    }
+
+    public function preserveRevision(string $action): void
+    {
+        $data = [
+            'id' => $this->revisionData[$action]['id'] ?? null,
+            'action'   => $action,
+            'revision' => $this->currentRevision[$action]['revision'],
+        ];
+
+        if ($data['null'] === null) {
+            $sql = 'INSERT INTO revisions (action, revision) VALUES (:action, :revision)';
+            unset($data['id']);
+        } else {
+            $sql = 'UPDATE revisions SET revision = :revision WHERE id = :id';
+            unset($data['action']);
+        }
+
+        $this->pdo->perform($sql, $data);
+    }
+
+    public function loadRevisionData()
+    {
+        $revisions = $this->pdo->fetchAll('SELECT * FROM revisions');
+        foreach ($revisions as $revision) {
+            $this->revisionData[$revision['action']] = ['id' => $revision['id'], 'revision' => $revision['revision']];
+        }
     }
 }

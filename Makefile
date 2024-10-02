@@ -23,7 +23,8 @@ build:
 	mkdir -p ./build && \
 	cp -r ./code/config ./code/src ./code/assetgrabber ./code/composer.* ./build && \
 	docker build --target basebuild -t assetgrabber-dev -f ./docker/Dockerfile . && \
-	docker build --target prodbuild -t assetgrabber -t ${AWS_ECR_REGISTRY}:$(TAG_NAME) -t ${AWS_ECR_REGISTRY}:latest -f ./docker/Dockerfile .
+	docker build --target prodbuild -t assetgrabber -t ${AWS_ECR_REGISTRY}:$(TAG_NAME) -t ${AWS_ECR_REGISTRY}:latest -f ./docker/Dockerfile . && \
+	rm -fr ./build
 
 run:
 	docker run -it assetgrabber sh
