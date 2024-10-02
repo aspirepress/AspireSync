@@ -19,7 +19,7 @@ $application = new Application();
 $commands = scandir('./src/Commands');
 
 foreach ($commands as $command) {
-    if (strpos($command, 'Command.php') !== false) {
+    if (strpos($command, 'Command.php') !== false && strpos($command, 'Abstract') === false) {
         $command = str_replace('.php', '', $command);
         $application->add($container->get('AssetGrabber\\Commands\\' . $command));
     }

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace AssetGrabber\Factories;
 
 use AssetGrabber\Commands\PluginsImportMetaCommand;
-use Aura\Sql\ExtendedPdoInterface;
+use AssetGrabber\Services\PluginMetadataService;
 use Laminas\ServiceManager\ServiceManager;
 
 class PluginsImportMetaCommandFactory
 {
     public function __invoke(ServiceManager $serviceManager): PluginsImportMetaCommand
     {
-        $pdo = $serviceManager->get(ExtendedPdoInterface::class);
-        return new PluginsImportMetaCommand($pdo);
+        $metadataService = $serviceManager->get(PluginMetadataService::class);
+        return new PluginsImportMetaCommand($metadataService);
     }
 }

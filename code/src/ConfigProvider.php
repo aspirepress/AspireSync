@@ -19,6 +19,7 @@ use AssetGrabber\Factories\ExtendedPdoFactory;
 use AssetGrabber\Factories\GenericServiceFactory;
 use AssetGrabber\Factories\InternalPluginDownloadCommandFactory;
 use AssetGrabber\Factories\InternalThemeDownloadCommandFactory;
+use AssetGrabber\Factories\PluginMetadataServiceFactory;
 use AssetGrabber\Factories\PluginsGrabCommandFactory;
 use AssetGrabber\Factories\PluginsImportMetaCommandFactory;
 use AssetGrabber\Factories\PluginsMetaCommandFactory;
@@ -29,6 +30,7 @@ use AssetGrabber\Factories\ThemesPartialCommandFactory;
 use AssetGrabber\Factories\ThemesPullLatestRevCommandFactory;
 use AssetGrabber\Services\PluginDownloadService;
 use AssetGrabber\Services\PluginListService;
+use AssetGrabber\Services\PluginMetadataService;
 use AssetGrabber\Services\ThemeDownloadService;
 use AssetGrabber\Services\ThemeListService;
 use Aura\Sql\ExtendedPdoInterface;
@@ -61,6 +63,7 @@ class ConfigProvider
                 ThemeListService::class      => GenericServiceFactory::class,
                 ThemeDownloadService::class  => GenericServiceFactory::class,
                 ExtendedPdoInterface::class  => ExtendedPdoFactory::class,
+                PluginMetadataService::class => PluginMetadataServiceFactory::class,
 
                 // Commands
                 PluginsGrabCommand::class            => PluginsGrabCommandFactory::class,
