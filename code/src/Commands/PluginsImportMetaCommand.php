@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands;
 
 use Aura\Sql\ExtendedPdoInterface;
+use PDOException;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,6 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PluginsImportMetaCommand extends Command
 {
+    /** @var string[] */
     private array $existing;
 
     public function __construct(private ExtendedPdoInterface $pdo)
@@ -29,7 +31,13 @@ class PluginsImportMetaCommand extends Command
     public function execute(InputInterface $input, OutputInterface $output): int
     {
         $files = scandir('/opt/assetgrabber/data/plugin-raw-data');
-        $output->writeln('Importing ' . count($files) - 2 . ' files...');
+        $files = count($files);
+        if ($files > 2) {
+            $count = $files - 2;
+        } else {
+            $count = 0;
+        }
+        $output->writeln('Importing ' . $count . ' files...');
 
         foreach ($files as $file) {
             if (strpos($file, '.json') !== false) {
@@ -57,7 +65,7 @@ class PluginsImportMetaCommand extends Command
 
                     $sql = "INSERT INTO plugins (id, name, slug, status, updated, pulled_at) VALUES (:id, :name, :slug, :status, :closed_date, :pulled_at)";
 
-                    if (isset($fileContents['closed_date']) && !empty($fileContents['closed_date'])) {
+                    if (isset($fileContents['closed_date']) && ! empty($fileContents['closed_date'])) {
                         $closedDate = date('c', strtotime($fileContents['closed_date']));
                     } else {
                         $closedDate = date('c');
@@ -66,66 +74,65 @@ class PluginsImportMetaCommand extends Command
                     $output->writeln('Writing CLOSED plugin ' . $fileContents['slug']);
                     try {
                         $this->pdo->perform($sql, [
-                            'id' => Uuid::uuid7()->toString(),
-                            'name' => $fileContents['name'],
-                            'slug' => $fileContents['slug'],
+                            'id'          => Uuid::uuid7()->toString(),
+                            'name'        => $fileContents['name'],
+                            'slug'        => $fileContents['slug'],
                             'closed_date' => $closedDate,
-                            'pulled_at' => $pulledAt,
-                            'status' => $fileContents['error'] === 'closed' ? 'closed' : $fileContents['error'],
+                            'pulled_at'   => $pulledAt,
+                            'status'      => $fileContents['error'],
                         ]);
-                    } catch (\PDOException $e) {
+                    } catch (PDOException $e) {
                         $this->pdo->rollBack();
                         $output->writeln('ERROR: ' . $e->getMessage());
                         $output->writeln('ERROR: Unable to write CLOSED plugin ' . $fileContents['slug']);
                         continue;
                     }
                 } else {
-
                     try {
-                        $name = $fileContents['name'];
-                        $slug = $fileContents['slug'];
+                        $name           = $fileContents['name'];
+                        $slug           = $fileContents['slug'];
                         $currentVersion = $fileContents['version'];
-                        $versions = $fileContents['versions'];
-                        $updatedAt = date('c', strtotime($fileContents['last_updated']));
-                        $id = Uuid::uuid7();
+                        $versions       = $fileContents['versions'];
+                        $updatedAt      = date('c', strtotime($fileContents['last_updated']));
+                        $id             = Uuid::uuid7();
 
                         $output->writeln('Writing OPEN plugin ' . $slug);
                         $sql = 'INSERT INTO plugins (id, name, slug, current_version, status, updated, pulled_at) VALUES (:id, :name, :slug, :current_version, :status, :updated_at, :pulled_at)';
                         $this->pdo->perform($sql, [
-                            'id' => $id->toString(),
-                            'name' => $name,
-                            'slug' => $slug,
+                            'id'              => $id->toString(),
+                            'name'            => $name,
+                            'slug'            => $slug,
                             'current_version' => $currentVersion,
-                            'status' => 'open',
-                            'updated_at' => $updatedAt,
-                            'pulled_at' => $pulledAt,
+                            'status'          => 'open',
+                            'updated_at'      => $updatedAt,
+                            'pulled_at'       => $pulledAt,
                         ]);
 
                         $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version) VALUES (:id, :plugin_id, :file_url, :type, :version)';
-                        if (!empty($versions)) {
+                        if (! empty($versions)) {
                             $output->writeln('Writing ' . count($versions) . ' versions of ' . $slug);
                             foreach ($versions as $version => $url) {
                                 $this->pdo->perform($sql, [
-                                    'id' => Uuid::uuid7()->toString(),
+                                    'id'        => Uuid::uuid7()->toString(),
                                     'plugin_id' => $id->toString(),
-                                    'file_url' => $url,
-                                    'type' => 'wp_cdn',
-                                    'version' => $version,
+                                    'file_url'  => $url,
+                                    'type'      => 'wp_cdn',
+                                    'version'   => $version,
                                 ]);
                             }
                         } else {
                             $output->writeln('Writing  SINGLE VERSION of ' . $slug);
-                            $url = $fileContents['download_link'];
+                            $url     = $fileContents['download_link'];
                             $version = $fileContents['version'];
                             $this->pdo->perform($sql, [
-                                'id' => Uuid::uuid7()->toString(),
+                                'id'        => Uuid::uuid7()->toString(),
                                 'plugin_id' => $id->toString(),
-                                'file_url' => $url,
-                                'type' => 'wp_cdn',
-                                'version' => $version,
+                                'file_url'  => $url,
+                                'type'      => 'wp_cdn',
+                                'version'   => $version,
                             ]);
                         }
-                    } catch (\PDOException $e) {
+                    } catch (PDOException $e) {
                         $this->pdo->rollBack();
                         $output->writeln('ERROR: ' . $e->getMessage());
                         $output->writeln('ERROR: Unable to write OPEN plugin ' . $slug);
@@ -146,11 +153,14 @@ class PluginsImportMetaCommand extends Command
         return isset($this->existing[$slug]);
     }
 
+    /**
+     * @return string[]
+     */
     private function loadExistingPlugins(): array
     {
-        $sql = 'SELECT slug, status FROM plugins';
+        $sql    = 'SELECT slug, status FROM plugins';
         $result = [];
-        foreach($this->pdo->fetchAll($sql) as $row) {
+        foreach ($this->pdo->fetchAll($sql) as $row) {
             $result[$row['slug']] = $row['status'];
         }
 

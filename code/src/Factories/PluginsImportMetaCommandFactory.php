@@ -7,7 +7,6 @@ namespace AssetGrabber\Factories;
 use AssetGrabber\Commands\PluginsImportMetaCommand;
 use Aura\Sql\ExtendedPdoInterface;
 use Laminas\ServiceManager\ServiceManager;
-use PDO;
 
 class PluginsImportMetaCommandFactory
 {

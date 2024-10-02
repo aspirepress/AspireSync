@@ -53,6 +53,9 @@ class PluginListService
         return $this->filter($pluginList, $filter);
     }
 
+    /**
+     * @return array<string, string|array<string, string>>
+     */
     public function getPluginMetadata(string $plugin): array
     {
         if (! file_exists('/opt/assetgrabber/data/plugin-raw-data')) {
@@ -61,8 +64,7 @@ class PluginListService
 
         if (file_exists('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json') && filemtime('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json') > time() - 86400) {
             $json = file_get_contents('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json');
-            $data = json_decode($json, true);
-            return $data;
+            return json_decode($json, true);
         } else {
             $url    = 'https://api.wordpress.org/plugins/info/1.0/' . $plugin . '.json';
             $client = new Client();
@@ -95,7 +97,7 @@ class PluginListService
 
         if (isset($data['versions'])) {
             $pluginData = $data['versions'];
-        } else if (isset($data['version'])) {
+        } elseif (isset($data['version'])) {
             $pluginData = [$data['version'] => $data['download_link']];
         } else {
             return [];

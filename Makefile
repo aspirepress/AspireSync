@@ -44,7 +44,7 @@ check: csfix cs quality test
 quality:
 	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpstan"
 
-test:e
+test:
 	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpunit"
 
 cs:
