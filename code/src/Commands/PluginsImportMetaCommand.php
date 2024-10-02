@@ -12,9 +12,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PluginsImportMetaCommand extends Command
 {
+    private array $existing;
+
     public function __construct(private ExtendedPdoInterface $pdo)
     {
         parent::__construct();
+        $this->existing = $this->loadExistingPlugins();
     }
 
     public function configure(): void
@@ -140,8 +143,17 @@ class PluginsImportMetaCommand extends Command
 
     private function checkPluginInDatabase(string $slug): bool
     {
-        $sql = 'SELECT id FROM plugins WHERE slug = :slug';
-        $exists = $this->pdo->fetchOne($sql, ['slug' => $slug]);
-        return (empty($exists) === false);
+        return isset($this->existing[$slug]);
+    }
+
+    private function loadExistingPlugins(): array
+    {
+        $sql = 'SELECT slug, status FROM plugins';
+        $result = [];
+        foreach($this->pdo->fetchAll($sql) as $row) {
+            $result[$row['slug']] = $row['status'];
+        }
+
+        return $result;
     }
 }
