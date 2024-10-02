@@ -31,9 +31,9 @@ class PluginsImportMetaCommand extends Command
     public function execute(InputInterface $input, OutputInterface $output): int
     {
         $files = scandir('/opt/assetgrabber/data/plugin-raw-data');
-        $files = count($files);
-        if ($files > 2) {
-            $count = $files - 2;
+        $fileCount = count($files);
+        if ($fileCount > 2) {
+            $count = $fileCount - 2;
         } else {
             $count = 0;
         }
