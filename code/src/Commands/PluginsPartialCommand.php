@@ -37,7 +37,7 @@ class PluginsPartialCommand extends Command
         $offset      = (int) $input->getArgument('offset');
 
         $output->writeln('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getPluginListForAction([], 'plugins:partial');
+        $pluginsToUpdate = $this->pluginListService->getPluginUpdateList([]);
 
         $totalPlugins = count($pluginsToUpdate);
 
@@ -56,13 +56,8 @@ class PluginsPartialCommand extends Command
         $processes = [];
 
         foreach ($pluginsToUpdate as $plugin => $versions) {
-            if (! empty($versions)) {
-                $versionList = implode(',', $versions);
-            } else {
-                $updatedVersionList       = $this->pluginListService->getVersionsForPlugin($plugin);
-                $versionList              = implode(',', $updatedVersionList);
-                $pluginsToUpdate[$plugin] = $updatedVersionList;
-            }
+            $versionList = implode(',', $versions);
+
 
             if (empty($versionList)) {
                 $output->writeln('No versions found for ' . $plugin . '...skipping...');
@@ -97,8 +92,6 @@ class PluginsPartialCommand extends Command
         ProcessWaitUtil::waitAtEndOfScript($processes);
 
         $output->writeln('All processes finished...');
-
-        $this->pluginListService->preserveRevision('plugins:partial');
 
         return Command::SUCCESS;
     }
