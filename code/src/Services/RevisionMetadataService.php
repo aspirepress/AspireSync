@@ -22,7 +22,7 @@ class RevisionMetadataService
     {
         $revisions = $this->pdo->fetchAll('SELECT * FROM revisions');
         foreach ($revisions as $revision) {
-            $this->revisionData[$revision['action']] = ['id' => $revision['id'], 'revision' => $revision['revision']];
+            $this->revisionData[$revision['action']] = ['id' => $revision['id'], 'revision' => $revision['revision'], 'added' => $revision['added_at']];
         }
     }
 
@@ -54,6 +54,15 @@ class RevisionMetadataService
     {
         if (isset($this->revisionData[$action])) {
             return $this->revisionData[$action]['revision'];
+        }
+
+        return null;
+    }
+
+    public function getRevisionDateForAction(string $action): ?string
+    {
+        if (isset($this->revisionData[$action])) {
+            return $this->revisionData[$action]['added'];
         }
 
         return null;

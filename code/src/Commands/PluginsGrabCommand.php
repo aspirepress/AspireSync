@@ -54,7 +54,7 @@ class PluginsGrabCommand extends AbstractBaseCommand
         }
 
         $output->writeln('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getPluginUpdateList($pluginList);
+        $pluginsToUpdate = $this->pluginListService->getPluginUpdateList($pluginList, 'plugins:grab');
 
         $output->writeln(count($pluginsToUpdate) . ' plugins to download...');
         if (count($pluginsToUpdate) === 0) {

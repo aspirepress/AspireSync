@@ -334,8 +334,12 @@ class PluginMetadataService
     /**
      * @return array<string, string[]>
      */
-    public function getVersionsForUnfinalizedPlugins(string $type = 'wp_cdn'): array
+    public function getVersionsForUnfinalizedPlugins(?string $date, string $type = 'wp_cdn'): array
     {
+        if ($date) {
+            $date = date('c', strtotime($date));
+        }
+
         try {
             $sql         = "SELECT slug, version FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugin_files.type = :type AND plugins.status = 'open'";
             $result      = $this->pdo->fetchAll($sql, ['type' => $type]);
