@@ -9,6 +9,8 @@ require 'vendor/autoload.php';
 
 $config = require './config/config.php';
 
+ini_set('memory_limit', '4G');
+
 $dependencies                       = $config['dependencies'];
 $dependencies['services']['config'] = $config;
 
