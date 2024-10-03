@@ -9,6 +9,11 @@ use AssetGrabber\Commands\Plugins\PluginsGrabCommand;
 use AssetGrabber\Commands\Plugins\PluginsImportMetaCommand;
 use AssetGrabber\Commands\Plugins\PluginsMetaCommand;
 use AssetGrabber\Commands\Plugins\PluginsPartialCommand;
+use AssetGrabber\Commands\InternalThemeDownloadCommand;
+use AssetGrabber\Commands\PluginsPullLatestRevCommand;
+use AssetGrabber\Commands\ThemesGrabCommand;
+use AssetGrabber\Commands\ThemesPartialCommand;
+use AssetGrabber\Commands\ThemesPullLatestRevCommand;
 use AssetGrabber\Commands\UtilCleanDataCommand;
 use AssetGrabber\Commands\UtilUploadCommand;
 use AssetGrabber\Factories\ExtendedPdoFactory;
@@ -17,6 +22,8 @@ use AssetGrabber\Factories\Flysystem\FilesystemFactory;
 use AssetGrabber\Factories\Flysystem\LocalFilesystemAdapterFactory;
 use AssetGrabber\Factories\InternalPluginDownloadCommandFactory;
 use AssetGrabber\Factories\PluginDownloadFromWpServiceFactory;
+use AssetGrabber\Factories\InternalThemeDownloadCommandFactory;
+use AssetGrabber\Factories\PluginDownloadServiceFactory;
 use AssetGrabber\Factories\PluginListServiceFactory;
 use AssetGrabber\Factories\PluginMetadataServiceFactory;
 use AssetGrabber\Factories\PluginsGrabCommandFactory;
@@ -26,9 +33,15 @@ use AssetGrabber\Factories\PluginsPartialCommandFactory;
 use AssetGrabber\Factories\RevisionMetadataServiceFactory;
 use AssetGrabber\Factories\UtilUploadCommandFactory;
 use AssetGrabber\Services\PluginDownloadFromWpService;
+use AssetGrabber\Factories\ThemesGrabCommandFactory;
+use AssetGrabber\Factories\ThemesPartialCommandFactory;
+use AssetGrabber\Factories\ThemesPullLatestRevCommandFactory;
+use AssetGrabber\Services\PluginDownloadService;
 use AssetGrabber\Services\PluginListService;
 use AssetGrabber\Services\PluginMetadataService;
 use AssetGrabber\Services\RevisionMetadataService;
+use AssetGrabber\Services\ThemeDownloadService;
+use AssetGrabber\Services\ThemeListService;
 use Aura\Sql\ExtendedPdoInterface;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use League\Flysystem\Filesystem;
@@ -58,13 +71,17 @@ class ConfigProvider
             'factories'  => [
                 // Services
                 PluginDownloadFromWpService::class => PluginDownloadFromWpServiceFactory::class,
-                PluginListService::class           => PluginListServiceFactory::class,
-                ExtendedPdoInterface::class        => ExtendedPdoFactory::class,
-                PluginMetadataService::class       => PluginMetadataServiceFactory::class,
-                RevisionMetadataService::class     => RevisionMetadataServiceFactory::class,
+
+
+                // Commands
+                PluginListService::class       => PluginListServiceFactory::class,
+                ExtendedPdoInterface::class    => ExtendedPdoFactory::class,
+                PluginMetadataService::class   => PluginMetadataServiceFactory::class,
+                RevisionMetadataService::class => RevisionMetadataServiceFactory::class,
 
                 // Commands
                 PluginsGrabCommand::class            => PluginsGrabCommandFactory::class,
+
                 InternalPluginDownloadCommand::class => InternalPluginDownloadCommandFactory::class,
                 PluginsPartialCommand::class         => PluginsPartialCommandFactory::class,
                 PluginsMetaCommand::class            => PluginsMetaCommandFactory::class,
