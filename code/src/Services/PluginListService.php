@@ -22,7 +22,7 @@ class PluginListService
      * * @return array<string, string[]>
      * @return string[][]
      */
-    public function getPluginListForAction(?array $filter, string $action): array
+    public function getPluginListForAction(array $filter, string $action): array
     {
         $lastRevision = 0;
         if ($this->revisionService->getRevisionForAction($action)) {
