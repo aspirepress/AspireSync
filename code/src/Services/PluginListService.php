@@ -72,10 +72,9 @@ class PluginListService
      * @param array<int, string> $explicitlyRequested
      * @return array<string, array<string>>
      */
-    public function getPluginUpdateList(?array $explicitlyRequested, string $action): array
+    public function getPluginUpdateList(?array $explicitlyRequested): array
     {
-        $date = $this->revisionService->getRevisionDateForAction($action);
-        return $this->filter($this->pluginService->getVersionsForUnfinalizedPlugins($date), $explicitlyRequested);
+        return $this->filter($this->pluginService->getVersionsForUnfinalizedPlugins(), $explicitlyRequested);
     }
 
     /**

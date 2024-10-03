@@ -334,20 +334,23 @@ class PluginMetadataService
     /**
      * @return array<string, string[]>
      */
-    public function getVersionsForUnfinalizedPlugins(?string $date, string $type = 'wp_cdn'): array
+    public function getVersionsForUnfinalizedPlugins(string $type = 'wp_cdn'): array
     {
-        if ($date) {
-            $date = date('c', strtotime($date));
-        }
-
         try {
-            $sql         = "SELECT slug, version FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugin_files.type = :type AND plugins.status = 'open'";
+            $sql         = "SELECT plugins.id, slug, version, plugin_files.metadata as version_meta FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugin_files.type = :type AND plugins.status = 'open'";
             $result      = $this->pdo->fetchAll($sql, ['type' => $type]);
             $finalResult = [];
             foreach ($result as $row) {
                 $plugin  = $row['slug'];
                 $version = $row['version'];
-                $finalResult[$plugin][] = $version;
+                if (! empty($row['metadata'])) {
+                    $metadata = json_decode($row['metadata'], true);
+                    if (! $metadata['aspirepress_meta']['finalized']) {
+                        $finalResult[$plugin][] = $version;
+                    }
+                } else {
+                    $finalResult[$plugin][] = $version;
+                }
             }
             return $finalResult;
         } catch (PDOException $e) {
@@ -399,22 +402,5 @@ class PluginMetadataService
 
         $sql = 'UPDATE plugin_files SET metadata = :metadata WHERE id = :id';
         $this->pdo->perform($sql, ['id' => $result['id'], 'metadata' => json_encode($metadata)]);
-    }
-
-    public function getUnfinalizedVersions(string $plugin, array $versions): array
-    {
-        $sql = 'SELECT version, plugin_files.metadata FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugins.slug = :slug AND version IN (:versions)';
-        $result = $this->pdo->fetchAll($sql, ['slug' => $plugin, 'versions' => implode(',', $versions)]);
-        $return = [];
-
-        foreach ($result as $row) {
-            $metadata = $row['metadata'] ?? '';
-            $metadata = json_decode($metadata, true);
-            if (empty($metadata['aspirepress_meta']['finalized']) && in_array($row['version'], $versions)) {
-                $return[] = $row['version'];
-            }
-        }
-        return $return;
-
     }
 }
