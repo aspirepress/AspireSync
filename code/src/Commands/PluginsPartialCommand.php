@@ -37,7 +37,7 @@ class PluginsPartialCommand extends Command
         $offset      = (int) $input->getArgument('offset');
 
         $output->writeln('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getPluginList();
+        $pluginsToUpdate = $this->pluginListService->getPluginListForAction([],'plugins:partial');
 
         $totalPlugins = count($pluginsToUpdate);
 

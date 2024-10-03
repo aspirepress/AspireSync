@@ -49,35 +49,13 @@ class PluginListService
         $lastRevision = 0;
         if (isset($this->revisionData[$action])) {
             $lastRevision = $this->revisionData[$action]['revision'];
-            return $this->filter($this->getPluginsToUpdate([], $lastRevision, $action), $filter);
+            return $this->filter($this->getPluginsToUpdate($filter, $lastRevision, $action), $filter);
         }
 
         return $this->filter($this->pullWholePluginList($action), $filter);
 
 
 
-    }
-
-    /**
-     * @param array<int, string>|null $filter
-     * @return array<string, string[]>
-     * @deprecated Use getPluginListForAction instead
-     */
-    public function getPluginList(?array $filter = []): array
-    {
-        if (! $filter) {
-            $filter = [];
-        }
-
-        if (file_exists('/opt/assetgrabber/data/plugin-data.json')) {
-            $json                = file_get_contents('/opt/assetgrabber/data/plugin-data.json');
-            $this->oldPluginData = json_decode($json, true);
-            $this->prevRevision  = $this->oldPluginData['meta']['my_revision'];
-            return $this->filter($this->getPluginsToUpdate($filter, $this->prevRevision), $filter);
-        }
-
-        $pluginList = $this->pullWholePluginList();
-        return $this->filter($pluginList, $filter);
     }
 
     /**
@@ -216,7 +194,7 @@ class PluginListService
         $currentRev = 'HEAD';
 
         if ($this->currentRevision === $this->prevRevision) {
-            return $this->mergePluginsToUpdate([], $explicitlyRequested);
+            return $this->addNewAndRequestedPlugins([], $explicitlyRequested);
         }
 
         $command = [
@@ -253,17 +231,20 @@ class PluginListService
         }
 
         $this->setCurrentRevision($action, $revision);
-        //$pluginsToUpdate = $this->mergePluginsToUpdate($pluginsToUpdate, $explicitlyRequested);
+        $pluginsToUpdate = $this->addNewAndRequestedPlugins($pluginsToUpdate, $explicitlyRequested);
 
         return $pluginsToUpdate;
     }
 
     /**
+     * Takes the entire list of plugins, and adds any we have not seen before, plus merges plugins that we have explicitly
+     * queued for update.
+     *
      * @param array<string, string[]> $pluginsToUpdate
      * @param array<int, string> $explicitlyRequested
      * @return array<string, string[]>
      */
-    private function mergePluginsToUpdate(array $pluginsToUpdate = [], array $explicitlyRequested = []): array
+    private function addNewAndRequestedPlugins(array $pluginsToUpdate = [], array $explicitlyRequested = []): array
     {
         $allPlugins = $this->pullWholePluginList();
 
