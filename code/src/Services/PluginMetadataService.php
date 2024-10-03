@@ -25,13 +25,21 @@ class PluginMetadataService
      */
     public function saveClosedPluginFromWP(array $pluginMetadata, string $pulledAt): array
     {
-        $sql = "INSERT INTO plugins (id, name, slug, status, updated, pulled_at) VALUES (:id, :name, :slug, :status, :closed_date, :pulled_at)";
+        $sql = "INSERT INTO plugins (id, name, slug, status, updated, pulled_at, metadata) VALUES (:id, :name, :slug, :status, :closed_date, :pulled_at, :metadata)";
 
         if (! empty($pluginMetadata['closed_date'])) {
             $closedDate = date('c', strtotime($pluginMetadata['closed_date']));
         } else {
             $closedDate = date('c');
         }
+
+        $pluginMetadata['aspirepress_meta'] = [
+            'seen' => date('c'),
+            'added' => date('c'),
+            'updated' => date('c'),
+            'processed' => null,
+            'finalized' => null,
+        ];
 
         $this->pdo->beginTransaction();
 
@@ -43,6 +51,7 @@ class PluginMetadataService
                 'closed_date' => $closedDate,
                 'pulled_at'   => $pulledAt,
                 'status'      => $pluginMetadata['error'],
+                'metadata'    => json_encode($pluginMetadata),
             ]);
             $this->pdo->commit();
             return ['error' => ''];
@@ -68,7 +77,15 @@ class PluginMetadataService
             $updatedAt      = date('c', strtotime($pluginMetadata['last_updated']));
             $id             = Uuid::uuid7();
 
-            $sql = 'INSERT INTO plugins (id, name, slug, current_version, status, updated, pulled_at) VALUES (:id, :name, :slug, :current_version, :status, :updated_at, :pulled_at)';
+            $pluginMetadata['aspirepress_meta'] = [
+                'seen' => date('c'),
+                'added' => date('c'),
+                'updated' => date('c'),
+                'processed' => null,
+                'finalized' => null,
+            ];
+
+            $sql = 'INSERT INTO plugins (id, name, slug, current_version, status, updated, pulled_at, metadata) VALUES (:id, :name, :slug, :current_version, :status, :updated_at, :pulled_at, :metadata)';
             $this->pdo->perform($sql, [
                 'id'              => $id->toString(),
                 'name'            => $name,
@@ -77,6 +94,7 @@ class PluginMetadataService
                 'status'          => 'open',
                 'updated_at'      => $updatedAt,
                 'pulled_at'       => $pulledAt,
+                'metadata'        => json_encode($pluginMetadata),
             ]);
 
             if (empty($pluginMetadata['versions'])) {
@@ -104,12 +122,20 @@ class PluginMetadataService
      */
     public function writeVersionsForPlugin(UuidInterface $pluginId, array $versions, string $cdn): array
     {
-        $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version) VALUES (:id, :plugin_id, :file_url, :type, :version)';
+        $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version, metadata) VALUES (:id, :plugin_id, :file_url, :type, :version, :metadata)';
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;
             $this->pdo->beginTransaction();
         }
+
+        $metadata['aspirepress_meta'] = [
+            'seen' => date('c'),
+            'added' => date('c'),
+            'updated' => date('c'),
+            'processed' => null,
+            'finalized' => null,
+        ];
 
         try {
             foreach ($versions as $version => $url) {
@@ -119,6 +145,7 @@ class PluginMetadataService
                     'file_url'  => $url,
                     'type'      => $cdn,
                     'version'   => $version,
+                    'metadata'  => json_encode($metadata),
                 ]);
             }
 
@@ -174,7 +201,22 @@ class PluginMetadataService
         try {
             $this->pdo->beginTransaction();
 
-            $sql = 'UPDATE plugins SET status = :status, pulled_at = :pulled_at, updated = :updated WHERE slug = :slug';
+            $mdSql = 'SELECT metadata FROM plugins WHERE slug = :slug';
+            $result = $this->pdo->fetchOne($mdSql, ['slug' => $fileContents['slug']]);
+            $metadata = json_decode($result['metadata'], true);
+            $apMetadata = $metadata['aspirepress_meta'];
+
+            $newMetadata = $fileContents;
+            $newMetadata['aspirepress_meta'] = [
+                'seen' => $apMetadata['seen'],
+                'added' => $apMetadata['added'],
+                'updated' => date('c'),
+                'processed' => null,
+                'finalized' => null
+            ];
+
+
+            $sql = 'UPDATE plugins SET status = :status, pulled_at = :pulled_at, updated = :updated, metadata = :metadata WHERE slug = :slug';
             $this->pdo->perform(
                 $sql,
                 [
@@ -182,6 +224,7 @@ class PluginMetadataService
                     'pulled_at' => $pulledAt,
                     'slug'      => $fileContents['slug'],
                     'updated'   => $closedDate,
+                    'metadata'  => json_encode($newMetadata),
                 ]
             );
             $this->pdo->commit();
@@ -201,16 +244,30 @@ class PluginMetadataService
         $this->pdo->beginTransaction();
 
         try {
+
+            $mdSql = 'SELECT id, metadata FROM plugins WHERE slug = :slug';
+            $result = $this->pdo->fetchOne($mdSql, ['slug' => $fileContents['slug']]);
+            $metadata = json_decode($result['metadata'], true);
+            $id = Uuid::fromString($result['id']);
+            $apMetadata = $metadata['aspirepress_meta'];
+
+            $newMetadata = $fileContents;
+            $newMetadata['aspirepress_meta'] = [
+                'seen' => $apMetadata['seen'],
+                'added' => $apMetadata['added'],
+                'updated' => date('c'),
+                'processed' => null,
+                'finalized' => null
+            ];
+
+
             $name           = substr($fileContents['name'], 0, 255);
             $slug           = $fileContents['slug'];
             $currentVersion = $fileContents['version'];
             $versions       = $fileContents['versions'];
             $updatedAt      = date('c', strtotime($fileContents['last_updated']));
 
-            $sql = 'SELECT id FROM plugins WHERE slug = :slug';
-            $id  = Uuid::fromString($this->pdo->fetchValue($sql, ['slug' => $slug]));
-
-            $sql = 'UPDATE plugins SET name = :name, current_version = :current_version, status = :status, updated = :updated, pulled_at = :pulled_at WHERE slug = :slug';
+            $sql = 'UPDATE plugins SET metadata = :metadata, name = :name, current_version = :current_version, status = :status, updated = :updated, pulled_at = :pulled_at WHERE slug = :slug';
             $this->pdo->perform($sql, [
                 'name'            => $name,
                 'slug'            => $slug,
@@ -218,6 +275,7 @@ class PluginMetadataService
                 'status'          => 'open',
                 'updated'         => $updatedAt,
                 'pulled_at'       => $pulledAt,
+                'metadata'        => json_encode($newMetadata),
             ]);
 
             if (! isset($fileContents['versions']) || empty($fileContents['versions'])) {
@@ -274,4 +332,73 @@ class PluginMetadataService
 
         return $result;
     }
+
+    public function getVersionsForUnfinalizedPlugins(string $type = 'wp_cdn'): array
+    {
+        try {
+            $sql = 'SELECT plugins.id, slug, version, plugin_files.metadata as version_meta FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugin_files.type = :type';
+            $result = $this->pdo->fetchAll($sql, ['type' => $type]);
+            $finalResult = [];
+            foreach ($result as $row) {
+                $plugin = $row['slug'];
+                $version = $row['version'];
+                if (!empty($row['metadata'])) {
+                    $metadata = json_decode($row['metadata'], true);
+                    if (!$metadata['aspirepress_meta']['finalized']) {
+                        $finalResult[$plugin][] = $version;
+                    }
+                } else {
+                    $finalResult[$plugin][] = $version;
+                }
+            }
+            return $finalResult;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Unable to get versions for plugins; reason: ' . $e->getMessage());
+        }
+    }
+
+    public function getDownloadUrlsForVersions(string $plugin, array $versions, string $type = 'wp_cdn'): array
+    {
+        try {
+            $sql = 'SELECT version, file_url FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugins.slug = :plugin AND plugin_files.type = :type';
+
+            $results = $this->pdo->fetchAll($sql, ['plugin' => $plugin, 'type' => $type]);
+            $return = [];
+            foreach ($results as $result) {
+                if (in_array($result['version'], $versions)) {
+                    $return[$result['version']] = $result['file_url'];
+                }
+            }
+            return $return;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Unable to get download URLs for plugin ' . $plugin . '; reason: ' . $e->getMessage());
+        }
+    }
+
+    public function setVersionToDownloaded(string $plugin, string $version, string $type = 'wp_cdn'): void
+    {
+        $sql = 'SELECT plugin_files.id as id, plugin_files.metadata as metadata FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugins.slug = :plugin AND plugin_files.type = :type AND plugin_files.version = :version';
+        $result = $this->pdo->fetchOne($sql, ['plugin' => $plugin, 'type' => $type, 'version' => $version]);
+
+        if (! isset($result)) {
+            return;
+        }
+
+        if (!empty($result['metadata'])) {
+            $metadata = json_decode($result['metadata'], true);
+            $metadata['aspirepress_meta']['finalized'] = date('c');
+        } else {
+            $metadata = [
+                'aspirepress_meta' => [
+                    'finalized' => date('c'),
+                ]
+            ];
+        }
+
+        $sql = 'UPDATE plugin_files SET metadata = :metadata WHERE id = :id';
+        $this->pdo->perform($sql, ['id' => $result['id'], 'metadata' => json_encode($metadata)]);
+
+    }
+
+
 }

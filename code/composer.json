@@ -1,5 +1,9 @@
 {
     "require": {
+        "php": "^8.3",
+        "ext-simplexml": "*",
+        "ext-pdo": "*",
+        "ext-pdo_pgsql": "*",
         "guzzlehttp/guzzle": "^7.9",
         "symfony/console": "^7.1",
         "symfony/process": "^7.1",

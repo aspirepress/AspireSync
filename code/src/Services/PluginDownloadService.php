@@ -13,7 +13,7 @@ class PluginDownloadService
     /**
      * @param array<int, string> $userAgents
      */
-    public function __construct(private array $userAgents)
+    public function __construct(private array $userAgents, private PluginMetadataService $pluginMetadataService)
     {
         shuffle($this->userAgents);
     }
@@ -25,7 +25,6 @@ class PluginDownloadService
     public function download(string $plugin, array $versions, string $numToDownload = 'all', bool $force = false): array
     {
         $client       = new Client();
-        $downloadUrl  = 'https://downloads.wordpress.org/plugin/%s.%s.zip?nostats=1';
         $downloadFile = '/opt/assetgrabber/data/plugins/%s.%s.zip';
 
         if (! file_exists('/opt/assetgrabber/data/plugins')) {
@@ -34,16 +33,18 @@ class PluginDownloadService
 
         switch ($numToDownload) {
             case 'all':
-                $download = array_keys($versions);
+                $download = $versions;
                 break;
 
             case 'latest':
-                $download = [VersionUtil::getLatestVersion(array_keys($versions))];
+                $download = [VersionUtil::getLatestVersion($versions)];
                 break;
 
             default:
-                $download = VersionUtil::limitVersions(VersionUtil::sortVersions(array_keys($versions)), (int) $numToDownload);
+                $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
         }
+
+        $versions = $this->pluginMetadataService->getDownloadUrlsForVersions($plugin, $versions);
 
         $outcomes = [];
 
@@ -63,8 +64,8 @@ class PluginDownloadService
                 $outcomes[$response->getStatusCode() . ' ' . $response->getReasonPhrase()][] = $version;
                 if (filesize($filePath) === 0) {
                     unlink($filePath);
-                    $outcomes[$version] = 'File was zero length; removed.';
                 }
+                $this->pluginMetadataService->setVersionToDownloaded($plugin, $version);
             } catch (ClientException $e) {
                 if (method_exists($e, 'getResponse')) {
                     $response = $e->getResponse();

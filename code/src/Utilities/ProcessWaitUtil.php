@@ -28,15 +28,20 @@ abstract class ProcessWaitUtil
 
     /**
      * @param Process[] $processes
+     * @return string[]
      */
-    public static function waitAtEndOfScript(array $processes): void
+    public static function waitAtEndOfScript(array $processes): array
     {
+        $stats = [];
         while (count($processes) > 0) {
             foreach ($processes as $k => $process) {
                 if (! $process->isRunning()) {
+                    $stats[] = $process->getOutput();
                     unset($processes[$k]);
                 }
             }
         }
+
+        return $stats;
     }
 }

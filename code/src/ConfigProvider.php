@@ -19,6 +19,7 @@ use AssetGrabber\Factories\ExtendedPdoFactory;
 use AssetGrabber\Factories\GenericServiceFactory;
 use AssetGrabber\Factories\InternalPluginDownloadCommandFactory;
 use AssetGrabber\Factories\InternalThemeDownloadCommandFactory;
+use AssetGrabber\Factories\PluginDownloadServiceFactory;
 use AssetGrabber\Factories\PluginListServiceFactory;
 use AssetGrabber\Factories\PluginMetadataServiceFactory;
 use AssetGrabber\Factories\PluginsGrabCommandFactory;
@@ -61,7 +62,7 @@ class ConfigProvider
             ],
             'factories'  => [
                 // Services
-                PluginDownloadService::class   => GenericServiceFactory::class,
+                PluginDownloadService::class   => PluginDownloadServiceFactory::class,
                 PluginListService::class       => PluginListServiceFactory::class,
                 ThemeListService::class        => GenericServiceFactory::class,
                 ThemeDownloadService::class    => GenericServiceFactory::class,

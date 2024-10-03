@@ -76,6 +76,12 @@ class PluginListService
         return [];
     }
 
+    public function getPluginUpdateList(?array $explicitlyRequested): array
+    {
+
+        return $this->filter($this->pluginService->getVersionsForUnfinalizedPlugins(), $explicitlyRequested);
+    }
+
     /**
      * @return array<string, string>
      */
