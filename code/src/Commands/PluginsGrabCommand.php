@@ -97,7 +97,7 @@ class PluginsGrabCommand extends Command
 
         $output->writeln('All processes finished...');
 
-        $this->pluginListService->preservePluginList($pluginsToUpdate);
+        $this->pluginListService->preserveRevision('plugins:grab');
 
         return Command::SUCCESS;
     }

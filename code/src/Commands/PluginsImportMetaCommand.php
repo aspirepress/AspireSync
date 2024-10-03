@@ -14,12 +14,12 @@ class PluginsImportMetaCommand extends AbstractBaseCommand
     /** @var array<string, int>  */
     private array $stats = [
         'unwritable' => 0,
-        'error'   => 0,
-        'success' => 0,
-        'update'  => 0,
-        'write'   => 0,
-        'skips'   => 0,
-        'total'   => 0,
+        'error'      => 0,
+        'success'    => 0,
+        'update'     => 0,
+        'write'      => 0,
+        'skips'      => 0,
+        'total'      => 0,
     ];
 
     public function __construct(private PluginMetadataService $pluginMetadata)

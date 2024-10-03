@@ -37,7 +37,7 @@ class PluginsPartialCommand extends Command
         $offset      = (int) $input->getArgument('offset');
 
         $output->writeln('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getPluginListForAction([],'plugins:partial');
+        $pluginsToUpdate = $this->pluginListService->getPluginListForAction([], 'plugins:partial');
 
         $totalPlugins = count($pluginsToUpdate);
 
@@ -98,7 +98,7 @@ class PluginsPartialCommand extends Command
 
         $output->writeln('All processes finished...');
 
-        $this->pluginListService->preservePluginList($pluginsToUpdate);
+        $this->pluginListService->preserveRevision('plugins:partial');
 
         return Command::SUCCESS;
     }
