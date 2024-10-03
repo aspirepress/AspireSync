@@ -35,9 +35,11 @@ class InternalPluginDownloadCommand extends Command
         $numVersions = $input->getArgument('num-versions');
 
         $output->writeln('Determining versions of ' . $plugin . '...');
-        $versions           = explode(',', $input->getArgument('version-list'));
+        $versions = explode(',', $input->getArgument('version-list'));
 
-        array_walk($versions, function (&$value) { $value = trim($value); });
+        array_walk($versions, function (&$value) {
+            $value = trim($value);
+        });
 
         $versionsToDownload = $this->determineDownloadedVersions($versions, $numVersions);
         $output->writeln('Downloading ' . $versionsToDownload . ' versions...');

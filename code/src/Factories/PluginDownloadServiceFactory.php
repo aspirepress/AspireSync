@@ -12,7 +12,7 @@ class PluginDownloadServiceFactory
 {
     public function __invoke(ServiceManager $serviceManager): PluginDownloadService
     {
-        $ua = $serviceManager->get('config')['user-agents'];
+        $ua                = $serviceManager->get('config')['user-agents'];
         $pluginMetaService = $serviceManager->get(PluginMetadataService::class);
         return new PluginDownloadService($ua, $pluginMetaService);
     }

@@ -15,13 +15,14 @@ use Symfony\Component\Process\Process;
 
 class PluginsGrabCommand extends AbstractBaseCommand
 {
+    /** @var array<string, int> */
     private array $stats = [
-            'success' => 0,
-            'failed' => 0,
-            'not_modified' => 0,
-            'not_found' => 0,
-            'total' => 0,
-        ];
+        'success'      => 0,
+        'failed'       => 0,
+        'not_modified' => 0,
+        'not_found'    => 0,
+        'total'        => 0,
+    ];
 
     public function __construct(private PluginListService $pluginListService)
     {
@@ -99,7 +100,7 @@ class PluginsGrabCommand extends AbstractBaseCommand
         $output->writeln('Waiting for all processes to finish...');
 
         $stats = ProcessWaitUtil::waitAtEndOfScript($processes);
-        foreach($stats as $stat) {
+        foreach ($stats as $stat) {
             $this->processStats($stat);
         }
 
@@ -124,27 +125,26 @@ class PluginsGrabCommand extends AbstractBaseCommand
     private function processStats(string $stats): void
     {
         preg_match_all('/[A-z\-_]+ ([0-9){3} [A-z ]+)\: ([0-9]+)/', $stats, $matches);
-        foreach($matches[1] as $k => $v)
-        {
-            switch($v) {
+        foreach ($matches[1] as $k => $v) {
+            switch ($v) {
                 case '304 Not Modified':
                     $this->stats['not_modified'] += (int) $matches[2][$k];
-                    $this->stats['total'] += (int) $matches[2][$k];
+                    $this->stats['total']        += (int) $matches[2][$k];
                     break;
 
                 case '200 OK':
                     $this->stats['success'] += (int) $matches[2][$k];
-                    $this->stats['total'] += (int) $matches[2][$k];
+                    $this->stats['total']   += (int) $matches[2][$k];
                     break;
 
                 case '404 Not Found':
                     $this->stats['not_found'] += (int) $matches[2][$k];
-                    $this->stats['total'] += (int) $matches[2][$k];
+                    $this->stats['total']     += (int) $matches[2][$k];
                     break;
 
                 default:
                     $this->stats['failed'] += (int) $matches[2][$k];
-                    $this->stats['total'] += (int) $matches[2][$k];
+                    $this->stats['total']  += (int) $matches[2][$k];
             }
         }
     }

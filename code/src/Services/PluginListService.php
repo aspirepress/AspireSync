@@ -13,14 +13,6 @@ class PluginListService
 {
     private int $prevRevision = 0;
 
-    /** @var array <string, string[]> */
-    private array $oldPluginData = [];
-
-    /**
-     * @param string[]|null $filter
-     * @return array<string, string[]>
-     */
-
     public function __construct(private PluginMetadataService $pluginService, private RevisionMetadataService $revisionService)
     {
     }
@@ -76,9 +68,12 @@ class PluginListService
         return [];
     }
 
+    /**
+     * @param array<int, string> $explicitlyRequested
+     * @return array<string, array<string>>
+     */
     public function getPluginUpdateList(?array $explicitlyRequested): array
     {
-
         return $this->filter($this->pluginService->getVersionsForUnfinalizedPlugins(), $explicitlyRequested);
     }
 
@@ -228,11 +223,11 @@ class PluginListService
      * Takes the entire list of plugins, and adds any we have not seen before, plus merges plugins that we have explicitly
      * queued for update.
      *
-     * @param array<string, string[]> $pluginsToUpdate
+     * @param array<int|string, string|string[]> $pluginsToUpdate
      * @param array<int, string> $explicitlyRequested
      * @return array<string, string[]>
      */
-    private function addNewAndRequestedPlugins(string $action, array $pluginsToUpdate = [], array $explicitlyRequested = []): array
+    private function addNewAndRequestedPlugins(string $action, array $pluginsToUpdate = [], ?array $explicitlyRequested = []): array
     {
         $allPlugins = $this->pullWholePluginList($action);
 
