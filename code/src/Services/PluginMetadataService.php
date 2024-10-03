@@ -337,20 +337,13 @@ class PluginMetadataService
     public function getVersionsForUnfinalizedPlugins(string $type = 'wp_cdn'): array
     {
         try {
-            $sql         = "SELECT plugins.id, slug, version, plugin_files.metadata as version_meta FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugin_files.type = :type AND plugins.status = 'open'";
+            $sql         = "SELECT slug, version FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugin_files.type = :type AND plugins.status = 'open'";
             $result      = $this->pdo->fetchAll($sql, ['type' => $type]);
             $finalResult = [];
             foreach ($result as $row) {
                 $plugin  = $row['slug'];
                 $version = $row['version'];
-                if (! empty($row['metadata'])) {
-                    $metadata = json_decode($row['metadata'], true);
-                    if (! $metadata['aspirepress_meta']['finalized']) {
-                        $finalResult[$plugin][] = $version;
-                    }
-                } else {
-                    $finalResult[$plugin][] = $version;
-                }
+                $finalResult[$plugin][] = $version;
             }
             return $finalResult;
         } catch (PDOException $e) {
@@ -365,7 +358,7 @@ class PluginMetadataService
     public function getDownloadUrlsForVersions(string $plugin, array $versions, string $type = 'wp_cdn'): array
     {
         try {
-            $sql = 'SELECT version, file_url FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugins.slug = :plugin AND plugin_files.type = :type';
+            $sql = 'SELECT version, file_url, metadata FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugins.slug = :plugin AND plugin_files.type = :type';
 
             $results = $this->pdo->fetchAll($sql, ['plugin' => $plugin, 'type' => $type]);
             $return  = [];
