@@ -161,6 +161,7 @@ class PluginListService
             }
 
             $output = $process->getOutput();
+
             file_put_contents('/opt/assetgrabber/data/raw-changelog', $output);
         }
 
@@ -207,20 +208,19 @@ class PluginListService
      */
     private function getPluginsToUpdate(?array $explicitlyRequested, string $lastRevision, string $action = 'default'): array
     {
-        $lastRev    = (int) $lastRevision;
-        $targetRev  = $lastRev + 1;
+        $targetRev    = (int) $lastRevision;
         $currentRev = 'HEAD';
 
         if ($this->currentRevision === $this->prevRevision) {
             return $this->mergePluginsToUpdate([], $explicitlyRequested);
         }
 
-
         $command = [
             'svn',
             'log',
             '-v',
             '-q',
+            '--xml',
             'https://plugins.svn.wordpress.org',
             "-r",
             "$targetRev:$currentRev",
@@ -233,22 +233,21 @@ class PluginListService
             throw new RuntimeException('Unable to get list of plugins to update' . $process->getErrorOutput());
         }
 
-        $output = explode(PHP_EOL, $process->getOutput());
+        $output = simplexml_load_string($process->getOutput());
+        $entries = $output->logentry;
 
         $pluginsToUpdate = [];
-        foreach ($output as $line) {
-            preg_match('#^   [ADMR] /([A-z]+)/#', $line, $matches);
+        $revision = $lastRevision;
+        foreach ($entries as $entry) {
+            $revision = (int) $entry->attributes()['revision'];
+            $path = (string) $entry->paths->path[0];
+            preg_match('#/([A-z\-_]+)/#', $path, $matches);
             if ($matches) {
                 $plugin = trim($matches[1]);
-            }
-
-            preg_match('#^r([0-9]+) \|#', $line, $matches);
-            if ($matches) {
-                $revision = (int) $matches[1];
+                $pluginsToUpdate[$plugin] = [];
             }
         }
 
-        var_dump($pluginsToUpdate); die;
         $this->currentRevision[$action] = ['revision' => $revision];
         //$pluginsToUpdate = $this->mergePluginsToUpdate($pluginsToUpdate, $explicitlyRequested);
 
@@ -335,7 +334,7 @@ class PluginListService
             'revision' => $this->currentRevision[$action]['revision'],
         ];
 
-        if ($data['null'] === null) {
+        if ($data['id'] === null) {
             $sql = 'INSERT INTO revisions (action, revision) VALUES (:action, :revision)';
             unset($data['id']);
         } else {
