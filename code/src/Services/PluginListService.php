@@ -52,8 +52,7 @@ class PluginListService
             return $this->filter($this->getPluginsToUpdate([], $lastRevision, $action), $filter);
         }
 
-
-        return $this->filter($this->pullWholePluginList(), $filter);
+        return $this->filter($this->pullWholePluginList($action), $filter);
 
 
 
@@ -74,7 +73,7 @@ class PluginListService
             $json                = file_get_contents('/opt/assetgrabber/data/plugin-data.json');
             $this->oldPluginData = json_decode($json, true);
             $this->prevRevision  = $this->oldPluginData['meta']['my_revision'];
-            return $this->filter($this->getPluginsToUpdate($filter, $this->prevRevision, $action), $filter);
+            return $this->filter($this->getPluginsToUpdate($filter, $this->prevRevision), $filter);
         }
 
         $pluginList = $this->pullWholePluginList();
@@ -174,10 +173,11 @@ class PluginListService
     /**
      * @return array<string, string[]>
      */
-    private function pullWholePluginList(): array
+    private function pullWholePluginList(string $action = 'default'): array
     {
         if (file_exists('/opt/assetgrabber/data/raw-svn-plugin-list') && filemtime('/opt/assetgrabber/data/raw-svn-plugin-list') > time() - 86400) {
             $plugins = file_get_contents('/opt/assetgrabber/data/raw-svn-plugin-list');
+            $contents = $plugins;
         } else {
             try {
                 $client   = new Client();
@@ -197,8 +197,12 @@ class PluginListService
             $pluginsToReturn[$plugin] = [];
         }
 
-        file_put_contents('/opt/assetgrabber/data/raw-plugin-list', implode(PHP_EOL, $plugins));
+        preg_match('/Revision ([0-9]+)\:/', $contents, $matches);
+        $revision = (int) $matches[1];
 
+
+        file_put_contents('/opt/assetgrabber/data/raw-plugin-list', implode(PHP_EOL, $plugins));
+        $this->setCurrentRevision($action, $revision);
         return $pluginsToReturn;
     }
 
@@ -248,7 +252,7 @@ class PluginListService
             }
         }
 
-        $this->currentRevision[$action] = ['revision' => $revision];
+        $this->setCurrentRevision($action, $revision);
         //$pluginsToUpdate = $this->mergePluginsToUpdate($pluginsToUpdate, $explicitlyRequested);
 
         return $pluginsToUpdate;
@@ -335,10 +339,10 @@ class PluginListService
         ];
 
         if ($data['id'] === null) {
-            $sql = 'INSERT INTO revisions (action, revision) VALUES (:action, :revision)';
+            $sql = 'INSERT INTO revisions (action, revision, added_at) VALUES (:action, :revision, NOW())';
             unset($data['id']);
         } else {
-            $sql = 'UPDATE revisions SET revision = :revision WHERE id = :id';
+            $sql = 'UPDATE revisions SET revision = :revision, added_at = NOW() WHERE id = :id';
             unset($data['action']);
         }
 
@@ -351,5 +355,10 @@ class PluginListService
         foreach ($revisions as $revision) {
             $this->revisionData[$revision['action']] = ['id' => $revision['id'], 'revision' => $revision['revision']];
         }
+    }
+
+    private function setCurrentRevision(string $action, int $revision): void
+    {
+        $this->currentRevision[$action] = ['revision' => $revision];
     }
 }

@@ -42,7 +42,7 @@ class PluginsGrabCommand extends Command
         }
 
         $output->writeln('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getPluginList($pluginList);
+        $pluginsToUpdate = $this->pluginListService->getPluginListForAction($pluginList, 'plugins:grab');
         $output->writeln(count($pluginsToUpdate) . ' plugins to download...');
 
         if (count($pluginsToUpdate) === 0) {
