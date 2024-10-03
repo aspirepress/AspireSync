@@ -358,7 +358,7 @@ class PluginMetadataService
     public function getDownloadUrlsForVersions(string $plugin, array $versions, string $type = 'wp_cdn'): array
     {
         try {
-            $sql = 'SELECT version, file_url, metadata FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugins.slug = :plugin AND plugin_files.type = :type';
+            $sql = 'SELECT version, file_url FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugins.slug = :plugin AND plugin_files.type = :type';
 
             $results = $this->pdo->fetchAll($sql, ['plugin' => $plugin, 'type' => $type]);
             $return  = [];
@@ -395,5 +395,22 @@ class PluginMetadataService
 
         $sql = 'UPDATE plugin_files SET metadata = :metadata WHERE id = :id';
         $this->pdo->perform($sql, ['id' => $result['id'], 'metadata' => json_encode($metadata)]);
+    }
+
+    public function getUnfinalizedVersions(string $plugin, array $versions): array
+    {
+        $sql = 'SELECT version, plugin_files.metadata FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugins.slug = :slug AND version IN (:versions)';
+        $result = $this->pdo->fetchAll($sql, ['slug' => $plugin, 'versions' => implode(',', $versions)]);
+        $return = [];
+
+        foreach ($result as $row) {
+            $metadata = $row['metadata'] ?? '';
+            $metadata = json_decode($metadata, true);
+            if (empty($metadata['aspirepress_meta']['finalized']) && in_array($row['version'], $versions)) {
+                $return[] = $row['version'];
+            }
+        }
+        return $return;
+
     }
 }

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands;
 
 use AssetGrabber\Services\PluginListService;
+use AssetGrabber\Services\PluginMetadataService;
 use AssetGrabber\Utilities\ProcessWaitUtil;
+use AssetGrabber\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,7 +26,7 @@ class PluginsGrabCommand extends AbstractBaseCommand
         'total'        => 0,
     ];
 
-    public function __construct(private PluginListService $pluginListService)
+    public function __construct(private PluginListService $pluginListService, private PluginMetadataService $pluginMetadataService)
     {
         parent::__construct();
     }
@@ -63,6 +65,9 @@ class PluginsGrabCommand extends AbstractBaseCommand
         $processes = [];
 
         foreach ($pluginsToUpdate as $plugin => $versions) {
+
+            $versions = $this->determineVersionsToDownload($plugin, $versions, $numVersions);
+
             $versionList = implode(',', $versions);
 
             if (empty($versionList)) {
@@ -147,5 +152,24 @@ class PluginsGrabCommand extends AbstractBaseCommand
                     $this->stats['total']  += (int) $matches[2][$k];
             }
         }
+    }
+
+    private function determineVersionsToDownload($plugin, array $versions, string $numToDownload): array
+    {
+        switch ($numToDownload) {
+            case 'all':
+                $download = $versions;
+                break;
+
+            case 'latest':
+                $download = [VersionUtil::getLatestVersion($versions)];
+                break;
+
+            default:
+                $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
+        }
+
+        return $this->pluginMetadataService->getUnfinaleizedVersions($plugin, $download);
+
     }
 }

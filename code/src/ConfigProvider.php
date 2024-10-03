@@ -15,7 +15,7 @@ use AssetGrabber\Commands\UtilCleanDataCommand;
 use AssetGrabber\Factories\ExtendedPdoFactory;
 use AssetGrabber\Factories\GenericServiceFactory;
 use AssetGrabber\Factories\InternalPluginDownloadCommandFactory;
-use AssetGrabber\Factories\PluginDownloadServiceFactory;
+use AssetGrabber\Factories\PluginDownloadFromWpServiceFactory;
 use AssetGrabber\Factories\PluginListServiceFactory;
 use AssetGrabber\Factories\PluginMetadataServiceFactory;
 use AssetGrabber\Factories\PluginsGrabCommandFactory;
@@ -24,7 +24,7 @@ use AssetGrabber\Factories\PluginsMetaCommandFactory;
 use AssetGrabber\Factories\PluginsPartialCommandFactory;
 use AssetGrabber\Factories\PluginsPullLatestRevCommandFactory;
 use AssetGrabber\Factories\RevisionMetadataServiceFactory;
-use AssetGrabber\Services\PluginDownloadService;
+use AssetGrabber\Services\PluginDownloadFromWpService;
 use AssetGrabber\Services\PluginListService;
 use AssetGrabber\Services\PluginMetadataService;
 use AssetGrabber\Services\RevisionMetadataService;
@@ -53,7 +53,7 @@ class ConfigProvider
             ],
             'factories'  => [
                 // Services
-                PluginDownloadService::class   => PluginDownloadServiceFactory::class,
+                PluginDownloadFromWpService::class   => PluginDownloadFromWpServiceFactory::class,
                 PluginListService::class       => PluginListServiceFactory::class,
                 ExtendedPdoInterface::class    => ExtendedPdoFactory::class,
                 PluginMetadataService::class   => PluginMetadataServiceFactory::class,

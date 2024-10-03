@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Factories;
 
-use AssetGrabber\Services\PluginDownloadService;
+use AssetGrabber\Services\PluginDownloadFromWpService;
 use AssetGrabber\Services\PluginMetadataService;
 use Laminas\ServiceManager\ServiceManager;
 
-class PluginDownloadServiceFactory
+class PluginDownloadFromWpServiceFactory
 {
-    public function __invoke(ServiceManager $serviceManager): PluginDownloadService
+    public function __invoke(ServiceManager $serviceManager): PluginDownloadFromWpService
     {
         $ua                = $serviceManager->get('config')['user-agents'];
         $pluginMetaService = $serviceManager->get(PluginMetadataService::class);
-        return new PluginDownloadService($ua, $pluginMetaService);
+        return new PluginDownloadFromWpService($ua, $pluginMetaService);
     }
 }

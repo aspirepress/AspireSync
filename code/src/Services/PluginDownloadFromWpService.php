@@ -8,7 +8,7 @@ use AssetGrabber\Utilities\VersionUtil;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
-class PluginDownloadService
+class PluginDownloadFromWpService
 {
     /**
      * @param array<int, string> $userAgents
@@ -31,27 +31,11 @@ class PluginDownloadService
             mkdir('/opt/assetgrabber/data/plugins');
         }
 
-        switch ($numToDownload) {
-            case 'all':
-                $download = $versions;
-                break;
-
-            case 'latest':
-                $download = [VersionUtil::getLatestVersion($versions)];
-                break;
-
-            default:
-                $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
-        }
+        $outcomes = [];
 
         $versions = $this->pluginMetadataService->getDownloadUrlsForVersions($plugin, $versions);
 
-        $outcomes = [];
-
         foreach ($versions as $version => $url) {
-            if (! in_array($version, $download)) {
-                continue;
-            }
 
             $filePath = sprintf($downloadFile, $plugin, $version);
 
