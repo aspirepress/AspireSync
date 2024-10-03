@@ -21,12 +21,8 @@ class PluginListService
      * @return array<string, string[]>
      */
 
-    /**
-     * @param array<int, string> $userAgents
-     */
-    public function __construct(private array $userAgents, private RevisionMetadataService $revisionService)
+    public function __construct(private PluginMetadataService $pluginService, private RevisionMetadataService $revisionService)
     {
-        shuffle($this->userAgents);
     }
 
     /**
@@ -180,7 +176,7 @@ class PluginListService
         $currentRev = 'HEAD';
 
         if ($targetRev === $this->prevRevision) {
-            return $this->addNewAndRequestedPlugins([], $explicitlyRequested);
+            return $this->addNewAndRequestedPlugins($action, $explicitlyRequested, $explicitlyRequested);
         }
 
         $command = [
@@ -217,7 +213,7 @@ class PluginListService
         }
 
         $this->revisionService->setCurrentRevision($action, $revision);
-        $pluginsToUpdate = $this->addNewAndRequestedPlugins($pluginsToUpdate, $explicitlyRequested);
+        $pluginsToUpdate = $this->addNewAndRequestedPlugins($action, $pluginsToUpdate, $explicitlyRequested);
 
         return $pluginsToUpdate;
     }
@@ -230,13 +226,13 @@ class PluginListService
      * @param array<int, string> $explicitlyRequested
      * @return array<string, string[]>
      */
-    private function addNewAndRequestedPlugins(array $pluginsToUpdate = [], array $explicitlyRequested = []): array
+    private function addNewAndRequestedPlugins(string $action, array $pluginsToUpdate = [], array $explicitlyRequested = []): array
     {
-        $allPlugins = $this->pullWholePluginList();
+        $allPlugins = $this->pullWholePluginList($action);
 
         foreach ($allPlugins as $pluginName => $pluginVersions) {
             // Is this the first time we've seen the plugin?
-            if (! isset($this->oldPluginData['plugins'][$pluginName])) {
+            if (! $this->pluginService->checkPluginInDatabase($pluginName)) {
                 $pluginsToUpdate[$pluginName] = [];
             }
 
