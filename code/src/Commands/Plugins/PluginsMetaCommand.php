@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Commands;
+namespace AssetGrabber\Commands\Plugins;
 
+use AssetGrabber\Commands\AbstractBaseCommand;
 use AssetGrabber\Services\PluginListService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Factories;
 
-use AssetGrabber\Commands\PluginsImportMetaCommand;
+use AssetGrabber\Commands\Plugins\PluginsImportMetaCommand;
 use AssetGrabber\Services\PluginMetadataService;
 use Laminas\ServiceManager\ServiceManager;
 

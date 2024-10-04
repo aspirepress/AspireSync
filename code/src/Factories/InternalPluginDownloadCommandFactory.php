@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Factories;
 
-use AssetGrabber\Commands\InternalPluginDownloadCommand;
+use AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand;
 use AssetGrabber\Services\PluginDownloadFromWpService;
 use Laminas\ServiceManager\ServiceManager;
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace AssetGrabber;
 
-use AssetGrabber\Commands\InternalPluginDownloadCommand;
-use AssetGrabber\Commands\PluginsGrabCommand;
-use AssetGrabber\Commands\PluginsImportMetaCommand;
-use AssetGrabber\Commands\PluginsMetaCommand;
-use AssetGrabber\Commands\PluginsPartialCommand;
+use AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand;
+use AssetGrabber\Commands\Plugins\PluginsGrabCommand;
+use AssetGrabber\Commands\Plugins\PluginsImportMetaCommand;
+use AssetGrabber\Commands\Plugins\PluginsMetaCommand;
+use AssetGrabber\Commands\Plugins\PluginsPartialCommand;
 use AssetGrabber\Commands\UtilCleanDataCommand;
 use AssetGrabber\Commands\UtilUploadCommand;
 use AssetGrabber\Factories\ExtendedPdoFactory;

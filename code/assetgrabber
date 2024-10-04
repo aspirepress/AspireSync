@@ -18,12 +18,13 @@ $container = new \Laminas\ServiceManager\ServiceManager($dependencies);
 
 $application = new Application();
 
-$commands = scandir('./src/Commands');
+$application->add($container->get(\AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand::class));
+$application->add($container->get(\AssetGrabber\Commands\Plugins\PluginsGrabCommand::class));
+$application->add($container->get(\AssetGrabber\Commands\Plugins\PluginsImportMetaCommand::class));
+$application->add($container->get(\AssetGrabber\Commands\Plugins\PluginsMetaCommand::class));
+$application->add($container->get(\AssetGrabber\Commands\Plugins\PluginsPartialCommand::class));
 
-foreach ($commands as $command) {
-    if (strpos($command, 'Command.php') !== false && strpos($command, 'Abstract') === false) {
-        $command = str_replace('.php', '', $command);
-        $application->add($container->get('AssetGrabber\\Commands\\' . $command));
-    }
-}
+$application->add($container->get(\AssetGrabber\Commands\UtilCleanDataCommand::class));
+$application->add($container->get(\AssetGrabber\Commands\UtilUploadCommand::class));
+
 $application->run();
