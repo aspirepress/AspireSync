@@ -52,7 +52,7 @@ class UtilUploadPluginsCommand extends AbstractBaseCommand
                 continue;
             }
 
-            preg_match('/([0-9A-z\-_]+)\.([0-9A-z\.\-]+)\.zip/', $file, $matches);
+            preg_match('/([0-9A-z\-_]+)\.([A-z0-9\-_ \.]+).zip/', $file, $matches);
             if (!empty($matches[1]) && !empty($matches[2])) {
                 $pluginName = (string) $matches[1];
                 $version = (string) $matches[2];
