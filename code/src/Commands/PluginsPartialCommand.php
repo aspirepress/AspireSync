@@ -54,10 +54,9 @@ class PluginsPartialCommand extends AbstractBaseCommand
             return Command::SUCCESS;
         }
 
-        if ($totalPlugins > $numToPull) {
-            $output->writeln('Limiting plugin download to ' . $numToPull . ' plugins... (offset by ' . $offset . ')');
-            $pluginsToUpdate = array_slice($pluginsToUpdate, $offset, $numToPull);
-        }
+        $output->writeln('Limiting plugin download to ' . $numToPull . ' plugins... (offset by ' . $offset . ')');
+        $pluginsToUpdate = array_slice($pluginsToUpdate, $offset, $numToPull);
+
 
         $processes = [];
 
