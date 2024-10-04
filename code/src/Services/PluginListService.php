@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Services;
 
+use AssetGrabber\Services\Interfaces\ListServiceInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
-class PluginListService
+class PluginListService implements ListServiceInterface
 {
     private int $prevRevision = 0;
 
@@ -21,7 +22,7 @@ class PluginListService
      * @param  array<int, string>  $filter
      * @return array<string, string[]>
      */
-    public function getPluginListForAction(array $filter, string $action): array
+    public function getItemsForAction(array $filter, string $action): array
     {
         $lastRevision = 0;
         if ($this->revisionService->getRevisionForAction($action)) {
@@ -35,26 +36,26 @@ class PluginListService
     /**
      * @return array<string, string|array<string, string>>
      */
-    public function getPluginMetadata(string $plugin): array
+    public function getItemMetadata(string $item): array
     {
         if (! file_exists('/opt/assetgrabber/data/plugin-raw-data')) {
             mkdir('/opt/assetgrabber/data/plugin-raw-data');
         }
 
-        $url    = 'https://api.wordpress.org/plugins/info/1.0/' . $plugin . '.json';
+        $url    = 'https://api.wordpress.org/plugins/info/1.0/' . $item . '.json';
         $client = new Client();
         try {
             $response = $client->get($url);
             $data     = json_decode($response->getBody()->getContents(), true);
             file_put_contents(
-                '/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json',
+                '/opt/assetgrabber/data/plugin-raw-data/' . $item . '.json',
                 json_encode($data, JSON_PRETTY_PRINT)
             );
             return $data;
         } catch (ClientException $e) {
             if ($e->getCode() === 404) {
                 $content = $e->getResponse()->getBody()->getContents();
-                file_put_contents('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json', $content);
+                file_put_contents('/opt/assetgrabber/data/plugin-raw-data/' . $item . '.json', $content);
                 return json_decode($content, true);
             }
         }
@@ -66,7 +67,7 @@ class PluginListService
      * @param array<int, string> $explicitlyRequested
      * @return array<string, array<string>>
      */
-    public function getPluginUpdateList(?array $explicitlyRequested): array
+    public function getUpdatedListOfItems(?array $explicitlyRequested): array
     {
         return $this->filter($this->pluginService->getVersionsForUnfinalizedPlugins(), $explicitlyRequested);
     }
@@ -74,9 +75,9 @@ class PluginListService
     /**
      * @return array<string, string>
      */
-    public function getVersionsForPlugin(string $plugin): array
+    public function getVersionsForItem(string $item): array
     {
-        $data = $this->getPluginMetadata($plugin);
+        $data = $this->getItemMetadata($item);
 
         if (isset($data['versions'])) {
             $pluginData = $data['versions'];

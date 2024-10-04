@@ -43,7 +43,7 @@ class PluginsPartialCommand extends AbstractBaseCommand
         $offset      = (int) $input->getArgument('offset');
 
         $output->writeln('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getPluginUpdateList([]);
+        $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems([]);
 
         $totalPlugins = count($pluginsToUpdate);
 

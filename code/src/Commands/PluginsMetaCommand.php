@@ -45,7 +45,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
         }
 
         $output->writeln('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getPluginListForAction($plugins, 'plugins:meta');
+        $pluginsToUpdate = $this->pluginListService->getItemsForAction($plugins, 'plugins:meta');
         $output->writeln(count($pluginsToUpdate) . ' plugins to download metadata for...');
 
         if (count($pluginsToUpdate) === 0) {
@@ -57,7 +57,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
 
         foreach ($pluginsToUpdate as $plugin => $versions) {
             $this->stats['plugins']++;
-            $data = $this->pluginListService->getPluginMetadata($plugin);
+            $data = $this->pluginListService->getItemMetadata($plugin);
 
             if (isset($data['versions']) && ! empty($data['versions'])) {
                 $output->writeln("Plugin $plugin has " . count($data['versions']) . ' versions');
