@@ -3,8 +3,8 @@ FROM php:8.3-cli-alpine AS basebuild
 COPY ./build /opt/assetgrabber
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN apk add subversion postgresql-dev $PHP_DEPS \
-    && docker-php-ext-install pdo pdo_pgsql \
+RUN apk add subversion postgresql-dev $PHP_DEPS;
+RUN docker-php-ext-install pdo pdo_pgsql \
     && mkdir -p /opt/assetgrabber/data \
     && addgroup -g 1000 -S assetgrabber \
     && adduser -u 1000 -S assetgrabber -G assetgrabber && \
