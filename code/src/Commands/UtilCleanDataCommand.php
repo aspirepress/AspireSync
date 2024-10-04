@@ -9,6 +9,7 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Process\Process;
 
 class UtilCleanDataCommand extends Command
 {
@@ -56,27 +57,14 @@ class UtilCleanDataCommand extends Command
 
     private function deleteFilesAndDirectories(string $dir): bool
     {
-        $files = scandir($dir);
-        foreach ($files as $file) {
-            if ($file === '.' || $file === '..' || $file === '.gitkeep') {
-                continue;
-            }
+        $process = new Process([
+            'sh',
+            '-c',
+            'rm -fr ' . $dir . '/*',
+        ]);
 
-            if (is_dir($dir . '/' . $file)) {
-                $status = $this->deleteFilesAndDirectories($dir . '/' . $file);
-                @rmdir($dir . '/' . $file);
-                if (! $status || file_exists($dir . '/' . $file)) {
-                    return false;
-                }
-            } else {
-                @unlink($dir . '/' . $file);
-                if (file_exists($dir . '/' . $file)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        $process->run();
+        return $process->isSuccessful();
     }
 
     /**
