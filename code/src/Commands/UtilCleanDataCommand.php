@@ -57,11 +57,11 @@ class UtilCleanDataCommand extends Command
 
     private function deleteFilesAndDirectories(string $dir): bool
     {
-        $process = new Process([
+        $process = new Process(command: [
             'sh',
             '-c',
             'rm -fr ' . $dir . '/*',
-        ]);
+        ], timeout: 300);
 
         $process->run();
         return $process->isSuccessful();
