@@ -54,9 +54,15 @@ class UtilUploadPluginsCommand extends AbstractBaseCommand
 
             preg_match('/([0-9A-z\-_]+)\.([0-9A-z\.\-]+)\.zip/', $file, $matches);
             if (!empty($matches[1]) && !empty($matches[2])) {
-                $pluginName = $matches[1];
-                $version = $matches[2];
+                $pluginName = (string) $matches[1];
+                $version = (string) $matches[2];
                 $pluginId = $plugins[$pluginName];
+
+                if (empty($pluginName) || empty($pluginId) || empty($version)) {
+                    $output->writeln('ERROR - Invalid data!';
+                    $output->writeln("DEBUG - Plugin Name: $pluginName, Version: $version, ID: $pluginId");
+                    continue;
+                }
 
                 $details = $this->pluginMetadata->getVersionData($pluginId, $version, 'aws_s3');
                 if ($details) {
