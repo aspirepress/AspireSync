@@ -27,6 +27,8 @@ class UtilCleanDataCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $output->writeln('Calculating the size and number of files in the data directory... (this may take a while)');
+
         $details = $this->countFilesAndDirectories('/opt/assetgrabber/data');
         $files   = $details['files'];
         $dirs    = $details['dirs'];
