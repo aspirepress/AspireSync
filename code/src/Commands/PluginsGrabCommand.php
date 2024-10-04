@@ -66,8 +66,6 @@ class PluginsGrabCommand extends AbstractBaseCommand
 
         foreach ($pluginsToUpdate as $plugin => $versions) {
 
-            $versions = $this->determineVersionsToDownload($plugin, $versions, $numVersions);
-
             $versionList = implode(',', $versions);
 
             if (empty($versionList)) {
@@ -107,6 +105,7 @@ class PluginsGrabCommand extends AbstractBaseCommand
         $stats = ProcessWaitUtil::waitAtEndOfScript($processes);
         foreach ($stats as $stat) {
             $this->processStats($stat);
+            $output->writeln($stat);
         }
 
         $output->writeln('All processes finished...');
@@ -152,24 +151,5 @@ class PluginsGrabCommand extends AbstractBaseCommand
                     $this->stats['total']  += (int) $matches[2][$k];
             }
         }
-    }
-
-    private function determineVersionsToDownload($plugin, array $versions, string $numToDownload): array
-    {
-        switch ($numToDownload) {
-            case 'all':
-                $download = $versions;
-                break;
-
-            case 'latest':
-                $download = [VersionUtil::getLatestVersion($versions)];
-                break;
-
-            default:
-                $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
-        }
-
-        return $this->pluginMetadataService->getUnfinaleizedVersions($plugin, $download);
-
     }
 }

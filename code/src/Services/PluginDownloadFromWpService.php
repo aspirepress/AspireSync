@@ -33,7 +33,7 @@ class PluginDownloadFromWpService
 
         $outcomes = [];
 
-        $versions = $this->pluginMetadataService->getDownloadUrlsForVersions($plugin, $versions);
+        $versions = $this->determineVersionsToDownload($plugin, $versions, $numToDownload);
 
         foreach ($versions as $version => $url) {
 
@@ -62,5 +62,23 @@ class PluginDownloadFromWpService
         }
 
         return $outcomes;
+    }
+
+    private function determineVersionsToDownload($plugin, array $versions, string $numToDownload): array
+    {
+        switch ($numToDownload) {
+            case 'all':
+                $download = $versions;
+                break;
+
+            case 'latest':
+                $download = [VersionUtil::getLatestVersion($versions)];
+                break;
+
+            default:
+                $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
+        }
+
+        return $this->pluginMetadataService->getUnprocessedVersions($plugin, $download);
     }
 }

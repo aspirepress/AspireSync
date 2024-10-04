@@ -403,4 +403,15 @@ class PluginMetadataService
         $sql = 'UPDATE plugin_files SET metadata = :metadata WHERE id = :id';
         $this->pdo->perform($sql, ['id' => $result['id'], 'metadata' => json_encode($metadata)]);
     }
+
+    public function getUnprocessedVersions(string $plugin, array $versions, string $type = 'wp_cdn'): array
+    {
+        $sql = 'SELECT version, file_url FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE type = :type AND plugins.slug = :plugin AND processed IS NULL AND plugin_files.version IN (:versions)';
+        $results = $this->pdo->fetchAll($sql, ['plugin' => $plugin, 'type' => $type, 'versions' => implode(',', $versions)]);
+        $return = [];
+        foreach($results as $result) {
+            $return[$result['version']] = $result['file_url'];
+        }
+        return $return;
+    }
 }
