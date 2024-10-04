@@ -31,7 +31,7 @@ class PluginsPartialCommand extends AbstractBaseCommand
             ->setDescription('Pulls a partial number of plugins based on the full list of plugins')
             ->addArgument('num-to-pull', InputArgument::REQUIRED, 'Number of plugins to pull')
             ->addArgument('offset', InputArgument::OPTIONAL, 'Offset to start pulling from', 0)
-            ->AddOption('versions', null, InputOption::VALUE_OPTIONAL, 'Number of versions to request', 'all')
+            ->AddOption('versions', null, InputOption::VALUE_OPTIONAL, 'Number of versions to request', 'latest')
             ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists');
     }
 
