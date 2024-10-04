@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Factories;
+namespace AssetGrabber\Factories\Plugins;
 
 use AssetGrabber\Commands\Plugins\PluginsMetaCommand;
 use AssetGrabber\Services\PluginListService;
