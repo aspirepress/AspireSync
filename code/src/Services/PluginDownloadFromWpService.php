@@ -31,10 +31,7 @@ class PluginDownloadFromWpService
             mkdir('/opt/assetgrabber/data/plugins');
         }
 
-        [$versions, $outcomes] = $this->determineVersionsToDownload($plugin, $versions, $numToDownload);
-        if (empty($versions) && ! empty($outcomes)) {
-            return $outcomes;
-        }
+        $versions = $this->pluginMetadataService->getDownloadUrlsForVersions($plugin, $versions);
 
         foreach ($versions as $version => $url) {
             $filePath = sprintf($downloadFile, $plugin, $version);
@@ -67,31 +64,5 @@ class PluginDownloadFromWpService
         return $outcomes;
     }
 
-    /**
-     * @param string[] $versions
-     * @return array<int, array<string, string>|string[][]>
-     */
-    private function determineVersionsToDownload(string $plugin, array $versions, string $numToDownload): array
-    {
-        switch ($numToDownload) {
-            case 'all':
-                $download = $versions;
-                break;
 
-            case 'latest':
-                $download = [VersionUtil::getLatestVersion($versions)];
-                break;
-
-            default:
-                $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
-        }
-
-        $downloadable = $this->pluginMetadataService->getUnprocessedVersions($plugin, $download);
-        $outcome      = [];
-        if (empty($downloadable)) {
-            $outcome['304 Not Modified'][] = $download;
-        }
-
-        return [$downloadable, $outcome];
-    }
 }

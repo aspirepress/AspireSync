@@ -6,6 +6,7 @@ namespace AssetGrabber\Factories;
 
 use AssetGrabber\Commands\PluginsPartialCommand;
 use AssetGrabber\Services\PluginListService;
+use AssetGrabber\Services\PluginMetadataService;
 use Laminas\ServiceManager\ServiceManager;
 
 class PluginsPartialCommandFactory
@@ -13,6 +14,7 @@ class PluginsPartialCommandFactory
     public function __invoke(ServiceManager $serviceManager): PluginsPartialCommand
     {
         $listService = $serviceManager->get(PluginListService::class);
-        return new PluginsPartialCommand($listService);
+        $metadata = $serviceManager->get(PluginMetadataService::class);
+        return new PluginsPartialCommand($listService, $metadata);
     }
 }

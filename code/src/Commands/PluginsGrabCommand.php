@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands;
 
 use AssetGrabber\Services\PluginListService;
+use AssetGrabber\Services\PluginMetadataService;
 use AssetGrabber\Utilities\GetPluginsFromSourceTrait;
 use AssetGrabber\Utilities\ProcessWaitUtil;
+use AssetGrabber\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,7 +20,7 @@ class PluginsGrabCommand extends AbstractBaseCommand
 {
     use GetPluginsFromSourceTrait;
 
-    public function __construct(private PluginListService $pluginListService)
+    public function __construct(private PluginListService $pluginListService, private PluginMetadataService $pluginMetadataService)
     {
         parent::__construct();
     }
@@ -57,10 +59,13 @@ class PluginsGrabCommand extends AbstractBaseCommand
         $processes = [];
 
         foreach ($pluginsToUpdate as $plugin => $versions) {
+
+            $versions = $this->determineVersionsToDownload($plugin, $versions, $numVersions);
+
             $versionList = implode(',', $versions);
 
             if (empty($versionList)) {
-                $output->writeln('No versions found for ' . $plugin . '...skipping...');
+                $output->writeln('No downloadable versions found for ' . $plugin . '...skipping...');
                 continue;
             }
 
@@ -105,5 +110,29 @@ class PluginsGrabCommand extends AbstractBaseCommand
         $this->endTimer();
         $output->writeln($this->getRunInfo($this->getCalculatedStats()));
         return Command::SUCCESS;
+    }
+
+    /**
+     * @param string[] $versions
+     * @return array<int, array<string, string>|string[][]>
+     */
+    private function determineVersionsToDownload(string $plugin, array $versions, string $numToDownload): array
+    {
+        switch ($numToDownload) {
+            case 'all':
+                $download = $versions;
+                break;
+
+            case 'latest':
+                $download = [VersionUtil::getLatestVersion($versions)];
+                break;
+
+            default:
+                $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
+        }
+
+        $downloadable = $this->pluginMetadataService->getUnprocessedVersions($plugin, $download);
+
+        return $downloadable;
     }
 }
