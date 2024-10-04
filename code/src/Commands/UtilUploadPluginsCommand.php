@@ -76,12 +76,12 @@ class UtilUploadPluginsCommand extends AbstractBaseCommand
                 }
 
                 try {
-                    $output->writeln("INFO - Uploading $pluginName to S3...");
+                    $output->writeln("INFO - Uploading $pluginName (v. $version) to S3...");
                     $this->flysystem->writeStream('/plugins/' . $file, fopen($dir . '/' . $file, 'r'));
 
                     $version = [$version => '/plugins/' . $file];
                     $this->pluginMetadata->writeVersionsForPlugin(Uuid::fromString($pluginId), $version, 'aws_s3');
-                    $output->writeln("SUCCESS - Uploaded and recorded $pluginName");
+                    $output->writeln("SUCCESS - Uploaded and recorded $pluginName (v. $version)");
                     if ($cleanUp) {
                         $output->writeln('INFO - Removing file for ' . $pluginName);
                         @unlink($dir . '/' . $file);
