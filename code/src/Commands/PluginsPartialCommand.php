@@ -13,8 +13,17 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
-class PluginsPartialCommand extends Command
+class PluginsPartialCommand extends AbstractBaseCommand
 {
+    /** @var array<string, int> */
+    private array $stats = [
+        'success'      => 0,
+        'failed'       => 0,
+        'not_modified' => 0,
+        'not_found'    => 0,
+        'total'        => 0,
+    ];
+
     public function __construct(private PluginListService $pluginListService)
     {
         parent::__construct();
@@ -32,6 +41,7 @@ class PluginsPartialCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->startTimer();
         $numVersions = $input->getOption('versions');
         $numToPull   = (int) $input->getArgument('num-to-pull');
         $offset      = (int) $input->getArgument('offset');
@@ -82,17 +92,63 @@ class PluginsPartialCommand extends Command
 
             if (count($processes) >= 24) {
                 $output->writeln('Max processes reached...waiting for space...');
-                $output->writeln(ProcessWaitUtil::wait($processes));
+                $stats = ProcessWaitUtil::wait($processes);
+                $this->processStats($stats);
+                $output->writeln($stats);
                 $output->writeln('Process ended; starting another...');
             }
         }
 
         $output->writeln('Waiting for all processes to finish...');
 
-        ProcessWaitUtil::waitAtEndOfScript($processes);
+        $stats = ProcessWaitUtil::waitAtEndOfScript($processes);
+        foreach ($stats as $stat) {
+            $this->processStats($stat);
+            $output->writeln($stat);
+        }
 
-        $output->writeln('All processes finished...');
+        $output->writeln('All processes finished!');
+
+        $this->endTimer();
+        $elapsed = $this->getElapsedTime();
+
+        $output->writeln("Took $elapsed seconds...");
+        $output->writeln([
+            'Stats:',
+            'DL Succeeded: ' . $this->stats['success'],
+            'DL Failed:    ' . $this->stats['failed'],
+            'Not Modified: ' . $this->stats['not_modified'],
+            'Not Found:    ' . $this->stats['not_found'],
+            'Total:        ' . $this->stats['total'],
+        ]);
 
         return Command::SUCCESS;
+    }
+
+    private function processStats(string $stats): void
+    {
+        preg_match_all('/[A-z\-_]+ ([0-9){3} [A-z ]+)\: ([0-9]+)/', $stats, $matches);
+        foreach ($matches[1] as $k => $v) {
+            switch ($v) {
+                case '304 Not Modified':
+                    $this->stats['not_modified'] += (int) $matches[2][$k];
+                    $this->stats['total']        += (int) $matches[2][$k];
+                    break;
+
+                case '200 OK':
+                    $this->stats['success'] += (int) $matches[2][$k];
+                    $this->stats['total']   += (int) $matches[2][$k];
+                    break;
+
+                case '404 Not Found':
+                    $this->stats['not_found'] += (int) $matches[2][$k];
+                    $this->stats['total']     += (int) $matches[2][$k];
+                    break;
+
+                default:
+                    $this->stats['failed'] += (int) $matches[2][$k];
+                    $this->stats['total']  += (int) $matches[2][$k];
+            }
+        }
     }
 }

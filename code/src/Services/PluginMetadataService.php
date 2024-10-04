@@ -382,32 +382,14 @@ class PluginMetadataService
 
     public function setVersionToDownloaded(string $plugin, string $version, string $type = 'wp_cdn'): void
     {
-        $sql    = 'SELECT plugin_files.id as id, plugin_files.metadata as metadata FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugins.slug = :plugin AND plugin_files.type = :type AND plugin_files.version = :version';
-        $result = $this->pdo->fetchOne($sql, ['plugin' => $plugin, 'type' => $type, 'version' => $version]);
-
-        if (empty($result)) {
-            return;
-        }
-
-        if (! empty($result['metadata'])) {
-            $metadata                                  = json_decode($result['metadata'], true);
-            $metadata['aspirepress_meta']['finalized'] = date('c');
-        } else {
-            $metadata = [
-                'aspirepress_meta' => [
-                    'finalized' => date('c'),
-                ],
-            ];
-        }
-
-        $sql = 'UPDATE plugin_files SET metadata = :metadata WHERE id = :id';
-        $this->pdo->perform($sql, ['id' => $result['id'], 'metadata' => json_encode($metadata)]);
+        $sql = 'UPDATE plugin_files SET processed = NOW() WHERE version = :version AND type = :type AND plugin_id = (SELECT id FROM plugins WHERE slug = :plugin)';
+        $this->pdo->perform($sql, ['plugin' => $plugin, 'type' => $type, 'version' => $version]);
     }
 
     public function getUnprocessedVersions(string $plugin, array $versions, string $type = 'wp_cdn'): array
     {
         $sql = 'SELECT version, file_url FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE type = :type AND plugins.slug = :plugin AND processed IS NULL AND plugin_files.version IN (:versions)';
-        $results = $this->pdo->fetchAll($sql, ['plugin' => $plugin, 'type' => $type, 'versions' => implode(',', $versions)]);
+        $results = $this->pdo->fetchAll($sql, ['plugin' => $plugin, 'type' => $type, 'versions' => $versions]);
         $return = [];
         foreach($results as $result) {
             $return[$result['version']] = $result['file_url'];

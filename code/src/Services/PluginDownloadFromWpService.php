@@ -54,6 +54,9 @@ class PluginDownloadFromWpService
                 if (method_exists($e, 'getResponse')) {
                     $response = $e->getResponse();
                     $outcomes[$response->getStatusCode() . ' ' . $response->getReasonPhrase()][] = $version;
+                    if ($response->getStatusCode() === 404) {
+                        $this->pluginMetadataService->setVersionToDownloaded($plugin, $version);
+                    }
                 } else {
                     $outcomes[$e->getMessage()][] = $version;
                 }
