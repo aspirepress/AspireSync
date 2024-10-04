@@ -31,9 +31,14 @@ class PluginDownloadFromWpService
             mkdir('/opt/assetgrabber/data/plugins');
         }
 
-        $versions = $this->pluginMetadataService->getDownloadUrlsForVersions($plugin, $versions);
+        $outcomes = [];
+        $downloadable = $this->pluginMetadataService->getDownloadUrlsForVersions($plugin, $versions);
 
-        foreach ($versions as $version => $url) {
+        if (!$downloadable) {
+            return $outcomes;
+        }
+
+        foreach ($downloadable as $version => $url) {
             $filePath = sprintf($downloadFile, $plugin, $version);
 
             if (file_exists($filePath) && ! $force) {
