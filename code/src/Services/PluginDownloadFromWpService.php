@@ -43,6 +43,7 @@ class PluginDownloadFromWpService
 
             if (file_exists($filePath) && ! $force) {
                 $outcomes['304 Not Modified'][] = $version;
+                $this->pluginMetadataService->setVersionToDownloaded($plugin, $version);
                 continue;
             }
             try {
