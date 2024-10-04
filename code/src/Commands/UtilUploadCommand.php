@@ -6,6 +6,7 @@ namespace AssetGrabber\Commands;
 
 use AssetGrabber\Services\PluginMetadataService;
 use AssetGrabber\Utilities\ListManagementUtil;
+use Exception;
 use League\Flysystem\Filesystem;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Command\Command;
@@ -39,7 +40,6 @@ class UtilUploadCommand extends AbstractBaseCommand
         switch ($action) {
             case 'plugins':
                 return $this->uploadPlugins($input, $output);
-                break;
 
             default:
                 $output->writeln('ERROR - Invalid action!');
@@ -57,8 +57,8 @@ class UtilUploadCommand extends AbstractBaseCommand
 
         $plugins = $this->pluginMetadata->getPluginData(filterBy: $plugins);
 
-        $dir = '/opt/assetgrabber/data/plugins';
-        $files = scandir($dir);
+        $dir    = '/opt/assetgrabber/data/plugins';
+        $files  = scandir($dir);
         $offset = $input->getOption('offset');
 
         $limit = $input->getOption('limit');
@@ -72,12 +72,12 @@ class UtilUploadCommand extends AbstractBaseCommand
             }
 
             preg_match('/([0-9A-z\-_]+)\.([A-z0-9\-_ \.]+).zip/', $file, $matches);
-            if (!empty($matches[1]) && !empty($matches[2])) {
-                $pluginName = (string) $matches[1];
-                $version = (string) $matches[2];
-                $pluginId = $plugins[$pluginName];
+            if (! empty($matches[1]) && ! empty($matches[2])) {
+                $pluginName = $matches[1];
+                $version    = $matches[2];
+                $pluginId   = $plugins[$pluginName];
 
-                if (empty($pluginName) || empty($pluginId) || empty($version)) {
+                if (! $pluginId) {
                     $output->writeln('ERROR - Invalid data!');
                     $output->writeln("DEBUG - File: $file | Plugin Name: $pluginName | Version: $version | ID: $pluginId");
                     continue;
@@ -105,7 +105,7 @@ class UtilUploadCommand extends AbstractBaseCommand
                         $output->writeln('INFO - Removing file for ' . $pluginName);
                         @unlink($dir . '/' . $file);
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $output->writeln('ERROR - Error writing ' . $pluginName . ' to S3: ' . $e->getMessage());
                 }
             }

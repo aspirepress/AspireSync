@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Services;
 
-use AssetGrabber\Utilities\VersionUtil;
+use AssetGrabber\Services\Interfaces\DownloadServiceInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
-class PluginDownloadFromWpService
+class PluginDownloadFromWpService implements DownloadServiceInterface
 {
     /**
      * @param array<int, string> $userAgents
@@ -19,8 +19,7 @@ class PluginDownloadFromWpService
     }
 
     /**
-     * @param string[] $versions
-     * @return array<string, string[]>
+     * @inheritDoc
      */
     public function download(string $plugin, array $versions, string $numToDownload = 'all', bool $force = false): array
     {
@@ -31,10 +30,10 @@ class PluginDownloadFromWpService
             mkdir('/opt/assetgrabber/data/plugins');
         }
 
-        $outcomes = [];
+        $outcomes     = [];
         $downloadable = $this->pluginMetadataService->getDownloadUrlsForVersions($plugin, $versions);
 
-        if (!$downloadable) {
+        if (! $downloadable) {
             return $outcomes;
         }
 
@@ -69,6 +68,4 @@ class PluginDownloadFromWpService
 
         return $outcomes;
     }
-
-
 }

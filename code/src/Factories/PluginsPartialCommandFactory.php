@@ -14,7 +14,7 @@ class PluginsPartialCommandFactory
     public function __invoke(ServiceManager $serviceManager): PluginsPartialCommand
     {
         $listService = $serviceManager->get(PluginListService::class);
-        $metadata = $serviceManager->get(PluginMetadataService::class);
+        $metadata    = $serviceManager->get(PluginMetadataService::class);
         return new PluginsPartialCommand($listService, $metadata);
     }
 }

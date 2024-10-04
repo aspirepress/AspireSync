@@ -61,11 +61,10 @@ class PluginsPartialCommand extends AbstractBaseCommand
         $output->writeln('Limiting plugin download to ' . $numToPull . ' plugins... (offset by ' . $offset . ')');
         $pluginsToUpdate = array_slice($pluginsToUpdate, $offset, $numToPull);
 
-
         $processes = [];
 
         foreach ($pluginsToUpdate as $plugin => $versions) {
-            $versions = $this->determineVersionsToDownload($plugin, $versions, $numVersions);
+            $versions    = $this->determineVersionsToDownload($plugin, $versions, $numVersions);
             $versionList = implode(',', $versions);
 
             if (empty($versionList)) {
@@ -117,7 +116,7 @@ class PluginsPartialCommand extends AbstractBaseCommand
 
     /**
      * @param string[] $versions
-     * @return array<int, array<string, string>|string[][]>
+     * @return array<int, string>
      */
     private function determineVersionsToDownload(string $plugin, array $versions, string $numToDownload): array
     {
@@ -134,8 +133,6 @@ class PluginsPartialCommand extends AbstractBaseCommand
                 $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
         }
 
-        $downloadable = $this->pluginMetadataService->getUnprocessedVersions($plugin, $download);
-
-        return $downloadable;
+        return $this->pluginMetadataService->getUnprocessedVersions($plugin, $download);
     }
 }

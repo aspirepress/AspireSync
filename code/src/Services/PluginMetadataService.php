@@ -393,16 +393,16 @@ class PluginMetadataService
     }
 
     /**
-     * @param array<int, string>|null $filterBy
+     * @param array<int, string> $filterBy
      * @return string[]
      */
     public function getPluginData(array $filterBy = []): array
     {
         if ($filterBy) {
-            $sql = "SELECT id, slug FROM plugins WHERE status = 'open' AND slug IN (:plugins)";
+            $sql     = "SELECT id, slug FROM plugins WHERE status = 'open' AND slug IN (:plugins)";
             $plugins = $this->pdo->fetchAll($sql, ['plugins' => $filterBy]);
         } else {
-            $sql = "SELECT id, slug FROM plugins WHERE status = 'open'";
+            $sql     = "SELECT id, slug FROM plugins WHERE status = 'open'";
             $plugins = $this->pdo->fetchAll($sql);
         }
         $result = [];
@@ -418,17 +418,16 @@ class PluginMetadataService
      */
     public function getVersionData(string $pluginId, ?string $version, string $type = 'wp_cdn'): array|bool
     {
-        $sql = 'SELECT * FROM plugin_files WHERE plugin_id = :plugin_id AND type = :type';
+        $sql  = 'SELECT * FROM plugin_files WHERE plugin_id = :plugin_id AND type = :type';
         $args = [
             'plugin_id' => $pluginId,
-            'type' => $type,
+            'type'      => $type,
         ];
         if ($version) {
-            $sql .= ' AND version = :version';
+            $sql            .= ' AND version = :version';
             $args['version'] = $version;
         }
 
         return $this->pdo->fetchOne($sql, $args);
-
     }
 }

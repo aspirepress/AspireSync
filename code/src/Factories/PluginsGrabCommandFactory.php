@@ -13,7 +13,7 @@ class PluginsGrabCommandFactory
 {
     public function __invoke(ServiceManager $serviceManager): PluginsGrabCommand
     {
-        $metadata = $serviceManager->get(PluginMetadataService::class);
+        $metadata      = $serviceManager->get(PluginMetadataService::class);
         $pluginService = $serviceManager->get(PluginListService::class);
         return new PluginsGrabCommand($pluginService, $metadata);
     }

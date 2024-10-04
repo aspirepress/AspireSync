@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace AssetGrabber\Factories\Flysystem;
 
@@ -12,7 +12,7 @@ class FilesystemFactory
 {
     public function __invoke(ServiceManager $serviceManager, string $service): Filesystem
     {
-        $config = $serviceManager->get('config');
+        $config  = $serviceManager->get('config');
         $adapter = $config['flysystem'][$service] ?? LocalFilesystemAdapter::class;
 
         $adapter = $serviceManager->get($adapter);

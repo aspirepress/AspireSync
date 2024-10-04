@@ -69,12 +69,12 @@ class ConfigProvider
                 PluginsPartialCommand::class         => PluginsPartialCommandFactory::class,
                 PluginsMetaCommand::class            => PluginsMetaCommandFactory::class,
                 PluginsImportMetaCommand::class      => PluginsImportMetaCommandFactory::class,
-                UtilUploadCommand::class    =>  UtilUploadCommandFactory::class,
+                UtilUploadCommand::class             => UtilUploadCommandFactory::class,
 
                 // Flysystem
-                Filesystem::class                    => FilesystemFactory::class,
-                LocalFilesystemAdapter::class          => LocalFilesystemAdapterFactory::class,
-                AwsS3V3Adapter::class             => AwsS3V3AdapterFactory::class,
+                Filesystem::class             => FilesystemFactory::class,
+                LocalFilesystemAdapter::class => LocalFilesystemAdapterFactory::class,
+                AwsS3V3Adapter::class         => AwsS3V3AdapterFactory::class,
 
                 // Util Flysystem Config
                 'util:upload:plugins' => FilesystemFactory::class,

@@ -16,7 +16,9 @@ abstract class ListManagementUtil
         }
 
         $list = explode(',', $list);
-        array_walk($list, function (&$value) { $value = trim($value, ','); });
+        array_walk($list, function (&$value) {
+            $value = trim($value, ',');
+        });
         return $list;
     }
 }
