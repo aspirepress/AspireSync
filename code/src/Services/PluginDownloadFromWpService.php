@@ -43,7 +43,7 @@ class PluginDownloadFromWpService
 
             if (file_exists($filePath) && ! $force) {
                 $outcomes['304 Not Modified'][] = $version;
-                $this->pluginMetadataService->setVersionToDownloaded($plugin, $version);
+                $this->pluginMetadataService->setVersionToDownloaded($plugin, (string) $version);
                 continue;
             }
             try {
@@ -52,13 +52,13 @@ class PluginDownloadFromWpService
                 if (filesize($filePath) === 0) {
                     unlink($filePath);
                 }
-                $this->pluginMetadataService->setVersionToDownloaded($plugin, $version);
+                $this->pluginMetadataService->setVersionToDownloaded($plugin, (string) $version);
             } catch (ClientException $e) {
                 if (method_exists($e, 'getResponse')) {
                     $response = $e->getResponse();
                     $outcomes[$response->getStatusCode() . ' ' . $response->getReasonPhrase()][] = $version;
                     if ($response->getStatusCode() === 404) {
-                        $this->pluginMetadataService->setVersionToDownloaded($plugin, $version);
+                        $this->pluginMetadataService->setVersionToDownloaded($plugin, (string) $version);
                     }
                 } else {
                     $outcomes[$e->getMessage()][] = $version;
