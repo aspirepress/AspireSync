@@ -25,6 +25,7 @@ class UtilUploadPluginsCommand extends AbstractBaseCommand
         $this->setName('util:upload:plugins')
             ->setDescription('Upload plugin files to S3')
             ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'A comma-separated list of plugins to upload')
+            ->addOption('limit', null, InputOption::VALUE_OPTIONAL, 'Limit the number of plugins to upload')
             ->addOption('clean', 'c', InputOption::VALUE_NONE, 'Clean up by removing the source after upload');
     }
 
@@ -40,6 +41,12 @@ class UtilUploadPluginsCommand extends AbstractBaseCommand
 
         $dir = '/opt/assetgrabber/data/plugins';
         $files = scandir($dir);
+
+        $limit = $input->getOption('limit');
+        if ($limit) {
+            $files = array_slice($files, 2, (int) $limit);
+        }
+
         foreach ($files as $file) {
             if (strpos($file, '.zip') === false) {
                 continue;
