@@ -11,7 +11,9 @@
         "laminas/laminas-config-aggregator": "^1.15",
         "laminas/laminas-coding-standard": "^2.5",
         "aura/sql": "^5.0",
-        "ramsey/uuid": "^4.7"
+        "ramsey/uuid": "^4.7",
+        "league/flysystem": "^3.29",
+        "league/flysystem-aws-s3-v3": "^3.0"
     },
     "autoload": {
         "psr-4": {

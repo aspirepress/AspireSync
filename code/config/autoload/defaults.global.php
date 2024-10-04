@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+
 return [
     'paths'       => [
         'basePath'     => '/opt/assetgrabber',
@@ -23,5 +26,18 @@ return [
         'user'   => $_ENV['DB_USER'],
         'pass'   => $_ENV['DB_PASS'],
         'schema' => $_ENV['DB_SCHEMA'],
+    ],
+    'flysystem' => [
+        'util:upload:plugins' => $_ENV['UPLOAD_PLUGINS_ADAPTER'] ?? LocalFilesystemAdapter::class,
+        'util:upload:themes' => $_ENV['UPLOAD_THEMES_ADAPTER'] ?? LocalFilesystemAdapter::class,
+    ],
+    'amazon' => [
+        's3' => [
+            'bucket' => $_ENV['AWS_BUCKET'] ?? null,
+            'region' => $_ENV['AWS_REGION'] ?? 'us-east-2',
+            'endpoint' => $_ENV['AWS_S3_ENDPOINT'] ?? null,
+            'key' => $_ENV['AWS_S3_KEY'] ?? null,
+            'secret' => $_ENV['AWS_S3_SECRET'] ?? null,
+        ],
     ],
 ];

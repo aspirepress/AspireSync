@@ -123,20 +123,12 @@ class PluginMetadataService
      */
     public function writeVersionsForPlugin(UuidInterface $pluginId, array $versions, string $cdn): array
     {
-        $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version, metadata) VALUES (:id, :plugin_id, :file_url, :type, :version, :metadata)';
+        $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version, processed) VALUES (:id, :plugin_id, :file_url, :type, :version, NOW())';
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;
             $this->pdo->beginTransaction();
         }
-
-        $metadata['aspirepress_meta'] = [
-            'seen'      => date('c'),
-            'added'     => date('c'),
-            'updated'   => date('c'),
-            'processed' => null,
-            'finalized' => null,
-        ];
 
         try {
             foreach ($versions as $version => $url) {
@@ -146,7 +138,6 @@ class PluginMetadataService
                     'file_url'  => $url,
                     'type'      => $cdn,
                     'version'   => $version,
-                    'metadata'  => json_encode($metadata),
                 ]);
             }
 
@@ -399,5 +390,45 @@ class PluginMetadataService
             $return[$result['version']] = $result['file_url'];
         }
         return $return;
+    }
+
+    /**
+     * @param array<int, string>|null $filterBy
+     * @return string[]
+     */
+    public function getPluginData(array $filterBy = []): array
+    {
+        if ($filterBy) {
+            $sql = "SELECT id, slug FROM plugins WHERE status = 'open' AND slug IN (:plugins)";
+            $plugins = $this->pdo->fetchAll($sql, ['plugins' => $filterBy]);
+        } else {
+            $sql = "SELECT id, slug FROM plugins WHERE status = 'open'";
+            $plugins = $this->pdo->fetchAll($sql);
+        }
+        $result = [];
+        foreach ($plugins as $plugin) {
+            $result[$plugin['slug']] = $plugin['id'];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getVersionData(string $pluginId, ?string $version, string $type = 'wp_cdn'): array|bool
+    {
+        $sql = 'SELECT * FROM plugin_files WHERE plugin_id = :plugin_id AND type = :type';
+        $args = [
+            'plugin_id' => $pluginId,
+            'type' => $type,
+        ];
+        if ($version) {
+            $sql .= ' AND version = :version';
+            $args['version'] = $version;
+        }
+
+        return $this->pdo->fetchOne($sql, $args);
+
     }
 }
