@@ -28,6 +28,7 @@ class UtilUploadCommand extends AbstractBaseCommand
             ->addArgument('action', InputArgument::REQUIRED, 'Action to perform')
             ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'A comma-separated list of plugins to upload')
             ->addOption('limit', null, InputOption::VALUE_OPTIONAL, 'Limit the number of plugins to upload')
+            ->addOption('offset', null, InputOption::VALUE_OPTIONAL, 'Offset to start uploading from', 0)
             ->addOption('clean', 'c', InputOption::VALUE_NONE, 'Clean up by removing the source after upload');
     }
 
@@ -58,10 +59,11 @@ class UtilUploadCommand extends AbstractBaseCommand
 
         $dir = '/opt/assetgrabber/data/plugins';
         $files = scandir($dir);
+        $offset = $input->getOption('offset');
 
         $limit = $input->getOption('limit');
         if ($limit) {
-            $files = array_slice($files, 2, (int) $limit);
+            $files = array_slice($files, $offset, (int) $limit);
         }
 
         foreach ($files as $file) {
