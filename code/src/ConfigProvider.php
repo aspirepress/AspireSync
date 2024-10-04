@@ -10,7 +10,7 @@ use AssetGrabber\Commands\PluginsImportMetaCommand;
 use AssetGrabber\Commands\PluginsMetaCommand;
 use AssetGrabber\Commands\PluginsPartialCommand;
 use AssetGrabber\Commands\UtilCleanDataCommand;
-use AssetGrabber\Commands\UtilUploadPluginsCommand;
+use AssetGrabber\Commands\UtilUploadCommand;
 use AssetGrabber\Factories\ExtendedPdoFactory;
 use AssetGrabber\Factories\Flysystem\AwsS3V3AdapterFactory;
 use AssetGrabber\Factories\Flysystem\FilesystemFactory;
@@ -24,7 +24,7 @@ use AssetGrabber\Factories\PluginsImportMetaCommandFactory;
 use AssetGrabber\Factories\PluginsMetaCommandFactory;
 use AssetGrabber\Factories\PluginsPartialCommandFactory;
 use AssetGrabber\Factories\RevisionMetadataServiceFactory;
-use AssetGrabber\Factories\UtilUploadPluginsCommandFactory;
+use AssetGrabber\Factories\UtilUploadCommandFactory;
 use AssetGrabber\Services\PluginDownloadFromWpService;
 use AssetGrabber\Services\PluginListService;
 use AssetGrabber\Services\PluginMetadataService;
@@ -69,7 +69,7 @@ class ConfigProvider
                 PluginsPartialCommand::class         => PluginsPartialCommandFactory::class,
                 PluginsMetaCommand::class            => PluginsMetaCommandFactory::class,
                 PluginsImportMetaCommand::class      => PluginsImportMetaCommandFactory::class,
-                UtilUploadPluginsCommand::class    =>  UtilUploadPluginsCommandFactory::class,
+                UtilUploadCommand::class    =>  UtilUploadCommandFactory::class,
 
                 // Flysystem
                 Filesystem::class                    => FilesystemFactory::class,

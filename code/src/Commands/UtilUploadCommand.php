@@ -9,11 +9,12 @@ use AssetGrabber\Utilities\ListManagementUtil;
 use League\Flysystem\Filesystem;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class UtilUploadPluginsCommand extends AbstractBaseCommand
+class UtilUploadCommand extends AbstractBaseCommand
 {
     public function __construct(private PluginMetadataService $pluginMetadata, private Filesystem $flysystem)
     {
@@ -22,14 +23,30 @@ class UtilUploadPluginsCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('util:upload:plugins')
+        $this->setName('util:upload')
             ->setDescription('Upload plugin files to S3')
+            ->addArgument('action', InputArgument::REQUIRED, 'Action to perform')
             ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'A comma-separated list of plugins to upload')
             ->addOption('limit', null, InputOption::VALUE_OPTIONAL, 'Limit the number of plugins to upload')
             ->addOption('clean', 'c', InputOption::VALUE_NONE, 'Clean up by removing the source after upload');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $action = $input->getArgument('action');
+
+        switch ($action) {
+            case 'plugins':
+                return $this->uploadPlugins($input, $output);
+                break;
+
+            default:
+                $output->writeln('ERROR - Invalid action!');
+                return Command::FAILURE;
+        }
+    }
+
+    private function uploadPlugins(InputInterface $input, OutputInterface $output): int
     {
         $this->startTimer();
         $plugins = ListManagementUtil::explodeCommaSeparatedList($input->getOption('plugins'));
@@ -79,8 +96,8 @@ class UtilUploadPluginsCommand extends AbstractBaseCommand
                     $output->writeln("INFO - Uploading $pluginName (v. $version) to S3...");
                     $this->flysystem->writeStream('/plugins/' . $file, fopen($dir . '/' . $file, 'r'));
 
-                    $version = [$version => '/plugins/' . $file];
-                    $this->pluginMetadata->writeVersionsForPlugin(Uuid::fromString($pluginId), $version, 'aws_s3');
+                    $versionInfo = [$version => '/plugins/' . $file];
+                    $this->pluginMetadata->writeVersionsForPlugin(Uuid::fromString($pluginId), $versionInfo, 'aws_s3');
                     $output->writeln("SUCCESS - Uploaded and recorded $pluginName (v. $version)");
                     if ($cleanUp) {
                         $output->writeln('INFO - Removing file for ' . $pluginName);
