@@ -60,7 +60,7 @@ class UtilUploadPluginsCommand extends AbstractBaseCommand
 
                 if (empty($pluginName) || empty($pluginId) || empty($version)) {
                     $output->writeln('ERROR - Invalid data!';
-                    $output->writeln("DEBUG - Plugin Name: $pluginName, Version: $version, ID: $pluginId");
+                    $output->writeln("DEBUG - File: $file | Plugin Name: $pluginName | Version: $version | ID: $pluginId");
                     continue;
                 }
 
