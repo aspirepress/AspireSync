@@ -18,9 +18,8 @@ class PluginListService
     }
 
     /**
-     * @param  array<int, string>|null  $filter
-     * * @return array<string, string[]>
-     * @return string[][]
+     * @param  array<int, string>  $filter
+     * @return array<string, string[]>
      */
     public function getPluginListForAction(array $filter, string $action): array
     {

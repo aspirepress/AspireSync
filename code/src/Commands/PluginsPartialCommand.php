@@ -62,7 +62,6 @@ class PluginsPartialCommand extends AbstractBaseCommand
         foreach ($pluginsToUpdate as $plugin => $versions) {
             $versionList = implode(',', $versions);
 
-
             if (empty($versionList)) {
                 $output->writeln('No versions found for ' . $plugin . '...skipping...');
                 continue;

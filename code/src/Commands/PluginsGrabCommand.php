@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands;
 
 use AssetGrabber\Services\PluginListService;
-use AssetGrabber\Services\PluginMetadataService;
 use AssetGrabber\Utilities\GetPluginsFromSourceTrait;
 use AssetGrabber\Utilities\ProcessWaitUtil;
-use AssetGrabber\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,7 +18,7 @@ class PluginsGrabCommand extends AbstractBaseCommand
 {
     use GetPluginsFromSourceTrait;
 
-    public function __construct(private PluginListService $pluginListService, private PluginMetadataService $pluginMetadataService)
+    public function __construct(private PluginListService $pluginListService)
     {
         parent::__construct();
     }
@@ -48,7 +46,7 @@ class PluginsGrabCommand extends AbstractBaseCommand
         }
 
         $output->writeln('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getPluginUpdateList($pluginList, 'plugins:grab');
+        $pluginsToUpdate = $this->pluginListService->getPluginUpdateList($pluginList);
 
         $output->writeln(count($pluginsToUpdate) . ' plugins to download...');
         if (count($pluginsToUpdate) === 0) {
@@ -59,7 +57,6 @@ class PluginsGrabCommand extends AbstractBaseCommand
         $processes = [];
 
         foreach ($pluginsToUpdate as $plugin => $versions) {
-
             $versionList = implode(',', $versions);
 
             if (empty($versionList)) {
@@ -109,6 +106,4 @@ class PluginsGrabCommand extends AbstractBaseCommand
         $output->writeln($this->getRunInfo($this->getCalculatedStats()));
         return Command::SUCCESS;
     }
-
-
 }

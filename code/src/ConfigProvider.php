@@ -9,11 +9,8 @@ use AssetGrabber\Commands\PluginsGrabCommand;
 use AssetGrabber\Commands\PluginsImportMetaCommand;
 use AssetGrabber\Commands\PluginsMetaCommand;
 use AssetGrabber\Commands\PluginsPartialCommand;
-use AssetGrabber\Commands\PluginsPullLatestRevCommand;
-
 use AssetGrabber\Commands\UtilCleanDataCommand;
 use AssetGrabber\Factories\ExtendedPdoFactory;
-use AssetGrabber\Factories\GenericServiceFactory;
 use AssetGrabber\Factories\InternalPluginDownloadCommandFactory;
 use AssetGrabber\Factories\PluginDownloadFromWpServiceFactory;
 use AssetGrabber\Factories\PluginListServiceFactory;
@@ -22,7 +19,6 @@ use AssetGrabber\Factories\PluginsGrabCommandFactory;
 use AssetGrabber\Factories\PluginsImportMetaCommandFactory;
 use AssetGrabber\Factories\PluginsMetaCommandFactory;
 use AssetGrabber\Factories\PluginsPartialCommandFactory;
-use AssetGrabber\Factories\PluginsPullLatestRevCommandFactory;
 use AssetGrabber\Factories\RevisionMetadataServiceFactory;
 use AssetGrabber\Services\PluginDownloadFromWpService;
 use AssetGrabber\Services\PluginListService;
@@ -53,16 +49,14 @@ class ConfigProvider
             ],
             'factories'  => [
                 // Services
-                PluginDownloadFromWpService::class   => PluginDownloadFromWpServiceFactory::class,
-                PluginListService::class       => PluginListServiceFactory::class,
-                ExtendedPdoInterface::class    => ExtendedPdoFactory::class,
-                PluginMetadataService::class   => PluginMetadataServiceFactory::class,
-                RevisionMetadataService::class => RevisionMetadataServiceFactory::class,
+                PluginDownloadFromWpService::class => PluginDownloadFromWpServiceFactory::class,
+                PluginListService::class           => PluginListServiceFactory::class,
+                ExtendedPdoInterface::class        => ExtendedPdoFactory::class,
+                PluginMetadataService::class       => PluginMetadataServiceFactory::class,
+                RevisionMetadataService::class     => RevisionMetadataServiceFactory::class,
 
                 // Commands
                 PluginsGrabCommand::class            => PluginsGrabCommandFactory::class,
-                PluginsPullLatestRevCommand::class   => PluginsPullLatestRevCommandFactory::class,
-                InternalThemeDownloadCommand::class  => InternalThemeDownloadCommandFactory::class,
                 InternalPluginDownloadCommand::class => InternalPluginDownloadCommandFactory::class,
                 PluginsPartialCommand::class         => PluginsPartialCommandFactory::class,
                 PluginsMetaCommand::class            => PluginsMetaCommandFactory::class,

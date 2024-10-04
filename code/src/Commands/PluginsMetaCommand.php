@@ -12,10 +12,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PluginsMetaCommand extends AbstractBaseCommand
 {
+    /** @var array<string, int> */
     private array $stats = [
-        'plugins' => 0,
+        'plugins'  => 0,
         'versions' => 0,
-        'errors' => 0,
+        'errors'   => 0,
     ];
 
     public function __construct(private PluginListService $pluginListService)
@@ -34,11 +35,13 @@ class PluginsMetaCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->startTimer();
-        $plugins = [];
+        $plugins         = [];
         $pluginsToUpdate = $input->getOption('plugins');
-        if($pluginsToUpdate) {
+        if ($pluginsToUpdate) {
             $plugins = explode(',', $pluginsToUpdate);
-            array_walk($plugins, function (&$value) { $value = trim($value); });
+            array_walk($plugins, function (&$value) {
+                $value = trim($value);
+            });
         }
 
         $output->writeln('Getting list of plugins...');

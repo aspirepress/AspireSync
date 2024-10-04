@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands;
 
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class AbstractBaseCommand extends Command
 {
@@ -33,8 +32,8 @@ abstract class AbstractBaseCommand extends Command
      */
     protected function getRunInfo(array $info = []): array
     {
-        $output = [];
-        $time = $this->getElapsedTime();
+        $output   = [];
+        $time     = $this->getElapsedTime();
         $output[] = "Took $time seconds...";
 
         return array_merge($output, $info);
