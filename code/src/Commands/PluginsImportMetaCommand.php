@@ -100,16 +100,16 @@ class PluginsImportMetaCommand extends AbstractBaseCommand
 
         $this->endTimer();
 
-        $output->writeln('Done! Took ' . $this->getElapsedTime() . ' seconds');
-
-        $output->writeln('Stats:');
-        $output->writeln('Errors:     ' . $this->stats['error']);
-        $output->writeln('Unwritable: ' . $this->stats['unwritable']);
-        $output->writeln('Successes:  ' . $this->stats['success']);
-        $output->writeln('Updates:    ' . $this->stats['update']);
-        $output->writeln('Writes:     ' . $this->stats['write']);
-        $output->writeln('Skips:      ' . $this->stats['skips']);
-        $output->writeln('Total:      ' . $this->stats['total']);
+        $output->writeln($this->getRunInfo([
+            'Stats:',
+            'Errors:     ' . $this->stats['error'],
+            'Unwritable: ' . $this->stats['unwritable'],
+            'Successes:  ' . $this->stats['success'],
+            'Updates:    ' . $this->stats['update'],
+            'Writes:     ' . $this->stats['write'],
+            'Skips:      ' . $this->stats['skips'],
+            'Total:      ' . $this->stats['total'],
+        ]));
 
         return self::SUCCESS;
     }

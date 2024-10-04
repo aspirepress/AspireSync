@@ -42,26 +42,21 @@ class PluginListService
             mkdir('/opt/assetgrabber/data/plugin-raw-data');
         }
 
-        if (file_exists('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json') && filemtime('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json') > time() - 86400) {
-            $json = file_get_contents('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json');
-            return json_decode($json, true);
-        } else {
-            $url    = 'https://api.wordpress.org/plugins/info/1.0/' . $plugin . '.json';
-            $client = new Client();
-            try {
-                $response = $client->get($url);
-                $data     = json_decode($response->getBody()->getContents(), true);
-                file_put_contents(
-                    '/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json',
-                    json_encode($data, JSON_PRETTY_PRINT)
-                );
-                return $data;
-            } catch (ClientException $e) {
-                if ($e->getCode() === 404) {
-                    $content = $e->getResponse()->getBody()->getContents();
-                    file_put_contents('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json', $content);
-                    return json_decode($content, true);
-                }
+        $url    = 'https://api.wordpress.org/plugins/info/1.0/' . $plugin . '.json';
+        $client = new Client();
+        try {
+            $response = $client->get($url);
+            $data     = json_decode($response->getBody()->getContents(), true);
+            file_put_contents(
+                '/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json',
+                json_encode($data, JSON_PRETTY_PRINT)
+            );
+            return $data;
+        } catch (ClientException $e) {
+            if ($e->getCode() === 404) {
+                $content = $e->getResponse()->getBody()->getContents();
+                file_put_contents('/opt/assetgrabber/data/plugin-raw-data/' . $plugin . '.json', $content);
+                return json_decode($content, true);
             }
         }
 

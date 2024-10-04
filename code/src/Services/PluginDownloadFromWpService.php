@@ -7,6 +7,7 @@ namespace AssetGrabber\Services;
 use AssetGrabber\Utilities\VersionUtil;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class PluginDownloadFromWpService
 {
@@ -31,9 +32,10 @@ class PluginDownloadFromWpService
             mkdir('/opt/assetgrabber/data/plugins');
         }
 
-        $outcomes = [];
-
-        $versions = $this->determineVersionsToDownload($plugin, $versions, $numToDownload);
+        list($versions, $outcomes) = $this->determineVersionsToDownload($plugin, $versions, $numToDownload);
+        if (empty($versions) && !empty($outcomes)) {
+            return $outcomes;
+        }
 
         foreach ($versions as $version => $url) {
 
@@ -82,6 +84,12 @@ class PluginDownloadFromWpService
                 $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
         }
 
-        return $this->pluginMetadataService->getUnprocessedVersions($plugin, $download);
+        $downloadable = $this->pluginMetadataService->getUnprocessedVersions($plugin, $download);
+        $outcome = [];
+        if (empty($downloadable)) {
+            $outcome['304 Not Modified'][] = $download;
+        }
+
+        return [$downloadable, $outcome];
     }
 }
