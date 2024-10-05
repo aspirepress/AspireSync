@@ -33,7 +33,7 @@ class ThemesMetadataService
 
     private function loadExistingThemes(): array
     {
-        $sql = 'SELECT slug, pulled_at FROM themes';
+        $sql    = 'SELECT slug, pulled_at FROM themes';
         $result = [];
         foreach ($this->pdo->fetchAll($sql) as $row) {
             $result[$row['slug']] = ['status' => $row['status'], 'pulled_at' => $row['pulled_at']];
@@ -176,11 +176,11 @@ class ThemesMetadataService
         try {
             foreach ($versions as $version => $url) {
                 $this->pdo->perform($sql, [
-                    'id'        => Uuid::uuid7()->toString(),
+                    'id'       => Uuid::uuid7()->toString(),
                     'theme_id' => $themeId->toString(),
-                    'file_url'  => $url,
-                    'type'      => $cdn,
-                    'version'   => $version,
+                    'file_url' => $url,
+                    'type'     => $cdn,
+                    'version'  => $version,
                 ]);
             }
 

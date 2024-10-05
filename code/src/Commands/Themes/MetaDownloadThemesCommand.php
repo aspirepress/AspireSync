@@ -15,9 +15,9 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
 {
     /** @var array<string, int> */
     private array $stats = [
-        'themes'  => 0,
-        'versions' => 0,
-        'errors'   => 0,
+        'themes'       => 0,
+        'versions'     => 0,
+        'errors'       => 0,
         'rate_limited' => 0,
     ];
 
@@ -82,6 +82,9 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
         ];
     }
 
+    /**
+     * @param array<int, string> $versions
+     */
     private function fetchThemeDetails(OutputInterface $output, string $theme, array $versions): void
     {
         $this->stats['themes']++;
@@ -95,7 +98,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
             $this->stats['versions'] += 1;
         } elseif (isset($data['error'])) {
             $output->writeln("Error fetching metadata for theme $theme: " . $data['error']);
-            if('429' === (string) $data['error']) {
+            if ('429' === (string) $data['error']) {
                 $this->progressiveBackoff($output);
                 $this->fetchThemeDetails($output, $theme, $versions);
                 $this->stats['rate_limited']++;

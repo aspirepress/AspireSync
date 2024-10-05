@@ -15,9 +15,9 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
 {
     /** @var array<string, int> */
     private array $stats = [
-        'plugins'  => 0,
-        'versions' => 0,
-        'errors'   => 0,
+        'plugins'      => 0,
+        'versions'     => 0,
+        'errors'       => 0,
         'rate_limited' => 0,
     ];
 
@@ -86,6 +86,9 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         ];
     }
 
+    /**
+     * @param array<int, string> $versions
+     */
     private function fetchPluginDetails(OutputInterface $output, string $plugin, array $versions): void
     {
         $this->stats['plugins']++;
@@ -112,5 +115,4 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
 
         $this->iterateProgressiveBackoffLevel(self::ITERATE_DOWN);
     }
-
 }

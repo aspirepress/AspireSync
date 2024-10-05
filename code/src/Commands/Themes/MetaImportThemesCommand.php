@@ -15,12 +15,12 @@ class MetaImportThemesCommand extends AbstractBaseCommand
     /** @var array<string, int> */
     private array $stats = [
         'unwritable' => 0,
-        'error' => 0,
-        'success' => 0,
-        'update' => 0,
-        'write' => 0,
-        'skips' => 0,
-        'total' => 0,
+        'error'      => 0,
+        'success'    => 0,
+        'update'     => 0,
+        'write'      => 0,
+        'skips'      => 0,
+        'total'      => 0,
     ];
 
     public function __construct(private ThemesMetadataService $themeMetadata)
@@ -43,8 +43,8 @@ class MetaImportThemesCommand extends AbstractBaseCommand
 
         if ($input->getOption('update-list')) {
             $updateList = explode(',', $input->getOption('update-list'));
-            $files = $this->filterFiles($files, $updateList);
-            $count = count($files);
+            $files      = $this->filterFiles($files, $updateList);
+            $count      = count($files);
         } else {
             $fileCount = count($files);
             if ($fileCount > 2) {
@@ -91,7 +91,6 @@ class MetaImportThemesCommand extends AbstractBaseCommand
                 $result = $this->themeMetadata->saveThemeFromWP($fileContents, $pulledAt);
                 $this->handleResponse($result, $fileContents['slug'], 'open', 'write', $output);
             }
-
         }
 
         $this->endTimer();
@@ -115,7 +114,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
      */
     private function handleResponse(array $result, string $slug, string $themeState, string $action, OutputInterface $output): void
     {
-        if (!empty($result['error'])) {
+        if (! empty($result['error'])) {
             $output->writeln('ERROR - ' . $result['error']);
             $output->writeln('ERROR - Unable to ' . $action . ' ' . $themeState . ' plugin ' . $slug);
             $this->stats['error']++;

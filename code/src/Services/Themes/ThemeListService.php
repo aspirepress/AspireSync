@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AssetGrabber\Services\Themes;
 
 use AssetGrabber\Services\Interfaces\ListServiceInterface;
@@ -11,7 +13,6 @@ use Symfony\Component\Process\Process;
 
 class ThemeListService implements ListServiceInterface
 {
-
     private int $prevRevision = 0;
 
     public function __construct(private ThemesMetadataService $themesMetadataService, private RevisionMetadataService $revisionService)
@@ -46,7 +47,8 @@ class ThemeListService implements ListServiceInterface
             'action'   => 'theme_information',
             'slug'     => $item,
             'fields[]' => 'versions',
-        ];        $client = new Client();
+        ];
+        $client      = new Client();
         try {
             $response = $client->get($url, ['query' => $queryParams]);
             $data     = json_decode($response->getBody()->getContents(), true);
@@ -104,13 +106,13 @@ class ThemeListService implements ListServiceInterface
         $entries = $output->logentry;
 
         $themesToUpdate = [];
-        $revision        = $lastRevision;
+        $revision       = $lastRevision;
         foreach ($entries as $entry) {
             $revision = (int) $entry->attributes()['revision'];
             $path     = (string) $entry->paths->path[0];
             preg_match('#/([A-z\-_]+)/#', $path, $matches);
             if ($matches) {
-                $theme                   = trim($matches[1]);
+                $theme                  = trim($matches[1]);
                 $themesToUpdate[$theme] = [];
             }
         }
@@ -127,12 +129,12 @@ class ThemeListService implements ListServiceInterface
     private function pullWholeThemeList(string $action = 'default'): array
     {
         if (file_exists('/opt/assetgrabber/data/raw-svn-theme-list') && filemtime('/opt/assetgrabber/data/raw-svn-theme-list') > time() - 43200) {
-            $themes  = file_get_contents('/opt/assetgrabber/data/raw-svn-theme-list');
+            $themes   = file_get_contents('/opt/assetgrabber/data/raw-svn-theme-list');
             $contents = $themes;
         } else {
             try {
                 $client   = new Client();
-                $themes  = $client->get('https://themes.svn.wordpress.org/', ['headers' => ['User-Agent' => 'AssetGrabber']]);
+                $themes   = $client->get('https://themes.svn.wordpress.org/', ['headers' => ['User-Agent' => 'AssetGrabber']]);
                 $contents = $themes->getBody()->getContents();
                 file_put_contents('/opt/assetgrabber/data/raw-svn-theme-list', $contents);
                 $themes = $contents;
@@ -181,7 +183,6 @@ class ThemeListService implements ListServiceInterface
 
         return $themesToUpdate;
     }
-
 
     /**
      * Reduces the themes slated for update to only those specified in the filter.

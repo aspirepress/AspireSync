@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AssetGrabber\Factories\Themes;
 
 use AssetGrabber\Services\RevisionMetadataService;
@@ -11,7 +13,7 @@ class ThemeListServiceFactory
 {
     public function __invoke(ServiceManager $serviceManager): ThemeListService
     {
-        $themeMetadata = $serviceManager->get(ThemesMetadataService::class);
+        $themeMetadata    = $serviceManager->get(ThemesMetadataService::class);
         $revisionMetadata = $serviceManager->get(RevisionMetadataService::class);
         return new ThemeListService($themeMetadata, $revisionMetadata);
     }

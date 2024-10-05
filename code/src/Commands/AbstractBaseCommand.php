@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Commands;
 
+use InvalidArgumentException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class AbstractBaseCommand extends Command
 {
-    protected const ITERATE_UP = 1;
+    protected const ITERATE_UP   = 1;
     protected const ITERATE_DOWN = 2;
 
     private int $progressiveBackoffLevel = 1;
@@ -45,7 +46,7 @@ abstract class AbstractBaseCommand extends Command
         return array_merge($output, $info);
     }
 
-    protected function progressiveBackoff(OutputInterface $output)
+    protected function progressiveBackoff(OutputInterface $output): void
     {
         $sleep = $this->progressiveBackoffLevel * 2;
         $output->writeln('Backing Off; Sleeping for ' . $sleep . ' seconds...');
@@ -65,7 +66,7 @@ abstract class AbstractBaseCommand extends Command
                 break;
 
             default:
-                throw new \InvalidArgumentException('Invalid progress level');
+                throw new InvalidArgumentException('Invalid progress level');
         }
 
         if ($this->progressiveBackoffLevel <= 0) {
