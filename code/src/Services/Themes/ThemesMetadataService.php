@@ -165,7 +165,7 @@ class ThemesMetadataService
         }
     }
 
-    private function writeVersionsForTheme(UuidInterface $themeId, array $versions, string $cdn = 'wp_cdn'): array
+    public function writeVersionsForTheme(UuidInterface $themeId, array $versions, string $cdn = 'wp_cdn'): array
     {
         $sql = 'INSERT INTO theme_files (id, theme_id, file_url, type, version, created) VALUES (:id, :theme_id, :file_url, :type, :version, NOW())';
 
@@ -276,4 +276,44 @@ class ThemesMetadataService
     {
         $sql = 'UPDATE theme_files SET processed = NOW() WHERE version = :version AND type = :type AND theme_id = (SELECT id FROM themes WHERE slug = :theme)';
         $this->pdo->perform($sql, ['theme' => $theme, 'type' => $type, 'version' => $version]);
-    }}
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getVersionData(string $themeId, ?string $version, string $type = 'wp_cdn'): array|bool
+    {
+        $sql  = 'SELECT * FROM theme_files WHERE theme_id = :theme_id AND type = :type';
+        $args = [
+            'theme_id' => $themeId,
+            'type'      => $type,
+        ];
+        if ($version) {
+            $sql            .= ' AND version = :version';
+            $args['version'] = $version;
+        }
+
+        return $this->pdo->fetchOne($sql, $args);
+    }
+
+    /**
+     * @param array<int, string> $filterBy
+     * @return string[]
+     */
+    public function getThemeData(array $filterBy = []): array
+    {
+        if ($filterBy) {
+            $sql     = "SELECT id, slug FROM themes WHERE slug IN (:themes)";
+            $themes = $this->pdo->fetchAll($sql, ['themes' => $filterBy]);
+        } else {
+            $sql     = "SELECT id, slug FROM themes";
+            $themes = $this->pdo->fetchAll($sql);
+        }
+        $result = [];
+        foreach ($themes as $theme) {
+            $result[$theme['slug']] = $theme['id'];
+        }
+
+        return $result;
+    }
+}

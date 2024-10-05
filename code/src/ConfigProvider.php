@@ -100,7 +100,7 @@ class ConfigProvider
                 AwsS3V3Adapter::class         => AwsS3V3AdapterFactory::class,
 
                 // Util Flysystem Config
-                'util:upload:plugins' => FilesystemFactory::class,
+                'util:upload' => FilesystemFactory::class,
             ],
         ];
     }
