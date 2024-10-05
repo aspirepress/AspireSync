@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Commands;
 
-use AssetGrabber\Services\Plugins\PluginMetadataService;
-use AssetGrabber\Services\Themes\ThemesMetadataService;
+use AssetGrabber\Services\Interfaces\Callback;
 use AssetGrabber\Utilities\ListManagementUtil;
 use Exception;
 use League\Flysystem\Filesystem;
@@ -18,8 +17,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UtilUploadCommand extends AbstractBaseCommand
 {
-    public function __construct(private PluginMetadataService $pluginMetadata, private ThemesMetadataService $themeMetadata, private Filesystem $flysystem)
+    private Callback $callback;
+
+    public function __construct(Callback $callback, private Filesystem $flysystem)
     {
+        if (!is_callable($callback)) {
+            throw new \InvalidArgumentException('Callable object required for constructor!');
+        }
+        $this->callback = $callback;
         parent::__construct();
     }
 
@@ -37,31 +42,35 @@ class UtilUploadCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $action = $input->getArgument('action');
+        $this->always("Running command {$this->getName()} $action");
+        $this->startTimer();
 
-        switch ($action) {
-            case 'themes':
-                return $this->uploadThemes($input, $output);
+        $metadata = ($this->callback)($action);
+        $resultCode = $this->upload($input, $metadata);
 
-            case 'plugins':
-                return $this->uploadPlugins($input, $output);
+        $this->endTimer();
 
-            default:
-                $output->writeln('ERROR - Invalid action!');
-                return Command::FAILURE;
-        }
+        $output->writeln($this->getRunInfo());
+
+        return $resultCode;
     }
 
-    private function uploadThemes(InputInterface $input, OutputInterface $output): int
+    private function upload(InputInterface $input, $metadata): int
     {
-        $this->startTimer();
-        $themes  = ListManagementUtil::explodeCommaSeparatedList($input->getOption('slugs'));
+        $itemRecords  = ListManagementUtil::explodeCommaSeparatedList($input->getOption('slugs'));
         $cleanUp = $input->getOption('clean');
 
-        $output->writeln('Preparing to upload files to S3...');
+        $this->debug('Preparing to upload files to S3...');
 
-        $themes = $this->themeMetadata->getThemeData(filterBy: $themes);
+        $itemRecords = $metadata->getData(filterBy: $itemRecords);
 
-        $dir    = '/opt/assetgrabber/data/themes';
+        $dir    = $metadata->getStorageDir();
+
+        if (!file_exists($dir) || !is_readable($dir)) {
+            $this->error('Unable to open storage directory!');
+            return self::FAILURE;
+        }
+
         $files  = scandir($dir);
         $offset = $input->getOption('offset');
 
@@ -77,117 +86,43 @@ class UtilUploadCommand extends AbstractBaseCommand
 
             preg_match('/([0-9A-z\-_]+)\.([A-z0-9\-_ \.]+).zip/', $file, $matches);
             if (! empty($matches[1]) && ! empty($matches[2])) {
-                $pluginName = $matches[1];
+                $itemSlug = $matches[1];
                 $version    = $matches[2];
-                $pluginId   = $themes[$pluginName];
+                $itemId   = $itemRecords[$itemSlug];
 
-                if (! $pluginId) {
-                    $output->writeln('ERROR - Invalid data!');
-                    $output->writeln("DEBUG - File: $file | Plugin Name: $pluginName | Version: $version | ID: $pluginId");
+                if (! $itemId) {
+                    $this->error('Unable to determine a valid item ID for the matched values!');
+                    $this->debug("File: $file | Item Name: $itemSlug | Version: $version | ID: $itemId");
                     continue;
                 }
 
-                $details = $this->themeMetadata->getVersionData($pluginId, $version, 'aws_s3');
+                $details = $metadata->getVersionData($itemId, $version, 'aws_s3');
                 if ($details) {
                     // We've already stored this file
-                    $output->writeln("NOTICE - Already uploaded $pluginName; skipping...");
+                    $this->notice("Already uploaded $itemSlug; skipping...");
                     if ($cleanUp) {
-                        $output->writeln('INFO - Removing file for ' . $pluginName);
+                        $this->debug("Removing file for $itemSlug");
                         @unlink($dir . '/' . $file);
                     }
                     continue;
                 }
 
                 try {
-                    $output->writeln("INFO - Uploading $pluginName (v. $version) to S3...");
+                    $this->info("Uploading $itemSlug (v. $version) to S3...");
                     $this->flysystem->writeStream('/themes/' . $file, fopen($dir . '/' . $file, 'r'));
 
                     $versionInfo = [$version => '/themes/' . $file];
-                    $this->themeMetadata->writeVersionProcessed(Uuid::fromString($pluginId), $versionInfo, 'aws_s3');
-                    $output->writeln("SUCCESS - Uploaded and recorded $pluginName (v. $version)");
+                    $metadata->writeVersionProcessed(Uuid::fromString($itemId), $versionInfo, 'aws_s3');
+                    $this->success("Uploaded and recorded $itemSlug (v. $version)");
                     if ($cleanUp) {
-                        $output->writeln('INFO - Removing file for ' . $pluginName);
+                        $this->debug("Removing file for $itemSlug");
                         @unlink($dir . '/' . $file);
                     }
                 } catch (Exception $e) {
-                    $output->writeln('ERROR - Error writing ' . $pluginName . ' to S3: ' . $e->getMessage());
+                    $this->error("Error writing $itemSlug to S3: " . $e->getMessage());
                 }
             }
         }
-        $this->endTimer();
-
-        $output->writeln($this->getRunInfo());
-
         return self::SUCCESS;
-    }
-
-    private function uploadPlugins(InputInterface $input, OutputInterface $output): int
-    {
-        $this->startTimer();
-        $plugins = ListManagementUtil::explodeCommaSeparatedList($input->getOption('slugs'));
-        $cleanUp = $input->getOption('clean');
-
-        $output->writeln('Preparing to upload files to S3...');
-
-        $plugins = $this->pluginMetadata->getPluginData(filterBy: $plugins);
-
-        $dir    = '/opt/assetgrabber/data/plugins';
-        $files  = scandir($dir);
-        $offset = $input->getOption('offset');
-
-        $limit = $input->getOption('limit');
-        if ($limit) {
-            $files = array_slice($files, $offset, (int) $limit);
-        }
-
-        foreach ($files as $file) {
-            if (strpos($file, '.zip') === false) {
-                continue;
-            }
-
-            preg_match('/([0-9A-z\-_]+)\.([A-z0-9\-_ \.]+).zip/', $file, $matches);
-            if (! empty($matches[1]) && ! empty($matches[2])) {
-                $pluginName = $matches[1];
-                $version    = $matches[2];
-                $pluginId   = $plugins[$pluginName];
-
-                if (! $pluginId) {
-                    $output->writeln('ERROR - Invalid data!');
-                    $output->writeln("DEBUG - File: $file | Plugin Name: $pluginName | Version: $version | ID: $pluginId");
-                    continue;
-                }
-
-                $details = $this->pluginMetadata->getVersionData($pluginId, $version, 'aws_s3');
-                if ($details) {
-                    // We've already stored this file
-                    $output->writeln("NOTICE - Already uploaded $pluginName; skipping...");
-                    if ($cleanUp) {
-                        $output->writeln('INFO - Removing file for ' . $pluginName);
-                        @unlink($dir . '/' . $file);
-                    }
-                    continue;
-                }
-
-                try {
-                    $output->writeln("INFO - Uploading $pluginName (v. $version) to S3...");
-                    $this->flysystem->writeStream('/plugins/' . $file, fopen($dir . '/' . $file, 'r'));
-
-                    $versionInfo = [$version => '/plugins/' . $file];
-                    $this->pluginMetadata->writeVersionsProcessed(Uuid::fromString($pluginId), $versionInfo, 'aws_s3');
-                    $output->writeln("SUCCESS - Uploaded and recorded $pluginName (v. $version)");
-                    if ($cleanUp) {
-                        $output->writeln('INFO - Removing file for ' . $pluginName);
-                        @unlink($dir . '/' . $file);
-                    }
-                } catch (Exception $e) {
-                    $output->writeln('ERROR - Error writing ' . $pluginName . ' to S3: ' . $e->getMessage());
-                }
-            }
-        }
-        $this->endTimer();
-
-        $output->writeln($this->getRunInfo());
-
-        return Command::SUCCESS;
     }
 }

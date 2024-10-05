@@ -51,7 +51,7 @@ abstract class AbstractBaseCommand extends Command
     protected function getRunInfo(array $info = []): array
     {
         $output   = [];
-        $time     = $this->getElapsedTime();
+        $time     = round($this->getElapsedTime(), 4);
         $output[] = "Took $time seconds...";
 
         return array_merge($output, $info);

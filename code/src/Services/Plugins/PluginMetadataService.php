@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Services\Plugins;
 
+use AssetGrabber\Services\Interfaces\MetadataInterface;
 use Aura\Sql\ExtendedPdoInterface;
 use Exception;
 use PDOException;
@@ -11,7 +12,7 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 
-class PluginMetadataService
+class PluginMetadataService implements MetadataInterface
 {
     /** @var string[][]  */
     private array $existing;
@@ -425,7 +426,7 @@ class PluginMetadataService
      * @param array<int, string> $filterBy
      * @return string[]
      */
-    public function getPluginData(array $filterBy = []): array
+    public function getData(array $filterBy = []): array
     {
         if ($filterBy) {
             $sql     = "SELECT id, slug FROM plugins WHERE status = 'open' AND slug IN (:plugins)";
@@ -487,5 +488,10 @@ class PluginMetadataService
             $sql = "INSERT INTO not_found_items (id, item_type, item_slug) VALUES (:id, 'plugin', :item)";
             $this->pdo->perform($sql, ['id' => Uuid::uuid7()->toString(), 'item' => $item]);
         }
+    }
+
+    public function getStorageDir(): string
+    {
+        return '/opt/assetgrabber/data/themes';
     }
 }

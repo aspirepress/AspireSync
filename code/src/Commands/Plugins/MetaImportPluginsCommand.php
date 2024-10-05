@@ -39,7 +39,12 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
     public function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->startTimer();
-        $files = scandir('/opt/assetgrabber/data/plugin-raw-data');
+        if (file_exists('/opt/assetgrabber/data/plugin-raw-data') && is_readable('/opt/assetgrabber/data/plugin-raw-data')) {
+            $files = scandir('/opt/assetgrabber/data/plugin-raw-data');
+        } else {
+            $this->error('Unable to read source directory for plugin metadata!');
+            return self::FAILURE;
+        }
 
         if ($input->getOption('update-list')) {
             $updateList = explode(',', $input->getOption('update-list'));

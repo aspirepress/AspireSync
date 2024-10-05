@@ -337,7 +337,7 @@ class ThemesMetadataService
      * @param array<int, string> $filterBy
      * @return string[]
      */
-    public function getThemeData(array $filterBy = []): array
+    public function getData(array $filterBy = []): array
     {
         if ($filterBy) {
             $sql    = "SELECT id, slug FROM themes WHERE slug IN (:themes)";
@@ -381,5 +381,10 @@ class ThemesMetadataService
             $sql = "INSERT INTO not_found_items (id, item_type, item_slug) VALUES (:id, 'theme', :item)";
             $this->pdo->perform($sql, ['id' => Uuid::uuid7()->toString(), 'item' => $item]);
         }
+    }
+
+    public function getStorageDir(): string
+    {
+        return '/opt/assetgrabber/data/themes';
     }
 }
