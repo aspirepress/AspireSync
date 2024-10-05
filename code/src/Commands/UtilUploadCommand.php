@@ -90,7 +90,7 @@ class UtilUploadCommand extends AbstractBaseCommand
         }
 
         foreach ($files as $file) {
-            if (!str_contains($file, '.zip')) {
+            if (! str_contains($file, '.zip')) {
                 continue;
             }
 
