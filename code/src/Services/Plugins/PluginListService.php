@@ -207,7 +207,7 @@ class PluginListService implements ListServiceInterface
 
         foreach ($allPlugins as $pluginName => $pluginVersions) {
             // Is this the first time we've seen the plugin?
-            if (! $this->pluginService->checkPluginInDatabase($pluginName)) {
+            if (! $this->pluginService->checkPluginInDatabase($pluginName) || ! $this->isNotFound($pluginName)) {
                 $pluginsToUpdate[$pluginName] = [];
             }
 
@@ -245,5 +245,15 @@ class PluginListService implements ListServiceInterface
     public function preserveRevision(string $action): void
     {
         $this->revisionService->preserveRevision($action);
+    }
+
+    public function isNotFound(string $item): bool
+    {
+        return $this->pluginService->isNotFound($item);
+    }
+
+    public function markItemNotFound(string $item): void
+    {
+        $this->pluginService->markItemNotFound($item);
     }
 }

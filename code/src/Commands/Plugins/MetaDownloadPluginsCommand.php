@@ -101,6 +101,9 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
                 $this->fetchPluginDetails($output, $plugin, $versions);
                 return;
             }
+            if ('404' === (string) $data['error']) {
+                $this->pluginListService->markItemNotFound($plugin);
+            }
             $this->stats['errors']++;
         } else {
             $output->writeln("No versions found for plugin $plugin");

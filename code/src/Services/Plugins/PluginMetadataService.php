@@ -328,18 +328,14 @@ class PluginMetadataService
     public function getVersionsForUnfinalizedPlugins(string $type = 'wp_cdn'): array
     {
         try {
+            $notFound = $this->getNotFoundPlugins();
             $sql         = "SELECT plugins.id, slug, version, plugin_files.metadata as version_meta FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugin_files.type = :type AND plugins.status = 'open'";
             $result      = $this->pdo->fetchAll($sql, ['type' => $type]);
             $finalResult = [];
             foreach ($result as $row) {
                 $plugin  = $row['slug'];
                 $version = $row['version'];
-                if (! empty($row['metadata'])) {
-                    $metadata = json_decode($row['metadata'], true);
-                    if (! $metadata['aspirepress_meta']['finalized']) {
-                        $finalResult[$plugin][] = $version;
-                    }
-                } else {
+                if (! in_array($plugin, $notFound)) {
                     $finalResult[$plugin][] = $version;
                 }
             }
@@ -429,5 +425,34 @@ class PluginMetadataService
         }
 
         return $this->pdo->fetchOne($sql, $args);
+    }
+
+    public function getNotFoundPlugins(): array
+    {
+        $sql = 'SELECT item_slug FROM not_found_items WHERE type = "plugin"';
+        return $this->pdo->fetchAll($sql);
+    }
+
+    public function isNotFound(string $item, bool $noLimit = false): bool
+    {
+        $sql = "SELECT COUNT(*) FROM not_found_items WHERE item_slug = :item AND type = 'plugin'";
+
+        if (! $noLimit) {
+            $sql .= " AND created_at > NOW() - INTERVAL 1 WEEK";
+        };
+
+        $result = $this->pdo->fetchOne($sql, ['item' => $item]);
+        return $result['count'] > 0;
+    }
+
+    public function markItemNotFound(string $item): void
+    {
+        if ($this->isNotFound($item, true)) {
+            $sql = "UPDATE not_found_items SET updated_at = NOW() WHERE item_slug = :item AND type = 'plugin'";
+            $this->pdo->perform($sql);
+        } else {
+            $sql = "INSERT INTO not_found_items (id, item_type, item_slug) VALUES (:id, 'plugin', :item)";
+            $this->pdo->perform($sql, ['id' => Uuid::uuid7()->toString(), 'item' => $item]);
+        }
     }
 }
