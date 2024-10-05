@@ -35,7 +35,7 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
         }
 
         foreach ($downloadable as $version => $url) {
-            $result = $this->runDownload($theme, $version, $url, $force);
+            $result                        = $this->runDownload($theme, $version, $url, $force);
             $outcomes[$result['status']][] = $result['version'];
         }
 
@@ -46,7 +46,7 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
     {
         $client       = new Client();
         $downloadFile = '/opt/assetgrabber/data/themes/%s.%s.zip';
-        $filePath = sprintf($downloadFile, $theme, $version);
+        $filePath     = sprintf($downloadFile, $theme, $version);
 
         if (file_exists($filePath) && ! $force) {
             $this->themeMetadataService->setVersionToDownloaded($theme, (string) $version);
@@ -62,7 +62,7 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
             if (method_exists($e, 'getResponse')) {
                 $response = $e->getResponse();
                 if ($response->getStatusCode() === 404) {
-                    $this->themeMetadataService->setVersionToDownloaded($theme, (string)$version);
+                    $this->themeMetadataService->setVersionToDownloaded($theme, (string) $version);
                 }
                 if ($response->getStatusCode() === 429) {
                     sleep(2);

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Commands;
 
-use AssetGrabber\Services\Interfaces\Callback;
+use AssetGrabber\Services\Interfaces\CallbackInterface;
 use AssetGrabber\Utilities\ListManagementUtil;
 use Exception;
+use InvalidArgumentException;
 use League\Flysystem\Filesystem;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -17,19 +17,20 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UtilUploadCommand extends AbstractBaseCommand
 {
-    private Callback $callback;
+    private CallbackInterface $callback;
 
+    /** @var array<string, int> */
     private array $stats = [
         'uploaded' => 0,
-        'failed' => 0,
-        'skipped' => 0,
-        'total' => 0,
+        'failed'   => 0,
+        'skipped'  => 0,
+        'total'    => 0,
     ];
 
-    public function __construct(Callback $callback, private Filesystem $flysystem)
+    public function __construct(CallbackInterface $callback, private Filesystem $flysystem)
     {
-        if (!is_callable($callback)) {
-            throw new \InvalidArgumentException('Callable object required for constructor!');
+        if (! is_callable($callback)) {
+            throw new InvalidArgumentException('Callable object required for constructor!');
         }
         $this->callback = $callback;
         parent::__construct();
@@ -52,7 +53,7 @@ class UtilUploadCommand extends AbstractBaseCommand
         $this->always("Running command {$this->getName()} $action");
         $this->startTimer();
 
-        $metadata = ($this->callback)($action);
+        $metadata   = ($this->callback)($action);
         $resultCode = $this->upload($input, $metadata);
 
         $this->endTimer();
@@ -62,18 +63,18 @@ class UtilUploadCommand extends AbstractBaseCommand
         return $resultCode;
     }
 
-    private function upload(InputInterface $input, $metadata): int
+    private function upload(InputInterface $input, object $metadata): int
     {
-        $itemRecords  = ListManagementUtil::explodeCommaSeparatedList($input->getOption('slugs'));
-        $cleanUp = $input->getOption('clean');
+        $itemRecords = ListManagementUtil::explodeCommaSeparatedList($input->getOption('slugs'));
+        $cleanUp     = $input->getOption('clean');
 
         $this->debug('Preparing to upload files to S3...');
 
         $itemRecords = $metadata->getData(filterBy: $itemRecords);
 
-        $dir    = $metadata->getStorageDir();
+        $dir = $metadata->getStorageDir();
 
-        if (!file_exists($dir) || !is_readable($dir)) {
+        if (! file_exists($dir) || ! is_readable($dir)) {
             $this->error('Unable to open storage directory!');
             return self::FAILURE;
         }
@@ -94,7 +95,7 @@ class UtilUploadCommand extends AbstractBaseCommand
             preg_match('/([0-9A-z\-_]+)\.([A-z0-9\-_ \.]+).zip/', $file, $matches);
             if (! empty($matches[1]) && ! empty($matches[2])) {
                 $itemSlug = $matches[1];
-                $version    = $matches[2];
+                $version  = $matches[2];
                 $itemId   = $itemRecords[$itemSlug];
 
                 if (! $itemId) {
@@ -139,7 +140,10 @@ class UtilUploadCommand extends AbstractBaseCommand
         return self::SUCCESS;
     }
 
-    private function calcStats()
+    /**
+     * @return string[]
+     */
+    private function calcStats(): array
     {
         return [
             'Stats:',

@@ -6,7 +6,6 @@ namespace AssetGrabber\Commands\Themes;
 
 use AssetGrabber\Commands\AbstractBaseCommand;
 use AssetGrabber\Services\Themes\ThemeListService;
-use AssetGrabber\Utilities\OutputManagementUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -66,7 +65,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
         $this->themeListService->preserveRevision($this->getName());
         $this->endTimer();
 
-        $output->success($this->getRunInfo($this->calculateStats()));
+        $this->always($this->getRunInfo($this->calculateStats()));
         return Command::SUCCESS;
     }
 
@@ -96,10 +95,10 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
             $this->info("Theme $theme has " . count($data['versions']) . ' versions');
             $this->stats['versions'] += count($data['versions']);
         } elseif (isset($data['version'])) {
-            $this->info("Theme $theme has 1 version", self::INFO);
+            $this->info("Theme $theme has 1 version");
             $this->stats['versions'] += 1;
         } elseif (isset($data['skipped'])) {
-            $this->notice($data['skipped'], self::NOTICE);
+            $this->notice($data['skipped']);
         } elseif (isset($data['error'])) {
             $this->error("Error fetching metadata for theme $theme: " . $data['error']);
             if ('429' === (string) $data['error']) {

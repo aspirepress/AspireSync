@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands\Themes;
 
 use AssetGrabber\Commands\AbstractBaseCommand;
-use AssetGrabber\Services\themes\themeListService;
-use AssetGrabber\Services\themes\ThemesMetadataService;
+use AssetGrabber\Services\Themes\ThemeListService;
+use AssetGrabber\Services\Themes\ThemesMetadataService;
 use AssetGrabber\Utilities\GetItemsFromSourceTrait;
 use AssetGrabber\Utilities\ProcessWaitUtil;
 use AssetGrabber\Utilities\VersionUtil;
@@ -21,7 +21,7 @@ class DownloadThemesPartialCommand extends AbstractBaseCommand
 {
     use GetItemsFromSourceTrait;
 
-    public function __construct(private themeListService $themeListService, private ThemesMetadataService $themesMetadataService)
+    public function __construct(private ThemeListService $themeListService, private ThemesMetadataService $themesMetadataService)
     {
         parent::__construct();
     }

@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands;
 
 use AssetGrabber\Utilities\ErrorWritingTrait;
-use AssetGrabber\Utilities\OutputManagementUtil;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\Output;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 

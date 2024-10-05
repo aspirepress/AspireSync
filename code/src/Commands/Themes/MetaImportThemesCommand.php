@@ -87,8 +87,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
                     $this->handleResponse($result, $fileContents['slug'], 'open', 'update', $output);
                 } else {
                     $this->stats['skips']++;
-                    $this->notice('Skipping theme ' . $fileContents['slug'] . ' as it exists in DB already...'
-                    );
+                    $this->notice('Skipping theme ' . $fileContents['slug'] . ' as it exists in DB already...');
                 }
             } else {
                 $this->notice('Writing theme ' . $fileContents['slug']);

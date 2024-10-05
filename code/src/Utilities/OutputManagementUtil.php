@@ -16,42 +16,66 @@ abstract class OutputManagementUtil
 
     private const FAILURE = '[FAILURE] ';
 
-    public static function error(string|Iterable $message): string
+    /**
+     * @param string|iterable<int, string> $message
+     */
+    public static function error(string|iterable $message): string
     {
         return self::formatMessage(self::ERROR, $message);
     }
 
-    public static function warning(string|Iterable $message): string
+    /**
+     * @param string|iterable<int, string> $message
+     */
+    public static function warning(string|iterable $message): string
     {
         return self::formatMessage(self::WARNING, $message);
     }
 
-    public static function notice(string|Iterable $message): string
+    /**
+     * @param string|iterable<int, string> $message
+     */
+    public static function notice(string|iterable $message): string
     {
         return self::formatMessage(self::NOTICE, $message);
     }
 
-    public static function info(string|Iterable $message): string
+    /**
+     * @param string|iterable<int, string> $message
+     */
+    public static function info(string|iterable $message): string
     {
         return self::formatMessage(self::INFO, $message);
     }
 
-    public static function debug(string|Iterable $message): string
+    /**
+     * @param string|iterable<int, string> $message
+     */
+    public static function debug(string|iterable $message): string
     {
         return self::formatMessage(self::DEBUG, $message);
     }
 
-    public static function success(string|Iterable $message): string
+    /**
+     * @param string|iterable<int, string> $message
+     */
+    public static function success(string|iterable $message): string
     {
         return self::formatMessage(self::SUCCESS, $message);
     }
 
-    public static function failure(string|Iterable $message): string
+    /**
+     * @param string|iterable<int, string> $message
+     */
+    public static function failure(string|iterable $message): string
     {
         return self::formatMessage(self::FAILURE, $message);
     }
 
-    private static function formatMessage(string $type, string|Iterable $messages)
+    /**
+     * @param string|iterable<int, string> $messages
+     */
+    private static function formatMessage(string $type, string|iterable $messages): string
     {
         $output = '';
         if (is_iterable($messages)) {
@@ -64,7 +88,10 @@ abstract class OutputManagementUtil
         return $type . $messages;
     }
 
-    public static function generic(string|Iterable $messages): string
+    /**
+     * @param string|iterable<int, string> $messages
+     */
+    public static function generic(string|iterable $messages): string
     {
         if (is_iterable($messages)) {
             $output = '';

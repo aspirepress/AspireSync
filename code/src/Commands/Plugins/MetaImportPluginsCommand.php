@@ -84,8 +84,7 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
                     continue;
                 } else {
                     $this->stats['skips']++;
-                    $this->notice('Skipping plugin ' . $fileContents['slug'] . ' as it exists in DB already...'
-                    );
+                    $this->notice('Skipping plugin ' . $fileContents['slug'] . ' as it exists in DB already...');
                     continue;
                 }
             }
