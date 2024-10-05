@@ -19,6 +19,13 @@ class UtilUploadCommand extends AbstractBaseCommand
 {
     private Callback $callback;
 
+    private array $stats = [
+        'uploaded' => 0,
+        'failed' => 0,
+        'skipped' => 0,
+        'total' => 0,
+    ];
+
     public function __construct(Callback $callback, private Filesystem $flysystem)
     {
         if (!is_callable($callback)) {
@@ -50,7 +57,7 @@ class UtilUploadCommand extends AbstractBaseCommand
 
         $this->endTimer();
 
-        $output->writeln($this->getRunInfo());
+        $output->writeln($this->getRunInfo($this->calcStats()));
 
         return $resultCode;
     }
@@ -100,6 +107,8 @@ class UtilUploadCommand extends AbstractBaseCommand
                 if ($details) {
                     // We've already stored this file
                     $this->notice("Already uploaded $itemSlug; skipping...");
+                    $this->stats['skipped']++;
+                    $this->stats['total']++;
                     if ($cleanUp) {
                         $this->debug("Removing file for $itemSlug");
                         @unlink($dir . '/' . $file);
@@ -114,15 +123,30 @@ class UtilUploadCommand extends AbstractBaseCommand
                     $versionInfo = [$version => '/themes/' . $file];
                     $metadata->writeVersionProcessed(Uuid::fromString($itemId), $versionInfo, 'aws_s3');
                     $this->success("Uploaded and recorded $itemSlug (v. $version)");
+                    $this->stats['uploaded']++;
+                    $this->stats['total']++;
                     if ($cleanUp) {
                         $this->debug("Removing file for $itemSlug");
                         @unlink($dir . '/' . $file);
                     }
                 } catch (Exception $e) {
                     $this->error("Error writing $itemSlug to S3: " . $e->getMessage());
+                    $this->stats['failed']++;
+                    $this->stats['total']++;
                 }
             }
         }
         return self::SUCCESS;
+    }
+
+    private function calcStats()
+    {
+        return [
+            'Stats:',
+            'Uploaded: ' . $this->stats['uploaded'],
+            'Failed:   ' . $this->stats['failed'],
+            'Skipped:  ' . $this->stats['skipped'],
+            'Total:    ' . $this->stats['total'],
+        ];
     }
 }
