@@ -10,6 +10,7 @@ use AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand;
 use AssetGrabber\Commands\Plugins\MetaDownloadPluginsCommand;
 use AssetGrabber\Commands\Plugins\MetaImportPluginsCommand;
 use AssetGrabber\Commands\Themes\DownloadThemesCommand;
+use AssetGrabber\Commands\Themes\DownloadThemesPartialCommand;
 use AssetGrabber\Commands\Themes\InternalThemeDownloadCommand;
 use AssetGrabber\Commands\Themes\MetaDownloadThemesCommand;
 use AssetGrabber\Commands\Themes\MetaImportThemesCommand;
@@ -29,6 +30,7 @@ use AssetGrabber\Factories\Plugins\PluginListServiceFactory;
 use AssetGrabber\Factories\Plugins\PluginMetadataServiceFactory;
 use AssetGrabber\Factories\RevisionMetadataServiceFactory;
 use AssetGrabber\Factories\Themes\DownloadThemesCommandFactory;
+use AssetGrabber\Factories\Themes\DownloadThemesPartialCommandFactory;
 use AssetGrabber\Factories\Themes\InternalThemeDownloadCommandFactory;
 use AssetGrabber\Factories\Themes\MetaDownloadThemesCommandFactory;
 use AssetGrabber\Factories\Themes\MetaImportThemesCommandFactory;
@@ -91,7 +93,7 @@ class ConfigProvider
                 MetaImportThemesCommand::class       => MetaImportThemesCommandFactory::class,
                 DownloadThemesCommand::class         => DownloadThemesCommandFactory::class,
                 InternalThemeDownloadCommand::class => InternalThemeDownloadCommandFactory::class,
-
+                DownloadThemesPartialCommand::class => DownloadThemesPartialCommandFactory::class,
                 // Flysystem
                 Filesystem::class             => FilesystemFactory::class,
                 LocalFilesystemAdapter::class => LocalFilesystemAdapterFactory::class,

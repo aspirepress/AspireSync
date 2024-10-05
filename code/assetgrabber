@@ -7,6 +7,7 @@ use AssetGrabber\Commands\Plugins\MetaImportPluginsCommand;
 use AssetGrabber\Commands\Plugins\MetaDownloadPluginsCommand;
 use AssetGrabber\Commands\Plugins\DownloadPluginsPartialCommand;
 use AssetGrabber\Commands\Themes\DownloadThemesCommand;
+use AssetGrabber\Commands\Themes\DownloadThemesPartialCommand;
 use AssetGrabber\Commands\Themes\InternalThemeDownloadCommand;
 use AssetGrabber\Commands\Themes\MetaImportThemesCommand;
 use AssetGrabber\Commands\Themes\MetaDownloadThemesCommand;
@@ -36,6 +37,7 @@ $application->add($container->get(DownloadPluginsPartialCommand::class));
 $application->add($container->get(MetaDownloadThemesCommand::class));
 $application->add($container->get(MetaImportThemesCommand::class));
 $application->add($container->get(DownloadThemesCommand::class));
+$application->add($container->get(DownloadThemesPartialCommand::class));
 $application->add($container->get(InternalThemeDownloadCommand::class));
 
 $application->add($container->get(UtilCleanDataCommand::class));
