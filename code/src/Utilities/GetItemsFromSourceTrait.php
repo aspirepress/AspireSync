@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Utilities;
 
-trait getItemsFromSourceTrait
+trait GetItemsFromSourceTrait
 {
     /** @var array<string, int> */
     private array $stats = [

@@ -7,7 +7,7 @@ namespace AssetGrabber\Commands\Themes;
 use AssetGrabber\Commands\AbstractBaseCommand;
 use AssetGrabber\Services\Themes\ThemeListService;
 use AssetGrabber\Services\Themes\ThemesMetadataService;
-use AssetGrabber\Utilities\getItemsFromSourceTrait;
+use AssetGrabber\Utilities\GetItemsFromSourceTrait;
 use AssetGrabber\Utilities\ListManagementUtil;
 use AssetGrabber\Utilities\ProcessWaitUtil;
 use AssetGrabber\Utilities\VersionUtil;
@@ -20,7 +20,7 @@ use Symfony\Component\Process\Process;
 
 class DownloadThemesCommand extends AbstractBaseCommand
 {
-    use getItemsFromSourceTrait;
+    use GetItemsFromSourceTrait;
 
     public function __construct(private ThemeListService $themeListService, private ThemesMetadataService $themeMetadataService)
     {

@@ -7,7 +7,7 @@ namespace AssetGrabber\Commands\Plugins;
 use AssetGrabber\Commands\AbstractBaseCommand;
 use AssetGrabber\Services\Plugins\PluginListService;
 use AssetGrabber\Services\Plugins\PluginMetadataService;
-use AssetGrabber\Utilities\getItemsFromSourceTrait;
+use AssetGrabber\Utilities\GetItemsFromSourceTrait;
 use AssetGrabber\Utilities\ProcessWaitUtil;
 use AssetGrabber\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
@@ -19,7 +19,7 @@ use Symfony\Component\Process\Process;
 
 class DownloadPluginsCommand extends AbstractBaseCommand
 {
-    use getItemsFromSourceTrait;
+    use GetItemsFromSourceTrait;
 
     public function __construct(private PluginListService $pluginListService, private PluginMetadataService $pluginMetadataService)
     {
