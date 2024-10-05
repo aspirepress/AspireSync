@@ -492,6 +492,6 @@ class PluginMetadataService implements MetadataInterface
 
     public function getStorageDir(): string
     {
-        return '/opt/assetgrabber/data/themes';
+        return '/opt/assetgrabber/data/plugins';
     }
 }
