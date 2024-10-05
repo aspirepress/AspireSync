@@ -39,6 +39,7 @@ class DownloadThemesCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->always('Running command ' . $this->getName());
         $this->startTimer();
         $numVersions = $input->getArgument('num-versions');
         $themesList  = $input->getOption('themes');
