@@ -27,8 +27,7 @@ return [
         'schema' => $_ENV['DB_SCHEMA'],
     ],
     'flysystem'   => [
-        'util:upload:plugins' => $_ENV['UPLOAD_PLUGINS_ADAPTER'] ?? LocalFilesystemAdapter::class,
-        'util:upload:themes'  => $_ENV['UPLOAD_THEMES_ADAPTER'] ?? LocalFilesystemAdapter::class,
+        'util:upload' => $_ENV['UPLOAD_ASSETS_ADAPTER'] ?? LocalFilesystemAdapter::class,
     ],
     'amazon'      => [
         's3' => [

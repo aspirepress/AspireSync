@@ -1,8 +1,18 @@
 #!/usr/bin/env php
 <?php
 
-use AssetGrabber\Services\PluginDownloadFromWpService;
-use AssetGrabber\Services\PluginListService;
+use AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand;
+use AssetGrabber\Commands\Plugins\DownloadPluginsCommand;
+use AssetGrabber\Commands\Plugins\MetaImportPluginsCommand;
+use AssetGrabber\Commands\Plugins\MetaDownloadPluginsCommand;
+use AssetGrabber\Commands\Plugins\DownloadPluginsPartialCommand;
+use AssetGrabber\Commands\Themes\DownloadThemesCommand;
+use AssetGrabber\Commands\Themes\DownloadThemesPartialCommand;
+use AssetGrabber\Commands\Themes\InternalThemeDownloadCommand;
+use AssetGrabber\Commands\Themes\MetaImportThemesCommand;
+use AssetGrabber\Commands\Themes\MetaDownloadThemesCommand;
+use AssetGrabber\Commands\UtilCleanCommand;
+use AssetGrabber\Commands\UtilUploadCommand;
 use Symfony\Component\Console\Application;
 
 require 'vendor/autoload.php';
@@ -18,13 +28,18 @@ $container = new \Laminas\ServiceManager\ServiceManager($dependencies);
 
 $application = new Application();
 
-$application->add($container->get(\AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand::class));
-$application->add($container->get(\AssetGrabber\Commands\Plugins\PluginsGrabCommand::class));
-$application->add($container->get(\AssetGrabber\Commands\Plugins\PluginsImportMetaCommand::class));
-$application->add($container->get(\AssetGrabber\Commands\Plugins\PluginsMetaCommand::class));
-$application->add($container->get(\AssetGrabber\Commands\Plugins\PluginsPartialCommand::class));
+$application->add($container->get(InternalPluginDownloadCommand::class));
+$application->add($container->get(DownloadPluginsCommand::class));
+$application->add($container->get(MetaImportPluginsCommand::class));
+$application->add($container->get(MetaDownloadPluginsCommand::class));
+$application->add($container->get(DownloadPluginsPartialCommand::class));
 
-$application->add($container->get(\AssetGrabber\Commands\UtilCleanDataCommand::class));
-$application->add($container->get(\AssetGrabber\Commands\UtilUploadCommand::class));
+$application->add($container->get(MetaDownloadThemesCommand::class));
+$application->add($container->get(MetaImportThemesCommand::class));
+$application->add($container->get(DownloadThemesCommand::class));
+$application->add($container->get(DownloadThemesPartialCommand::class));
+$application->add($container->get(InternalThemeDownloadCommand::class));
 
+$application->add($container->get(UtilCleanCommand::class));
+$application->add($container->get(UtilUploadCommand::class));
 $application->run();

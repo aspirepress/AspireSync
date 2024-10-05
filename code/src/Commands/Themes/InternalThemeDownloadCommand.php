@@ -2,28 +2,33 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Commands\Plugins;
+namespace AssetGrabber\Commands\Themes;
 
 use AssetGrabber\Services\Plugins\PluginDownloadFromWpService;
+use AssetGrabber\Services\Themes\ThemeDownloadFromWpService;
+use AssetGrabber\Services\Themes\ThemeListService;
+use AssetGrabber\Services\Themes\ThemesMetadataService;
+use AssetGrabber\Utilities\ListManagementUtil;
+use Aura\Sql\ExtendedPdoInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class InternalPluginDownloadCommand extends Command
+class InternalThemeDownloadCommand extends Command
 {
-    public function __construct(private PluginDownloadFromWpService $service)
+    public function __construct(private ThemeDownloadFromWpService $service)
     {
         parent::__construct();
     }
 
     protected function configure(): void
     {
-        $this->setName('internal:plugin-download')
-            ->setDescription('Download all versions of a given plugin')
+        $this->setName('internal:theme-download')
+            ->setDescription('Download all versions of a given theme')
             ->setHidden(true)
-            ->addArgument('plugin', InputArgument::REQUIRED, 'Plugin name')
+            ->addArgument('theme', InputArgument::REQUIRED, 'Theme name')
             ->addArgument('version-list', InputArgument::REQUIRED, 'List of versions to download')
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to download', 'all')
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'Force download even if file exists');
@@ -31,21 +36,17 @@ class InternalPluginDownloadCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $plugin      = $input->getArgument('plugin');
+        $theme      = $input->getArgument('theme');
         $numVersions = $input->getArgument('num-versions');
 
-        $output->writeln('Determining versions of ' . $plugin . '...');
-        $versions = explode(',', $input->getArgument('version-list'));
+        $output->writeln('Determining versions of ' . $theme . '...');
+        $versions = ListManagementUtil::explodeCommaSeparatedList($input->getArgument('version-list'));
 
-        array_walk($versions, function (&$value) {
-            $value = trim($value);
-        });
-
-        $versionsToDownload = $this->determineDownloadedVersions($versions, $numVersions);
-        $output->writeln('Downloading ' . $versionsToDownload . ' versions...');
-        $responses = $this->service->download($plugin, $versions, $numVersions, $input->getOption('force'));
+        $versionCount = $this->versionCountBasedOnRequestedNumber($versions, $numVersions);
+        $output->writeln('Downloading ' . $versionCount . ' versions...');
+        $responses = $this->service->download($theme, $versions, $numVersions, $input->getOption('force'));
         foreach ($responses as $responseCode => $versions) {
-            $output->writeln($plugin . ' ' . $responseCode . ': ' . count($versions));
+            $output->writeln($theme . ' ' . $responseCode . ': ' . count($versions));
         }
 
         return Command::SUCCESS;
@@ -54,7 +55,7 @@ class InternalPluginDownloadCommand extends Command
     /**
      * @param array<int, string> $versions
      */
-    private function determineDownloadedVersions(array $versions, string|int $numToDownload): int
+    private function versionCountBasedOnRequestedNumber(array $versions, string|int $numToDownload): int
     {
         switch ($numToDownload) {
             case 'all':

@@ -1,0 +1,294 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AssetGrabber\Services;
+
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use RuntimeException;
+use Symfony\Component\Process\Process;
+
+class ThemeListService
+{
+    private int $prevRevision = 0;
+
+    private int $currentRevision;
+
+    /** @var array<string, string[]> */
+    private array $oldThemeData = [];
+
+    /**
+     * @param array<string> $userAgents
+     */
+    public function __construct(private array $userAgents)
+    {
+        shuffle($this->userAgents);
+    }
+
+    /**
+     * @param string[]|null $filter
+     * @return array<string, string[]>
+     */
+    public function getThemeList(?array $filter = []): array
+    {
+        if (! $filter) {
+            $filter = [];
+        }
+
+        $this->currentRevision = $this->identifyCurrentRevision();
+        if (file_exists('/opt/assetgrabber/data/theme-data.json')) {
+            $json               = file_get_contents('/opt/assetgrabber/data/theme-data.json');
+            $this->oldThemeData = json_decode($json, true);
+            $this->prevRevision = $this->oldThemeData['meta']['my_revision'];
+            return $this->filter($this->getThemesToUpdate($filter), $filter);
+        }
+
+        $themeList = $this->pullWholeThemeList();
+        return $this->filter($themeList, $filter);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getVersionsForTheme(string $theme): array
+    {
+        if (! file_exists('/opt/assetgrabber/data/theme-raw-data')) {
+            mkdir('/opt/assetgrabber/data/theme-raw-data');
+        }
+
+        if (file_exists('/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json') && filemtime('/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json') > time() - 86400) {
+            $json = file_get_contents('/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json');
+            $data = json_decode($json, true);
+            if (! isset($data['versions'])) {
+                return [];
+            }
+            $themeData = array_keys($data['versions']);
+        } else {
+            $url         = 'https://api.wordpress.org/themes/info/1.2/';
+            $queryParams = [
+                'action'   => 'theme_information',
+                'slug'     => $theme,
+                'fields[]' => 'versions',
+            ];
+            $client      = new Client();
+            try {
+                $response = $client->get($url, ['query' => $queryParams]);
+                $data     = json_decode($response->getBody()->getContents(), true);
+                file_put_contents(
+                    '/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json',
+                    json_encode($data, JSON_PRETTY_PRINT)
+                );
+                $themeData = array_keys($data['versions']);
+            } catch (ClientException $e) {
+                if ($e->getCode() === 404) {
+                    $content = $e->getResponse()->getBody()->getContents();
+                    file_put_contents('/opt/assetgrabber/data/theme-raw-data/' . $theme . '.json', $content);
+                }
+
+                return [];
+            }
+        }
+
+        if (in_array('trunk', $themeData)) {
+            $themeData = array_diff($themeData, ['trunk']);
+        }
+
+        return $themeData;
+    }
+
+    public function identifyCurrentRevision(bool $force = false): int
+    {
+        if (! $force && file_exists('/opt/assetgrabber/data/theme-raw-changelog') && filemtime('/opt/assetgrabber/data/theme-raw-changelog') > time() - 86400) {
+            $output = file_get_contents('/opt/assetgrabber/data/theme-raw-changelog');
+        } else {
+            $command = [
+                'svn',
+                'log',
+                '-v',
+                '-q',
+                'https://themes.svn.wordpress.org',
+                "-r",
+                "HEAD",
+            ];
+
+            $process = new Process($command);
+            $process->run();
+
+            if (! $process->isSuccessful()) {
+                throw new RuntimeException('Unable to get list of themes to update' . $process->getErrorOutput());
+            }
+
+            $output = $process->getOutput();
+            file_put_contents('/opt/assetgrabber/data/theme-raw-changelog', $output);
+        }
+
+        $output = explode(PHP_EOL, $output);
+        preg_match('/([0-9]+) \|/', $output[1], $matches);
+        $this->prevRevision = (int) $matches[1];
+        return (int) $matches[1];
+    }
+
+    /**
+     * @return array<string, string[]>
+     */
+    private function pullWholeThemeList(): array
+    {
+        if (file_exists('/opt/assetgrabber/data/raw-svn-theme-list') && filemtime('/opt/assetgrabber/data/raw-svn-theme-list') > time() - 86400) {
+            $themes = file_get_contents('/opt/assetgrabber/data/raw-svn-theme-list');
+        } else {
+            try {
+                $client   = new Client();
+                $themes   = $client->get('https://themes.svn.wordpress.org/', ['headers' => ['AssetGrabber']]);
+                $contents = $themes->getBody()->getContents();
+                file_put_contents('/opt/assetgrabber/data/raw-svn-theme-list', $contents);
+                $themes = $contents;
+            } catch (ClientException $e) {
+                throw new RuntimeException('Unable to download theme list: ' . $e->getMessage());
+            }
+        }
+        preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $themes, $matches);
+        $themes = $matches[1];
+
+        $themesToReturn = [];
+        foreach ($themes as $theme) {
+            $themesToReturn[$theme] = [];
+        }
+
+        file_put_contents('/opt/assetgrabber/data/raw-theme-list', implode(PHP_EOL, $themes));
+
+        return $themesToReturn;
+    }
+
+    /**
+     * @param array<string, string> $explicitlyRequested
+     * @return array<string, string[]>
+     */
+    private function getThemesToUpdate(array $explicitlyRequested = []): array
+    {
+        $lastRev    = (int) $this->oldThemeData['meta']['my_revision'];
+        $targetRev  = $lastRev + 1;
+        $currentRev = $this->currentRevision;
+
+        if ($this->currentRevision === $this->prevRevision) {
+            return $this->mergeThemesToUpdate([], $explicitlyRequested);
+        }
+
+        if (file_exists('/opt/assetgrabber/data/theme-revision-' . $currentRev)) {
+            $output = file('/opt/assetgrabber/data/theme-revision-' . $currentRev);
+        } else {
+            $command = [
+                'svn',
+                'log',
+                '-v',
+                '-q',
+                'https://themes.svn.wordpress.org',
+                "-r",
+                "$targetRev:$currentRev",
+            ];
+
+            $process = new Process($command);
+            $process->run();
+
+            if (! $process->isSuccessful()) {
+                throw new RuntimeException('Unable to get list of themes to update' . $process->getErrorOutput());
+            }
+
+            $output = explode(PHP_EOL, $process->getOutput());
+            file_put_contents('/opt/assetgrabber/data/revision-' . $currentRev, $process->getOutput());
+        }
+
+        $themesToUpdate = [];
+        foreach ($output as $line) {
+            preg_match('#^   [ADMR] /([^/(]+)/([^/(]+)/([^/(]+)/#', $line, $matches);
+            if ($matches) {
+                $theme = trim($matches[1]);
+                if (trim($matches[2]) === 'tags' && ! empty($matches[3])) {
+                    if (! isset($themesToUpdate[$theme])) {
+                        $themesToUpdate[$theme] = [];
+                    }
+
+                    if (! in_array($matches[3], $themesToUpdate[$theme])) {
+                        $themesToUpdate[$theme][] = $matches[3];
+                    }
+                }
+            }
+        }
+
+        $themesToUpdate = $this->mergeThemesToUpdate($themesToUpdate, $explicitlyRequested);
+
+        return $themesToUpdate;
+    }
+
+    /**
+     * @param array<string, string[]> $themesToUpdate
+     * @param array<string, string> $explicitlyRequested
+     * @return array<string, string[]>
+     */
+    private function mergeThemesToUpdate(array $themesToUpdate = [], array $explicitlyRequested = []): array
+    {
+        $allThemes = $this->pullWholeThemeList();
+
+        foreach ($allThemes as $themeName => $themeVersion) {
+            // Is this the first time we've seen the theme?
+            if (! isset($this->oldThemeData['themes'][$themeName])) {
+                $themesToUpdate[$themeName] = [];
+            }
+
+            if (in_array($themeName, $explicitlyRequested)) {
+                $themesToUpdate[$themeName] = [];
+            }
+        }
+
+        return $themesToUpdate;
+    }
+
+    /**
+     * @param array<string, string[]> $themes
+     */
+    public function preserveThemeList(array $themes): int|bool
+    {
+        if ($this->oldThemeData) {
+            $toSave                        = [
+                'meta'   => [],
+                'themes' => $this->oldThemeData['themes'],
+            ];
+            $toSave['themes']              = array_merge($toSave['themes'], $themes);
+            $toSave['meta']['my_revision'] = $this->currentRevision;
+        } else {
+            $toSave = [
+                'meta'   => [
+                    'my_revision' => $this->currentRevision,
+                ],
+                'themes' => [],
+            ];
+
+            $toSave['themes'] = array_merge($toSave['themes'], $themes);
+        }
+
+        return file_put_contents('/opt/assetgrabber/data/theme-data.json', json_encode($toSave, JSON_PRETTY_PRINT));
+    }
+
+    /**
+     * Reduces the themes slated for update to only those specified in the filter.
+     *
+     * @param  array<string, string[]>  $themes
+     * @param  array<string, string>|null  $filter
+     * @return array<string, string[]>
+     */
+    private function filter(array $themes, ?array $filter): array
+    {
+        if (! $filter) {
+            return $themes;
+        }
+
+        $filtered = [];
+        foreach ($filter as $theme) {
+            if (array_key_exists($theme, $themes)) {
+                $filtered[$theme] = $themes[$theme];
+            }
+        }
+
+        return $filtered;
+    }
+}

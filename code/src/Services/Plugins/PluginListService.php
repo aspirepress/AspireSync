@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services;
+namespace AssetGrabber\Services\Plugins;
 
 use AssetGrabber\Services\Interfaces\ListServiceInterface;
+use AssetGrabber\Services\RevisionMetadataService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
@@ -70,28 +71,6 @@ class PluginListService implements ListServiceInterface
     public function getUpdatedListOfItems(?array $explicitlyRequested): array
     {
         return $this->filter($this->pluginService->getVersionsForUnfinalizedPlugins(), $explicitlyRequested);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function getVersionsForItem(string $item): array
-    {
-        $data = $this->getItemMetadata($item);
-
-        if (isset($data['versions'])) {
-            $pluginData = $data['versions'];
-        } elseif (isset($data['version'])) {
-            $pluginData = [$data['version'] => $data['download_link']];
-        } else {
-            return [];
-        }
-
-        if (isset($pluginData['trunk'])) {
-            unset($pluginData['trunk']);
-        }
-
-        return $pluginData;
     }
 
     public function identifyCurrentRevision(bool $force = false): int

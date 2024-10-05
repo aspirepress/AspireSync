@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services;
+namespace AssetGrabber\Services\Plugins;
 
 use Aura\Sql\ExtendedPdoInterface;
 use Exception;
@@ -123,7 +123,7 @@ class PluginMetadataService
      */
     public function writeVersionsForPlugin(UuidInterface $pluginId, array $versions, string $cdn): array
     {
-        $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version, processed) VALUES (:id, :plugin_id, :file_url, :type, :version, NOW())';
+        $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version, created) VALUES (:id, :plugin_id, :file_url, :type, :version, NOW())';
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;

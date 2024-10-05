@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Factories;
+namespace AssetGrabber\Factories\Plugins;
 
 use AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand;
-use AssetGrabber\Services\PluginDownloadFromWpService;
+use AssetGrabber\Services\Plugins\PluginDownloadFromWpService;
 use Laminas\ServiceManager\ServiceManager;
 
 class InternalPluginDownloadCommandFactory

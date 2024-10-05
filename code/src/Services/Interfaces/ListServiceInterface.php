@@ -23,12 +23,5 @@ interface ListServiceInterface
      */
     public function getUpdatedListOfItems(?array $explicitlyRequested): array;
 
-    /**
-     * @return array<string, string>
-     */
-    public function getVersionsForItem(string $item): array;
-
-    public function identifyCurrentRevision(bool $force = false): int;
-
     public function preserveRevision(string $action): void;
 }

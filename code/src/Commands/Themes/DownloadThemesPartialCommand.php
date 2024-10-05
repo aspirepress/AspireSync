@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Commands\Plugins;
+namespace AssetGrabber\Commands\Themes;
 
 use AssetGrabber\Commands\AbstractBaseCommand;
-use AssetGrabber\Services\PluginListService;
-use AssetGrabber\Services\PluginMetadataService;
-use AssetGrabber\Utilities\GetPluginsFromSourceTrait;
+use AssetGrabber\Services\themes\themeListService;
+use AssetGrabber\Services\themes\ThemesMetadataService;
+use AssetGrabber\Utilities\getItemsFromSourceTrait;
 use AssetGrabber\Utilities\ProcessWaitUtil;
 use AssetGrabber\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
@@ -17,62 +17,67 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
-class PluginsGrabCommand extends AbstractBaseCommand
+class DownloadThemesPartialCommand extends AbstractBaseCommand
 {
-    use GetPluginsFromSourceTrait;
+    use getItemsFromSourceTrait;
 
-    public function __construct(private PluginListService $pluginListService, private PluginMetadataService $pluginMetadataService)
+    public function __construct(private ThemeListService $themeListService, private ThemesMetadataService $themesMetadataService)
     {
         parent::__construct();
     }
 
     protected function configure(): void
     {
-        $this->setName('plugins:grab')
-            ->setDescription('Grabs plugins (with number of specified versions or explicitly specified plugins) from the origin repo')
-            ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
-            ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins to request')
+        $this->setName('download:themes:partial')
+            ->setAliases(['themes:partial'])
+            ->setDescription('Pulls a partial number of themes based on the full list of themes')
+            ->addArgument('num-to-pull', InputArgument::REQUIRED, 'Number of themes to pull')
+            ->addArgument('offset', InputArgument::OPTIONAL, 'Offset to start pulling from', 0)
+            ->AddOption('versions', null, InputOption::VALUE_OPTIONAL, 'Number of versions to request', 'latest')
             ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->startTimer();
-        $numVersions = $input->getArgument('num-versions');
-        $pluginList  = $input->getOption('plugins');
+        $numVersions = $input->getOption('versions');
+        $numToPull   = (int) $input->getArgument('num-to-pull');
+        $offset      = (int) $input->getArgument('offset');
 
-        if ($pluginList) {
-            $pluginList = explode(',', $pluginList);
-            foreach ($pluginList as $k => $plugin) {
-                $pluginList[$k] = trim($plugin);
-            }
-        }
+        $output->writeln('Getting list of themes...');
+        $themesToUpdate = $this->themeListService->getUpdatedListOfItems([]);
 
-        $output->writeln('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems($pluginList);
+        $totalthemes = count($themesToUpdate);
 
-        $output->writeln(count($pluginsToUpdate) . ' plugins to download...');
-        if (count($pluginsToUpdate) === 0) {
-            $output->writeln('No plugins to download...exiting...');
+        $output->writeln($totalthemes . ' themes to download...');
+
+        if ($totalthemes === 0) {
+            $output->writeln('No themes to download...exiting...');
             return Command::SUCCESS;
         }
 
+        if ($offset > $totalthemes) {
+            $output->writeln('Offset is greater than total themes...exiting...');
+            return Command::SUCCESS;
+        }
+        $output->writeln('Limiting theme download to ' . $numToPull . ' themes... (offset by ' . $offset . ')');
+        $themesToUpdate = array_slice($themesToUpdate, $offset, $numToPull);
+
         $processes = [];
 
-        foreach ($pluginsToUpdate as $plugin => $versions) {
-            $versions = $this->determineVersionsToDownload($plugin, $versions, $numVersions);
-
+        foreach ($themesToUpdate as $theme => $versions) {
+            $versions    = $this->determineVersionsToDownload($theme, $versions, $numVersions);
             $versionList = implode(',', $versions);
 
             if (empty($versionList)) {
-                $output->writeln('No downloadable versions found for ' . $plugin . '...skipping...');
+                $output->writeln('No versions found for ' . $theme . '...skipping...');
                 continue;
             }
 
             $command = [
                 './assetgrabber',
-                'internal:plugin-download',
-                $plugin,
+                'internal:theme-download',
+                $theme,
                 $versionList,
                 $numVersions,
             ];
@@ -82,16 +87,14 @@ class PluginsGrabCommand extends AbstractBaseCommand
             }
 
             $process = new Process($command);
-            $process->start(function ($type, $buffer) use ($output) {
-                $output->write($buffer);
-            });
+            $process->start();
             $processes[] = $process;
 
             if (count($processes) >= 24) {
                 $output->writeln('Max processes reached...waiting for space...');
                 $stats = ProcessWaitUtil::wait($processes);
-                $output->writeln($stats);
                 $this->processStats($stats);
+                $output->writeln($stats);
                 $output->writeln('Process ended; starting another...');
             }
         }
@@ -104,11 +107,12 @@ class PluginsGrabCommand extends AbstractBaseCommand
             $output->writeln($stat);
         }
 
-        $output->writeln('All processes finished...');
+        $output->writeln('All processes finished!');
 
-        // Output statistics
         $this->endTimer();
+
         $output->writeln($this->getRunInfo($this->getCalculatedStats()));
+
         return Command::SUCCESS;
     }
 
@@ -116,7 +120,7 @@ class PluginsGrabCommand extends AbstractBaseCommand
      * @param string[] $versions
      * @return array<int, string>
      */
-    private function determineVersionsToDownload(string $plugin, array $versions, string $numToDownload): array
+    private function determineVersionsToDownload(string $theme, array $versions, string $numToDownload): array
     {
         switch ($numToDownload) {
             case 'all':
@@ -131,6 +135,6 @@ class PluginsGrabCommand extends AbstractBaseCommand
                 $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
         }
 
-        return $this->pluginMetadataService->getUnprocessedVersions($plugin, $download);
+        return $this->themesMetadataService->getUnprocessedVersions($theme, $download);
     }
 }

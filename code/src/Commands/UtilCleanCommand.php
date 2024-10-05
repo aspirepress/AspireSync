@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Process\Process;
 
-class UtilCleanDataCommand extends Command
+class UtilCleanCommand extends Command
 {
     /** @var int[] */
     private $filesDirsCount = [
@@ -22,7 +22,8 @@ class UtilCleanDataCommand extends Command
 
     protected function configure(): void
     {
-        $this->setName('util:clean-data')
+        $this->setName('util:clean')
+            ->setAliases(['util:clean-data'])
             ->setDescription('Clean data directory and reset to original');
     }
 
