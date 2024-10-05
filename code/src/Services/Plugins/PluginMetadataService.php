@@ -336,7 +336,6 @@ class PluginMetadataService
                 $plugin  = $row['slug'];
                 $version = $row['version'];
                 if (! in_array($plugin, $notFound)) {
-                    die('here');
                     $finalResult[$plugin][] = $version;
                 }
             }
