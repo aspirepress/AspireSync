@@ -6,11 +6,15 @@ namespace AssetGrabber\Utilities;
 
 abstract class OutputManagementUtil
 {
-    private const ERROR   = '[ERROR]  ';
+    private const ERROR   = '[ERROR]   ';
     private const WARNING = '[WARNING] ';
     private const NOTICE  = '[NOTICE]  ';
     private const INFO    = '[INFO]    ';
     private const DEBUG   = '[DEBUG]   ';
+
+    private const SUCCESS = '[SUCCESS] ';
+
+    private const FAILURE = '[FAILURE] ';
 
     public static function error(string $message): string
     {
@@ -35,6 +39,16 @@ abstract class OutputManagementUtil
     public static function debug(string $message): string
     {
         return self::formatMessage(self::DEBUG, $message);
+    }
+
+    public static function success(string $message): string
+    {
+        return self::formatMessage(self::SUCCESS, $message);
+    }
+
+    public static function failure(string $message): string
+    {
+        return self::formatMessage(self::FAILURE, $message);
     }
 
     private static function formatMessage($type, $message)
