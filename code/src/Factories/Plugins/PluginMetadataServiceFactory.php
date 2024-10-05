@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Factories\Plugins;
 
-use AssetGrabber\Services\PluginMetadataService;
+use AssetGrabber\Services\Plugins\PluginMetadataService;
 use Aura\Sql\ExtendedPdoInterface;
 use Laminas\ServiceManager\ServiceManager;
 

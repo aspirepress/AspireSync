@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands\Plugins;
 
 use AssetGrabber\Commands\AbstractBaseCommand;
-use AssetGrabber\Services\PluginMetadataService;
+use AssetGrabber\Services\Plugins\PluginMetadataService;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;

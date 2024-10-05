@@ -1,8 +1,6 @@
 #!/usr/bin/env php
 <?php
 
-use AssetGrabber\Services\PluginDownloadFromWpService;
-use AssetGrabber\Services\PluginListService;
 use Symfony\Component\Console\Application;
 
 require 'vendor/autoload.php';

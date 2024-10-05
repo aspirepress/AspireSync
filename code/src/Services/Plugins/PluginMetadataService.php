@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services;
+namespace AssetGrabber\Services\Plugins;
 
 use Aura\Sql\ExtendedPdoInterface;
 use Exception;

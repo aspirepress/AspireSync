@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Commands\Plugins;
 
-use AssetGrabber\Services\PluginDownloadFromWpService;
+use AssetGrabber\Services\Plugins\PluginDownloadFromWpService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

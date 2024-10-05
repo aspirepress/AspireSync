@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Factories\Plugins;
 
-use AssetGrabber\Services\PluginDownloadFromWpService;
-use AssetGrabber\Services\PluginMetadataService;
+use AssetGrabber\Services\Plugins\PluginDownloadFromWpService;
+use AssetGrabber\Services\Plugins\PluginMetadataService;
 use Laminas\ServiceManager\ServiceManager;
 
 class PluginDownloadFromWpServiceFactory

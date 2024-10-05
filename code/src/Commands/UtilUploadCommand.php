@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Commands;
 
-use AssetGrabber\Services\PluginMetadataService;
+use AssetGrabber\Services\Plugins\PluginMetadataService;
 use AssetGrabber\Utilities\ListManagementUtil;
 use Exception;
 use League\Flysystem\Filesystem;

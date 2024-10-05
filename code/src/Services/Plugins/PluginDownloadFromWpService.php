@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services;
+namespace AssetGrabber\Services\Plugins;
 
 use AssetGrabber\Services\Interfaces\DownloadServiceInterface;
 use GuzzleHttp\Client;

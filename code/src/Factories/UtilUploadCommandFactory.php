@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace AssetGrabber\Factories;
 
 use AssetGrabber\Commands\UtilUploadCommand;
-use AssetGrabber\Services\PluginMetadataService;
+use AssetGrabber\Services\Plugins\PluginMetadataService;
 use Laminas\ServiceManager\ServiceManager;
 
 class UtilUploadCommandFactory

@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services;
+namespace AssetGrabber\Services\Plugins;
 
 use AssetGrabber\Services\Interfaces\ListServiceInterface;
+use AssetGrabber\Services\RevisionMetadataService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
