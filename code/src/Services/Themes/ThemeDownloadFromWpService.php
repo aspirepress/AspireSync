@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services\Plugins;
+namespace AssetGrabber\Services\Themes;
 
 use AssetGrabber\Services\Interfaces\DownloadServiceInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
-class PluginDownloadFromWpService implements DownloadServiceInterface
+class ThemeDownloadFromWpService implements DownloadServiceInterface
 {
     /**
      * @param array<int, string> $userAgents
      */
-    public function __construct(private array $userAgents, private PluginMetadataService $pluginMetadataService)
+    public function __construct(private array $userAgents, private ThemesMetadataService $themeMetadataService)
     {
         shuffle($this->userAgents);
     }
@@ -24,14 +24,14 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
     public function download(string $theme, array $versions, string $numToDownload = 'all', bool $force = false): array
     {
         $client       = new Client();
-        $downloadFile = '/opt/assetgrabber/data/plugins/%s.%s.zip';
+        $downloadFile = '/opt/assetgrabber/data/themes/%s.%s.zip';
 
-        if (! file_exists('/opt/assetgrabber/data/plugins')) {
-            mkdir('/opt/assetgrabber/data/plugins');
+        if (! file_exists('/opt/assetgrabber/data/themes')) {
+            mkdir('/opt/assetgrabber/data/themes');
         }
 
         $outcomes     = [];
-        $downloadable = $this->pluginMetadataService->getDownloadUrlsForVersions($theme, $versions);
+        $downloadable = $this->themeMetadataService->getDownloadUrlsForVersions($theme, $versions);
 
         if (! $downloadable) {
             return $outcomes;
@@ -42,7 +42,7 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
 
             if (file_exists($filePath) && ! $force) {
                 $outcomes['304 Not Modified'][] = $version;
-                $this->pluginMetadataService->setVersionToDownloaded($theme, (string) $version);
+                $this->themeMetadataService->setVersionToDownloaded($theme, (string) $version);
                 continue;
             }
             try {
@@ -51,13 +51,13 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
                 if (filesize($filePath) === 0) {
                     unlink($filePath);
                 }
-                $this->pluginMetadataService->setVersionToDownloaded($theme, (string) $version);
+                $this->themeMetadataService->setVersionToDownloaded($theme, (string) $version);
             } catch (ClientException $e) {
                 if (method_exists($e, 'getResponse')) {
                     $response = $e->getResponse();
                     $outcomes[$response->getStatusCode() . ' ' . $response->getReasonPhrase()][] = $version;
                     if ($response->getStatusCode() === 404) {
-                        $this->pluginMetadataService->setVersionToDownloaded($theme, (string) $version);
+                        $this->themeMetadataService->setVersionToDownloaded($theme, (string) $version);
                     }
                 } else {
                     $outcomes[$e->getMessage()][] = $version;

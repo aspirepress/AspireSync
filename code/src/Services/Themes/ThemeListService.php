@@ -67,7 +67,7 @@ class ThemeListService implements ListServiceInterface
      */
     public function getUpdatedListOfItems(?array $explicitlyRequested): array
     {
-        // TODO: Implement getUpdatedListOfItems() method.
+        return $this->filter($this->themesMetadataService->getVersionsForUnfinalizedThemes(), $explicitlyRequested);
     }
 
     public function preserveRevision(string $action): void

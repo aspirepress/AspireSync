@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace AssetGrabber;
 
-use AssetGrabber\Commands\Plugins\DownlloadPluginsCommand;
+use AssetGrabber\Commands\Plugins\DownloadPluginsCommand;
 use AssetGrabber\Commands\Plugins\DownloadPluginsPartialCommand;
 use AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand;
 use AssetGrabber\Commands\Plugins\MetaDownloadPluginsCommand;
 use AssetGrabber\Commands\Plugins\MetaImportPluginsCommand;
+use AssetGrabber\Commands\Themes\DownloadThemesCommand;
+use AssetGrabber\Commands\Themes\InternalThemeDownloadCommand;
 use AssetGrabber\Commands\Themes\MetaDownloadThemesCommand;
 use AssetGrabber\Commands\Themes\MetaImportThemesCommand;
 use AssetGrabber\Commands\UtilCleanDataCommand;
@@ -26,8 +28,11 @@ use AssetGrabber\Factories\Plugins\PluginDownloadFromWpServiceFactory;
 use AssetGrabber\Factories\Plugins\PluginListServiceFactory;
 use AssetGrabber\Factories\Plugins\PluginMetadataServiceFactory;
 use AssetGrabber\Factories\RevisionMetadataServiceFactory;
+use AssetGrabber\Factories\Themes\DownloadThemesCommandFactory;
+use AssetGrabber\Factories\Themes\InternalThemeDownloadCommandFactory;
 use AssetGrabber\Factories\Themes\MetaDownloadThemesCommandFactory;
 use AssetGrabber\Factories\Themes\MetaImportThemesCommandFactory;
+use AssetGrabber\Factories\Themes\ThemeDownloadFromWpServiceFactory;
 use AssetGrabber\Factories\Themes\ThemeListServiceFactory;
 use AssetGrabber\Factories\Themes\ThemeMetadataServiceFactory;
 use AssetGrabber\Factories\UtilUploadCommandFactory;
@@ -35,6 +40,7 @@ use AssetGrabber\Services\Plugins\PluginDownloadFromWpService;
 use AssetGrabber\Services\Plugins\PluginListService;
 use AssetGrabber\Services\Plugins\PluginMetadataService;
 use AssetGrabber\Services\RevisionMetadataService;
+use AssetGrabber\Services\Themes\ThemeDownloadFromWpService;
 use AssetGrabber\Services\Themes\ThemeListService;
 use AssetGrabber\Services\Themes\ThemesMetadataService;
 use Aura\Sql\ExtendedPdoInterface;
@@ -72,9 +78,10 @@ class ConfigProvider
                 PluginMetadataService::class       => PluginMetadataServiceFactory::class,
                 RevisionMetadataService::class     => RevisionMetadataServiceFactory::class,
                 ThemesMetadataService::class       => ThemeMetadataServiceFactory::class,
+                ThemeDownloadFromWpService::class => ThemeDownloadFromWpServiceFactory::class,
 
                 // Commands
-                DownlloadPluginsCommand::class       => DownloadPluginsCommandFactory::class,
+                DownloadPluginsCommand::class        => DownloadPluginsCommandFactory::class,
                 InternalPluginDownloadCommand::class => InternalPluginDownloadCommandFactory::class,
                 DownloadPluginsPartialCommand::class => DownloadPluginsPartialCommandFactory::class,
                 MetaDownloadPluginsCommand::class    => MetaDownloadPluginsCommandFactory::class,
@@ -82,6 +89,8 @@ class ConfigProvider
                 UtilUploadCommand::class             => UtilUploadCommandFactory::class,
                 MetaDownloadThemesCommand::class     => MetaDownloadThemesCommandFactory::class,
                 MetaImportThemesCommand::class       => MetaImportThemesCommandFactory::class,
+                DownloadThemesCommand::class         => DownloadThemesCommandFactory::class,
+                InternalThemeDownloadCommand::class => InternalThemeDownloadCommandFactory::class,
 
                 // Flysystem
                 Filesystem::class             => FilesystemFactory::class,

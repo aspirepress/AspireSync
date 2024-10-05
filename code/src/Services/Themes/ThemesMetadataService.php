@@ -9,6 +9,7 @@ use Exception;
 use PDOException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use RuntimeException;
 
 class ThemesMetadataService
 {
@@ -36,7 +37,7 @@ class ThemesMetadataService
         $sql    = 'SELECT slug, pulled_at FROM themes';
         $result = [];
         foreach ($this->pdo->fetchAll($sql) as $row) {
-            $result[$row['slug']] = ['status' => $row['status'], 'pulled_at' => $row['pulled_at']];
+            $result[$row['slug']] = ['pulled_at' => $row['pulled_at']];
         }
 
         return $result;
@@ -110,7 +111,7 @@ class ThemesMetadataService
         $this->pdo->beginTransaction();
 
         try {
-            $mdSql      = 'SELECT id, metadata FROM plugins WHERE slug = :slug';
+            $mdSql      = 'SELECT id, metadata FROM themes WHERE slug = :slug';
             $result     = $this->pdo->fetchOne($mdSql, ['slug' => $fileContents['slug']]);
             $metadata   = json_decode($result['metadata'], true);
             $id         = Uuid::fromString($result['id']);
@@ -153,7 +154,7 @@ class ThemesMetadataService
             $versionResult = $this->writeVersionsForTheme($id, $newVersions, 'wp_cdn');
 
             if (! empty($versionResult['error'])) {
-                throw new Exception('Unable to write versions for plugin ' . $slug);
+                throw new Exception('Unable to write versions for theme ' . $slug);
             }
 
             $this->pdo->commit();
@@ -215,4 +216,64 @@ class ThemesMetadataService
 
         return $newVersions;
     }
-}
+
+    /**
+     * @param string[] $versions
+     * @return string[]
+     */
+    public function getUnprocessedVersions(string $theme, array $versions, string $type = 'wp_cdn'): array
+    {
+        $sql     = 'SELECT version FROM theme_files LEFT JOIN themes ON themes.id = theme_files.theme_id WHERE type = :type AND themes.slug = :theme AND processed IS NULL AND theme_files.version IN (:versions)';
+        $results = $this->pdo->fetchAll($sql, ['theme' => $theme, 'type' => $type, 'versions' => $versions]);
+        $return  = [];
+        foreach ($results as $result) {
+            $return[] = $result['version'];
+        }
+        return $return;
+    }
+
+    /**
+     * @param array<int, string> $versions
+     * @return array<string, string>
+     */
+    public function getDownloadUrlsForVersions(string $theme, array $versions, string $type = 'wp_cdn'): array
+    {
+        try {
+            $sql = 'SELECT version, file_url FROM theme_files LEFT JOIN themes ON themes.id = theme_files.theme_id WHERE themes.slug = :theme AND theme_files.type = :type AND version IN (:versions)';
+
+            $results = $this->pdo->fetchAll($sql, ['theme' => $theme, 'type' => $type, 'versions' => $versions]);
+            $return  = [];
+            foreach($results as $result) {
+                $return[$result['version']] = $result['file_url'];
+            }
+            return $return;
+        } catch (PDOException $e) {
+            throw new RuntimeException('Unable to get download URLs for theme ' . $theme . '; reason: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * @return array<string, string[]>
+     */
+    public function getVersionsForUnfinalizedThemes(string $type = 'wp_cdn'): array
+    {
+        try {
+            $sql         = "SELECT themes.id, slug, version FROM theme_files LEFT JOIN themes ON themes.id = theme_files.theme_id WHERE theme_files.type = :type";
+            $result      = $this->pdo->fetchAll($sql, ['type' => $type]);
+            $finalResult = [];
+            foreach ($result as $row) {
+                $theme = $row['slug'];
+                $version = $row['version'];
+                $finalResult[$theme][] = $version;
+            }
+            return $finalResult;
+        } catch (PDOException $e) {
+            throw new RuntimeException('Unable to get versions for themes; reason: ' . $e->getMessage());
+        }
+    }
+
+    public function setVersionToDownloaded(string $theme, string $version, string $type = 'wp_cdn'): void
+    {
+        $sql = 'UPDATE theme_files SET processed = NOW() WHERE version = :version AND type = :type AND theme_id = (SELECT id FROM themes WHERE slug = :theme)';
+        $this->pdo->perform($sql, ['theme' => $theme, 'type' => $type, 'version' => $version]);
+    }}
