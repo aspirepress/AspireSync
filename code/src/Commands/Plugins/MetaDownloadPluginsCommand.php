@@ -48,7 +48,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         }
 
         $output->writeln('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getItemsForAction($plugins, 'plugins:meta');
+        $pluginsToUpdate = $this->pluginListService->getItemsForAction($plugins, $this->getName());
         $output->writeln(count($pluginsToUpdate) . ' plugins to download metadata for...');
 
         if (count($pluginsToUpdate) === 0) {
@@ -58,14 +58,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
 
         $processes = [];
 
-        foreach ($pluginsToUpdate as $plugin => $versions) {
-            $this->fetchPluginDetails($output, $plugin, $versions);
-        }
-
         $aliases = $this->getAliases();
-        foreach ($aliases as $alias) {
-            $this->pluginListService->preserveRevision($alias);
-        }
         $this->pluginListService->preserveRevision($this->getName());
         $this->endTimer();
 
