@@ -9,8 +9,8 @@ use AssetGrabber\Commands\Plugins\DownlloadPluginsCommand;
 use AssetGrabber\Commands\Plugins\MetaImportPluginsCommand;
 use AssetGrabber\Commands\Plugins\MetaDownloadPluginsCommand;
 use AssetGrabber\Commands\Plugins\DownloadPluginsPartialCommand;
-use AssetGrabber\Commands\Themes\ThemeImportMetaCommand;
-use AssetGrabber\Commands\Themes\ThemesMetaCommand;
+use AssetGrabber\Commands\Themes\MetaImportThemesCommand;
+use AssetGrabber\Commands\Themes\MetaDownloadThemesCommand;
 use AssetGrabber\Commands\UtilCleanDataCommand;
 use AssetGrabber\Commands\UtilUploadCommand;
 use AssetGrabber\Factories\ExtendedPdoFactory;
@@ -26,9 +26,9 @@ use AssetGrabber\Factories\Plugins\MetaImportPluginsCommandFactory;
 use AssetGrabber\Factories\Plugins\MetaDownloadPluginsCommandFactory;
 use AssetGrabber\Factories\Plugins\DownloadPluginsPartialCommandFactory;
 use AssetGrabber\Factories\RevisionMetadataServiceFactory;
-use AssetGrabber\Factories\Themes\ThemeImportMetaCommandFactory;
+use AssetGrabber\Factories\Themes\MetaImportThemesCommandFactory;
 use AssetGrabber\Factories\Themes\ThemeListServiceFactory;
-use AssetGrabber\Factories\Themes\ThemeMetaCommandFactory;
+use AssetGrabber\Factories\Themes\MetaDownloadThemesCommandFactory;
 use AssetGrabber\Factories\Themes\ThemeMetadataServiceFactory;
 use AssetGrabber\Factories\UtilUploadCommandFactory;
 use AssetGrabber\Services\Plugins\PluginDownloadFromWpService;
@@ -80,8 +80,8 @@ class ConfigProvider
                 MetaDownloadPluginsCommand::class            => MetaDownloadPluginsCommandFactory::class,
                 MetaImportPluginsCommand::class      => MetaImportPluginsCommandFactory::class,
                 UtilUploadCommand::class             => UtilUploadCommandFactory::class,
-                ThemesMetaCommand::class             => ThemeMetaCommandFactory::class,
-                ThemeImportMetaCommand::class        => ThemeImportMetaCommandFactory::class,
+                MetaDownloadThemesCommand::class             => MetaDownloadThemesCommandFactory::class,
+                MetaImportThemesCommand::class        => MetaImportThemesCommandFactory::class,
 
                 // Flysystem
                 Filesystem::class             => FilesystemFactory::class,

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Factories\Themes;
 
-use AssetGrabber\Commands\Themes\ThemesMetaCommand;
+use AssetGrabber\Commands\Themes\MetaDownloadThemesCommand;
 use AssetGrabber\Services\Themes\ThemeListService;
 use Laminas\ServiceManager\ServiceManager;
 
-class ThemeMetaCommandFactory
+class MetaDownloadThemesCommandFactory
 {
-    public function __invoke(ServiceManager $serviceManager): ThemesMetaCommand
+    public function __invoke(ServiceManager $serviceManager): MetaDownloadThemesCommand
     {
         $listSerivce = $serviceManager->get(ThemeListService::class);
-        return new ThemesMetaCommand($listSerivce);
+        return new MetaDownloadThemesCommand($listSerivce);
     }
 }

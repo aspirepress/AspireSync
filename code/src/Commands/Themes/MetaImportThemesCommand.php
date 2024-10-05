@@ -10,20 +10,20 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ThemeImportMetaCommand extends AbstractBaseCommand
+class MetaImportThemesCommand extends AbstractBaseCommand
 {
-    /** @var array<string, int>  */
+    /** @var array<string, int> */
     private array $stats = [
         'unwritable' => 0,
-        'error'      => 0,
-        'success'    => 0,
-        'update'     => 0,
-        'write'      => 0,
-        'skips'      => 0,
-        'total'      => 0,
+        'error' => 0,
+        'success' => 0,
+        'update' => 0,
+        'write' => 0,
+        'skips' => 0,
+        'total' => 0,
     ];
 
-    public function __construct(private ThemesMetadataService $pluginMetadata)
+    public function __construct(private ThemesMetadataService $themeMetadata)
     {
         parent::__construct();
     }
@@ -33,18 +33,18 @@ class ThemeImportMetaCommand extends AbstractBaseCommand
         $this->setName('meta:import:themes')
             ->setAliases(['themes:import-meta'])
             ->setDescription('Import metadata from JSON files into Postgres')
-            ->addOption('update-list', null, InputOption::VALUE_OPTIONAL, 'List the specific plugins to update');
+            ->addOption('update-list', null, InputOption::VALUE_OPTIONAL, 'List the specific themes to update');
     }
 
     public function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->startTimer();
-        $files = scandir('/opt/assetgrabber/data/plugin-raw-data');
+        $files = scandir('/opt/assetgrabber/data/theme-raw-data');
 
         if ($input->getOption('update-list')) {
             $updateList = explode(',', $input->getOption('update-list'));
-            $files      = $this->filterFiles($files, $updateList);
-            $count      = count($files);
+            $files = $this->filterFiles($files, $updateList);
+            $count = count($files);
         } else {
             $fileCount = count($files);
             if ($fileCount > 2) {
@@ -62,42 +62,36 @@ class ThemeImportMetaCommand extends AbstractBaseCommand
 
             $this->stats['total']++;
 
-            $fileContents = file_get_contents('/opt/assetgrabber/data/plugin-raw-data/' . $file);
+            $fileContents = file_get_contents('/opt/assetgrabber/data/theme-raw-data/' . $file);
             $fileContents = json_decode($fileContents, true);
 
-            $pulledAt = date('c', filemtime('/opt/assetgrabber/data/plugin-raw-data/' . $file));
+            if (isset($fileContents['error'])) {
+                $this->stats['unwritable']++;
+                $output->writeln("ERROR - Could not write theme $file because it does not exist.");
+                continue;
+            }
+
+            $pulledAt = date('c', filemtime('/opt/assetgrabber/data/theme-raw-data/' . $file));
 
             // Check for existing
-            $existing = $this->pluginMetadata->checkPluginInDatabase($fileContents['slug'] ?? '');
+            $existing = $this->themeMetadata->checkThemeInDatabase($fileContents['slug'] ?? '');
             if ($existing) {
                 if (strtotime($existing['pulled_at']) < strtotime($pulledAt)) {
-                    $output->writeln('NOTICE - Updating plugin ' . $fileContents['slug'] . ' as newer metadata exists...');
-                    $result = $this->pluginMetadata->updatePluginFromWP($fileContents, $pulledAt);
+                    $output->writeln('NOTICE - Updating theme ' . $fileContents['slug'] . ' as newer metadata exists...');
+                    $result = $this->themeMetadata->updateThemeFromWP($fileContents, $pulledAt);
                     $this->handleResponse($result, $fileContents['slug'], 'open', 'update', $output);
-                    continue;
                 } else {
                     $this->stats['skips']++;
                     $output->writeln(
-                        'NOTICE - Skipping plugin ' . $fileContents['slug'] . ' as it exists in DB already...'
+                        'NOTICE - Skipping theme ' . $fileContents['slug'] . ' as it exists in DB already...'
                     );
-                    continue;
                 }
-            }
-            if (isset($fileContents['error'])) {
-                if ($fileContents['error'] !== 'closed') {
-                    $this->stats['unwritable']++;
-                    $output->writeln('NOTICE - Skipping; unable to write file ' . $file);
-                    continue;
-                }
-
-                $output->writeln('NOTICE - Writing CLOSED plugin ' . $fileContents['slug']);
-                $result = $this->pluginMetadata->saveClosedPluginFromWP($fileContents, $pulledAt);
-                $this->handleResponse($result, $fileContents['slug'], 'closed', 'write', $output);
             } else {
-                $output->writeln('NOTICE - Writing OPEN plugin ' . $fileContents['slug']);
-                $result = $this->pluginMetadata->saveOpenPluginFromWP($fileContents, $pulledAt);
+                $output->writeln('NOTICE - Writing theme ' . $fileContents['slug']);
+                $result = $this->themeMetadata->saveThemeFromWP($fileContents, $pulledAt);
                 $this->handleResponse($result, $fileContents['slug'], 'open', 'write', $output);
             }
+
         }
 
         $this->endTimer();
@@ -117,24 +111,24 @@ class ThemeImportMetaCommand extends AbstractBaseCommand
     }
 
     /**
-     * @param  string[]|array  $result
+     * @param string[]|array $result
      */
-    private function handleResponse(array $result, string $slug, string $pluginState, string $action, OutputInterface $output): void
+    private function handleResponse(array $result, string $slug, string $themeState, string $action, OutputInterface $output): void
     {
-        if (! empty($result['error'])) {
+        if (!empty($result['error'])) {
             $output->writeln('ERROR - ' . $result['error']);
-            $output->writeln('ERROR - Unable to ' . $action . ' ' . $pluginState . ' plugin ' . $slug);
+            $output->writeln('ERROR - Unable to ' . $action . ' ' . $themeState . ' plugin ' . $slug);
             $this->stats['error']++;
         } else {
-            $output->writeln('SUCCESS - Completed ' . $action . ' for ' . $pluginState . ' plugin ' . $slug);
+            $output->writeln('SUCCESS - Completed ' . $action . ' for ' . $themeState . ' plugin ' . $slug);
             $this->stats[$action]++;
             $this->stats['success']++;
         }
     }
 
     /**
-     * @param  array<int, string>  $files
-     * @param  string[]  $updateList
+     * @param array<int, string> $files
+     * @param string[] $updateList
      * @return string[]
      */
     private function filterFiles(array $files, array $updateList): array

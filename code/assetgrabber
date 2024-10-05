@@ -6,8 +6,8 @@ use AssetGrabber\Commands\Plugins\DownlloadPluginsCommand;
 use AssetGrabber\Commands\Plugins\MetaImportPluginsCommand;
 use AssetGrabber\Commands\Plugins\MetaDownloadPluginsCommand;
 use AssetGrabber\Commands\Plugins\DownloadPluginsPartialCommand;
-use AssetGrabber\Commands\Themes\ThemeImportMetaCommand;
-use AssetGrabber\Commands\Themes\ThemesMetaCommand;
+use AssetGrabber\Commands\Themes\MetaImportThemesCommand;
+use AssetGrabber\Commands\Themes\MetaDownloadThemesCommand;
 use AssetGrabber\Commands\UtilCleanDataCommand;
 use AssetGrabber\Commands\UtilUploadCommand;
 use Symfony\Component\Console\Application;
@@ -31,8 +31,8 @@ $application->add($container->get(MetaImportPluginsCommand::class));
 $application->add($container->get(MetaDownloadPluginsCommand::class));
 $application->add($container->get(DownloadPluginsPartialCommand::class));
 
-$application->add($container->get(ThemesMetaCommand::class));
-$application->add($container->get(ThemeImportMetaCommand::class));
+$application->add($container->get(MetaDownloadThemesCommand::class));
+$application->add($container->get(MetaImportThemesCommand::class));
 
 $application->add($container->get(UtilCleanDataCommand::class));
 $application->add($container->get(UtilUploadCommand::class));
