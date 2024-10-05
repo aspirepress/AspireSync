@@ -49,6 +49,11 @@ abstract class AbstractBaseCommand extends Command
     protected function progressiveBackoff(OutputInterface $output): void
     {
         $sleep = $this->progressiveBackoffLevel * 2;
+
+        if ($sleep >=  120) {
+            throw new \RuntimeException('Progressive backoff exceeded maximum sleep time of 120 seconds...');
+        }
+
         $output->writeln('Backing Off; Sleeping for ' . $sleep . ' seconds...');
         sleep($sleep);
         $this->iterateProgressiveBackoffLevel(self::ITERATE_UP);
