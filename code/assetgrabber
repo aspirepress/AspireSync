@@ -11,7 +11,7 @@ use AssetGrabber\Commands\Themes\DownloadThemesPartialCommand;
 use AssetGrabber\Commands\Themes\InternalThemeDownloadCommand;
 use AssetGrabber\Commands\Themes\MetaImportThemesCommand;
 use AssetGrabber\Commands\Themes\MetaDownloadThemesCommand;
-use AssetGrabber\Commands\UtilCleanDataCommand;
+use AssetGrabber\Commands\UtilCleanCommand;
 use AssetGrabber\Commands\UtilUploadCommand;
 use Symfony\Component\Console\Application;
 
@@ -40,6 +40,6 @@ $application->add($container->get(DownloadThemesCommand::class));
 $application->add($container->get(DownloadThemesPartialCommand::class));
 $application->add($container->get(InternalThemeDownloadCommand::class));
 
-$application->add($container->get(UtilCleanDataCommand::class));
+$application->add($container->get(UtilCleanCommand::class));
 $application->add($container->get(UtilUploadCommand::class));
 $application->run();

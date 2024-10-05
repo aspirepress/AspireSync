@@ -14,7 +14,7 @@ use AssetGrabber\Commands\Themes\DownloadThemesPartialCommand;
 use AssetGrabber\Commands\Themes\InternalThemeDownloadCommand;
 use AssetGrabber\Commands\Themes\MetaDownloadThemesCommand;
 use AssetGrabber\Commands\Themes\MetaImportThemesCommand;
-use AssetGrabber\Commands\UtilCleanDataCommand;
+use AssetGrabber\Commands\UtilCleanCommand;
 use AssetGrabber\Commands\UtilUploadCommand;
 use AssetGrabber\Factories\ExtendedPdoFactory;
 use AssetGrabber\Factories\Flysystem\AwsS3V3AdapterFactory;
@@ -69,7 +69,7 @@ class ConfigProvider
     {
         return [
             'invokables' => [
-                UtilCleanDataCommand::class => UtilCleanDataCommand::class,
+                UtilCleanCommand::class => UtilCleanCommand::class,
             ],
             'factories'  => [
                 // Services
