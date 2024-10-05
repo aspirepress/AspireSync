@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Commands\Themes;
 
+use AssetGrabber\Commands\AbstractBaseCommand;
 use AssetGrabber\Services\Themes\ThemeDownloadFromWpService;
 use AssetGrabber\Utilities\ListManagementUtil;
 use Symfony\Component\Console\Command\Command;
@@ -12,7 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class InternalThemeDownloadCommand extends Command
+class InternalThemeDownloadCommand extends AbstractBaseCommand
 {
     public function __construct(private ThemeDownloadFromWpService $service)
     {
@@ -35,14 +36,14 @@ class InternalThemeDownloadCommand extends Command
         $theme       = $input->getArgument('theme');
         $numVersions = $input->getArgument('num-versions');
 
-        $output->writeln('Determining versions of ' . $theme . '...');
+        $this->debug('Determining versions of ' . $theme . '...');
         $versions = ListManagementUtil::explodeCommaSeparatedList($input->getArgument('version-list'));
 
         $versionCount = $this->versionCountBasedOnRequestedNumber($versions, $numVersions);
-        $output->writeln('Downloading ' . $versionCount . ' versions...');
+        $this->info('Downloading ' . $versionCount . ' versions...');
         $responses = $this->service->download($theme, $versions, $numVersions, $input->getOption('force'));
         foreach ($responses as $responseCode => $versions) {
-            $output->writeln($theme . ' ' . $responseCode . ': ' . count($versions));
+            $this->always($theme . ' ' . $responseCode . ': ' . count($versions));
         }
 
         return Command::SUCCESS;

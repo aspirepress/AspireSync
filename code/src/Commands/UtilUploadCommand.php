@@ -57,7 +57,7 @@ class UtilUploadCommand extends AbstractBaseCommand
 
         $this->endTimer();
 
-        $output->writeln($this->getRunInfo($this->calcStats()));
+        $this->always($this->getRunInfo($this->calcStats()));
 
         return $resultCode;
     }

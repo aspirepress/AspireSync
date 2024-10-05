@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Commands\Plugins;
 
+use AssetGrabber\Commands\AbstractBaseCommand;
 use AssetGrabber\Services\Plugins\PluginDownloadFromWpService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -11,7 +12,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class InternalPluginDownloadCommand extends Command
+class InternalPluginDownloadCommand extends AbstractBaseCommand
 {
     public function __construct(private PluginDownloadFromWpService $service)
     {
@@ -34,7 +35,9 @@ class InternalPluginDownloadCommand extends Command
         $plugin      = $input->getArgument('plugin');
         $numVersions = $input->getArgument('num-versions');
 
-        $output->writeln('Determining versions of ' . $plugin . '...');
+        $this->debug("Running {$this->getName()} for $plugin");
+
+        $this->debug('Determining versions of ' . $plugin . '...');
         $versions = explode(',', $input->getArgument('version-list'));
 
         array_walk($versions, function (&$value) {
@@ -42,10 +45,10 @@ class InternalPluginDownloadCommand extends Command
         });
 
         $versionsToDownload = $this->determineDownloadedVersions($versions, $numVersions);
-        $output->writeln('Downloading ' . $versionsToDownload . ' versions...');
+        $this->debug('Downloading ' . $versionsToDownload . ' versions...');
         $responses = $this->service->download($plugin, $versions, $numVersions, $input->getOption('force'));
         foreach ($responses as $responseCode => $versions) {
-            $output->writeln($plugin . ' ' . $responseCode . ': ' . count($versions));
+            $this->always($plugin . ' ' . $responseCode . ': ' . count($versions));
         }
 
         return Command::SUCCESS;

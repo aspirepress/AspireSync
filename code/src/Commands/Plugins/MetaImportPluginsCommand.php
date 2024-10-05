@@ -38,6 +38,8 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
 
     public function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->always("Running command {$this->getName()}");
+
         $this->startTimer();
         if (file_exists('/opt/assetgrabber/data/plugin-raw-data') && is_readable('/opt/assetgrabber/data/plugin-raw-data')) {
             $files = scandir('/opt/assetgrabber/data/plugin-raw-data');
@@ -58,7 +60,7 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
                 $count = 0;
             }
         }
-        $output->writeln('Importing ' . $count . ' files...');
+        $this->debug('Importing ' . $count . ' files...');
 
         foreach ($files as $file) {
             if (strpos($file, '.json') === false) {
@@ -76,14 +78,13 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
             $existing = $this->pluginMetadata->checkPluginInDatabase($fileContents['slug'] ?? '');
             if ($existing) {
                 if (strtotime($existing['pulled_at']) < strtotime($pulledAt)) {
-                    $output->writeln('NOTICE - Updating plugin ' . $fileContents['slug'] . ' as newer metadata exists...');
+                    $this->notice('Updating plugin ' . $fileContents['slug'] . ' as newer metadata exists...');
                     $result = $this->pluginMetadata->updatePluginFromWP($fileContents, $pulledAt);
                     $this->handleResponse($result, $fileContents['slug'], 'open', 'update', $output);
                     continue;
                 } else {
                     $this->stats['skips']++;
-                    $output->writeln(
-                        'NOTICE - Skipping plugin ' . $fileContents['slug'] . ' as it exists in DB already...'
+                    $this->notice('Skipping plugin ' . $fileContents['slug'] . ' as it exists in DB already...'
                     );
                     continue;
                 }
@@ -91,15 +92,15 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
             if (isset($fileContents['error'])) {
                 if ($fileContents['error'] !== 'closed') {
                     $this->stats['unwritable']++;
-                    $output->writeln('NOTICE - Skipping; unable to write file ' . $file);
+                    $this->notice('Skipping; unable to write file ' . $file);
                     continue;
                 }
 
-                $output->writeln('NOTICE - Writing CLOSED plugin ' . $fileContents['slug']);
+                $this->notice('Writing CLOSED plugin ' . $fileContents['slug']);
                 $result = $this->pluginMetadata->saveClosedPluginFromWP($fileContents, $pulledAt);
                 $this->handleResponse($result, $fileContents['slug'], 'closed', 'write', $output);
             } else {
-                $output->writeln('NOTICE - Writing OPEN plugin ' . $fileContents['slug']);
+                $this->notice('Writing OPEN plugin ' . $fileContents['slug']);
                 $result = $this->pluginMetadata->saveOpenPluginFromWP($fileContents, $pulledAt);
                 $this->handleResponse($result, $fileContents['slug'], 'open', 'write', $output);
             }
@@ -107,7 +108,7 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
 
         $this->endTimer();
 
-        $output->writeln($this->getRunInfo([
+        $this->always($this->getRunInfo([
             'Stats:',
             'Errors:     ' . $this->stats['error'],
             'Unwritable: ' . $this->stats['unwritable'],
@@ -127,11 +128,11 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
     private function handleResponse(array $result, string $slug, string $pluginState, string $action, OutputInterface $output): void
     {
         if (! empty($result['error'])) {
-            $output->writeln('ERROR - ' . $result['error']);
-            $output->writeln('ERROR - Unable to ' . $action . ' ' . $pluginState . ' plugin ' . $slug);
+            $this->error($result['error']);
+            $this->error('Unable to ' . $action . ' ' . $pluginState . ' plugin ' . $slug);
             $this->stats['error']++;
         } else {
-            $output->writeln('SUCCESS - Completed ' . $action . ' for ' . $pluginState . ' plugin ' . $slug);
+            $this->success('Completed ' . $action . ' for ' . $pluginState . ' plugin ' . $slug);
             $this->stats[$action]++;
             $this->stats['success']++;
         }

@@ -37,6 +37,8 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->always("Running command {$this->getName()}");
+
         $this->startTimer();
         $plugins         = [];
         $pluginsToUpdate = $input->getOption('plugins');
@@ -47,12 +49,12 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
             });
         }
 
-        $output->writeln('Getting list of plugins...');
+        $this->debug('Getting list of plugins...');
         $pluginsToUpdate = $this->pluginListService->getItemsForAction($plugins, $this->getName());
-        $output->writeln(count($pluginsToUpdate) . ' plugins to download metadata for...');
+        $this->debug(count($pluginsToUpdate) . ' plugins to download metadata for...');
 
         if (count($pluginsToUpdate) === 0) {
-            $output->writeln('No plugin metadata to download...exiting...');
+            $this->success('No plugin metadata to download...exiting...');
             return Command::SUCCESS;
         }
 
@@ -63,7 +65,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         $this->pluginListService->preserveRevision($this->getName());
         $this->endTimer();
 
-        $output->writeln($this->getRunInfo($this->calculateStats()));
+        $this->always($this->getRunInfo($this->calculateStats()));
         return Command::SUCCESS;
     }
 
@@ -89,15 +91,15 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         $data = $this->pluginListService->getItemMetadata($plugin);
 
         if (isset($data['versions']) && ! empty($data['versions'])) {
-            $output->writeln("INFO - Plugin $plugin has " . count($data['versions']) . ' versions');
+            $this->info("Plugin $plugin has " . count($data['versions']) . ' versions');
             $this->stats['versions'] += count($data['versions']);
         } elseif (isset($data['version'])) {
-            $output->writeln("INFO - Plugin $plugin has 1 version");
+            $this->info("Plugin $plugin has 1 version");
             $this->stats['versions'] += 1;
         } elseif (isset($data['skipped'])) {
-            $output->writeln("INFO - {$data['skipped']}");
+            $this->info("{$data['skipped']}");
         } elseif (isset($data['error'])) {
-            $output->writeln("NOTICE - Error fetching metadata for plugin $plugin: " . $data['error']);
+            $this->error("Not able to fetch metadata for plugin $plugin: " . $data['error']);
             if ('429' === (string) $data['error']) {
                 $this->stats['rate_limited']++;
                 $this->progressiveBackoff($output);
@@ -109,7 +111,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
             }
             $this->stats['errors']++;
         } else {
-            $output->writeln("INFO - No versions found for plugin $plugin");
+            $this->info("No versions found for plugin $plugin");
         }
 
         $this->iterateProgressiveBackoffLevel(self::ITERATE_DOWN);

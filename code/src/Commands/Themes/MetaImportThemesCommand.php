@@ -58,7 +58,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
                 $count = 0;
             }
         }
-        $output->writeln('Importing ' . $count . ' files...');
+        $this->debug('Importing ' . $count . ' files...');
 
         foreach ($files as $file) {
             if (strpos($file, '.json') === false) {
@@ -72,7 +72,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
 
             if (isset($fileContents['error'])) {
                 $this->stats['unwritable']++;
-                $output->writeln("ERROR - Could not write theme $file because it does not exist.");
+                $this->error("Could not write theme $file because it does not exist.");
                 continue;
             }
 
@@ -82,17 +82,16 @@ class MetaImportThemesCommand extends AbstractBaseCommand
             $existing = $this->themeMetadata->checkThemeInDatabase($fileContents['slug'] ?? '');
             if ($existing) {
                 if (strtotime($existing['pulled_at']) < strtotime($pulledAt)) {
-                    $output->writeln('NOTICE - Updating theme ' . $fileContents['slug'] . ' as newer metadata exists...');
+                    $this->notice('Updating theme ' . $fileContents['slug'] . ' as newer metadata exists...');
                     $result = $this->themeMetadata->updateThemeFromWP($fileContents, $pulledAt);
                     $this->handleResponse($result, $fileContents['slug'], 'open', 'update', $output);
                 } else {
                     $this->stats['skips']++;
-                    $output->writeln(
-                        'NOTICE - Skipping theme ' . $fileContents['slug'] . ' as it exists in DB already...'
+                    $this->notice('Skipping theme ' . $fileContents['slug'] . ' as it exists in DB already...'
                     );
                 }
             } else {
-                $output->writeln('NOTICE - Writing theme ' . $fileContents['slug']);
+                $this->notice('Writing theme ' . $fileContents['slug']);
                 $result = $this->themeMetadata->saveThemeFromWP($fileContents, $pulledAt);
                 $this->handleResponse($result, $fileContents['slug'], 'open', 'write', $output);
             }
@@ -100,7 +99,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
 
         $this->endTimer();
 
-        $output->writeln($this->getRunInfo([
+        $this->always($this->getRunInfo([
             'Stats:',
             'Errors:     ' . $this->stats['error'],
             'Unwritable: ' . $this->stats['unwritable'],
@@ -120,11 +119,11 @@ class MetaImportThemesCommand extends AbstractBaseCommand
     private function handleResponse(array $result, string $slug, string $themeState, string $action, OutputInterface $output): void
     {
         if (! empty($result['error'])) {
-            $output->writeln('ERROR - ' . $result['error']);
-            $output->writeln('ERROR - Unable to ' . $action . ' ' . $themeState . ' plugin ' . $slug);
+            $this->error($result['error']);
+            $this->error('Unable to ' . $action . ' ' . $themeState . ' plugin ' . $slug);
             $this->stats['error']++;
         } else {
-            $output->writeln('SUCCESS - Completed ' . $action . ' for ' . $themeState . ' plugin ' . $slug);
+            $this->success('Completed ' . $action . ' for ' . $themeState . ' plugin ' . $slug);
             $this->stats[$action]++;
             $this->stats['success']++;
         }

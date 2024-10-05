@@ -39,28 +39,29 @@ class DownloadThemesPartialCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->always("Running command {$this->getName()}");
         $this->startTimer();
         $numVersions = $input->getOption('versions');
         $numToPull   = (int) $input->getArgument('num-to-pull');
         $offset      = (int) $input->getArgument('offset');
 
-        $output->writeln('Getting list of themes...');
+        $this->debug('Getting list of themes...');
         $themesToUpdate = $this->themeListService->getUpdatedListOfItems([]);
 
         $totalthemes = count($themesToUpdate);
 
-        $output->writeln($totalthemes . ' themes to download...');
+        $this->debug($totalthemes . ' themes to download...');
 
         if ($totalthemes === 0) {
-            $output->writeln('No themes to download...exiting...');
+            $this->success('No themes to download...exiting...');
             return Command::SUCCESS;
         }
 
         if ($offset > $totalthemes) {
-            $output->writeln('Offset is greater than total themes...exiting...');
-            return Command::SUCCESS;
+            $this->failure('Offset is greater than total themes...exiting...');
+            return Command::FAILURE;
         }
-        $output->writeln('Limiting theme download to ' . $numToPull . ' themes... (offset by ' . $offset . ')');
+        $this->info('Limiting theme download to ' . $numToPull . ' themes... (offset by ' . $offset . ')');
         $themesToUpdate = array_slice($themesToUpdate, $offset, $numToPull);
 
         $processes = [];
@@ -70,7 +71,7 @@ class DownloadThemesPartialCommand extends AbstractBaseCommand
             $versionList = implode(',', $versions);
 
             if (empty($versionList)) {
-                $output->writeln('No versions found for ' . $theme . '...skipping...');
+                $this->info('No versions found for ' . $theme . '...skipping...');
                 continue;
             }
 
@@ -91,27 +92,27 @@ class DownloadThemesPartialCommand extends AbstractBaseCommand
             $processes[] = $process;
 
             if (count($processes) >= 24) {
-                $output->writeln('Max processes reached...waiting for space...');
+                $this->debug('Max processes reached...waiting for space...');
                 $stats = ProcessWaitUtil::wait($processes);
                 $this->processStats($stats);
-                $output->writeln($stats);
-                $output->writeln('Process ended; starting another...');
+                $this->info($stats);
+                $this->debug('Process ended; starting another...');
             }
         }
 
-        $output->writeln('Waiting for all processes to finish...');
+        $this->debug('Waiting for all processes to finish...');
 
         $stats = ProcessWaitUtil::waitAtEndOfScript($processes);
         foreach ($stats as $stat) {
             $this->processStats($stat);
-            $output->writeln($stat);
+            $this->info($stat);
         }
 
-        $output->writeln('All processes finished!');
+        $this->debug('All processes finished!');
 
         $this->endTimer();
 
-        $output->writeln($this->getRunInfo($this->getCalculatedStats()));
+        $this->always($this->getRunInfo($this->getCalculatedStats()));
 
         return Command::SUCCESS;
     }

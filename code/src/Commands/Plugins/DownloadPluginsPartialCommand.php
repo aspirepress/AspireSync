@@ -39,28 +39,30 @@ class DownloadPluginsPartialCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->always("Running command {$this->getName()}");
+
         $this->startTimer();
         $numVersions = $input->getOption('versions');
         $numToPull   = (int) $input->getArgument('num-to-pull');
         $offset      = (int) $input->getArgument('offset');
 
-        $output->writeln('Getting list of plugins...');
+        $this->debug('Getting list of plugins...');
         $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems([]);
 
         $totalPlugins = count($pluginsToUpdate);
 
-        $output->writeln($totalPlugins . ' plugins to download...');
+        $this->debug($totalPlugins . ' plugins to download...');
 
         if ($totalPlugins === 0) {
-            $output->writeln('No plugins to download...exiting...');
+            $this->success('No plugins to download...exiting...');
             return Command::SUCCESS;
         }
 
         if ($offset > $totalPlugins) {
-            $output->writeln('Offset is greater than total plugins...exiting...');
-            return Command::SUCCESS;
+            $this->failure('Offset is greater than total plugins...exiting...');
+            return Command::FAILURE;
         }
-        $output->writeln('Limiting plugin download to ' . $numToPull . ' plugins... (offset by ' . $offset . ')');
+        $this->info('Limiting plugin download to ' . $numToPull . ' plugins... (offset by ' . $offset . ')');
         $pluginsToUpdate = array_slice($pluginsToUpdate, $offset, $numToPull);
 
         $processes = [];
@@ -70,7 +72,7 @@ class DownloadPluginsPartialCommand extends AbstractBaseCommand
             $versionList = implode(',', $versions);
 
             if (empty($versionList)) {
-                $output->writeln('No versions found for ' . $plugin . '...skipping...');
+                $this->notice('No versions found for ' . $plugin . '...skipping...');
                 continue;
             }
 
@@ -91,27 +93,27 @@ class DownloadPluginsPartialCommand extends AbstractBaseCommand
             $processes[] = $process;
 
             if (count($processes) >= 24) {
-                $output->writeln('Max processes reached...waiting for space...');
+                $this->debug('Max processes reached...waiting for space...');
                 $stats = ProcessWaitUtil::wait($processes);
                 $this->processStats($stats);
-                $output->writeln($stats);
-                $output->writeln('Process ended; starting another...');
+                $this->info($stats);
+                $this->debug('Process ended; starting another...');
             }
         }
 
-        $output->writeln('Waiting for all processes to finish...');
+        $this->debug('Waiting for all processes to finish...');
 
         $stats = ProcessWaitUtil::waitAtEndOfScript($processes);
         foreach ($stats as $stat) {
             $this->processStats($stat);
-            $output->writeln($stat);
+            $this->info($stat);
         }
 
-        $output->writeln('All processes finished!');
+        $this->debug('All processes finished!');
 
         $this->endTimer();
 
-        $output->writeln($this->getRunInfo($this->getCalculatedStats()));
+        $this->always($this->getRunInfo($this->getCalculatedStats()));
 
         return Command::SUCCESS;
     }
