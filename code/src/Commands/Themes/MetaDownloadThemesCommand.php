@@ -38,6 +38,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->writeMessage("Running command " . $this->getName());
         $this->startTimer();
         $themes         = [];
         $themesToUpdate = $input->getOption('themes');
@@ -48,12 +49,12 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
             });
         }
 
-        $output->writeln('Getting list of themes...');
+        $this->info('Getting list of themes...');
         $themesToUpdate = $this->themeListService->getItemsForAction($themes, $this->getName());
-        $output->writeln(count($themesToUpdate) . ' themes to download metadata for...');
+        $this->info(count($themesToUpdate) . ' themes to download metadata for...');
 
         if (count($themesToUpdate) === 0) {
-            $output->writeln('No theme metadata to download...exiting...');
+            $this->error('No theme metadata to download...exiting...');
             return Command::SUCCESS;
         }
 
@@ -65,7 +66,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
         $this->themeListService->preserveRevision($this->getName());
         $this->endTimer();
 
-        $output->writeln($this->getRunInfo($this->calculateStats()));
+        $output->success($this->getRunInfo($this->calculateStats()));
         return Command::SUCCESS;
     }
 
@@ -92,15 +93,15 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
         $data = $this->themeListService->getItemMetadata((string) $theme);
 
         if (isset($data['versions']) && ! empty($data['versions'])) {
-            $this->writeMessage("Theme $theme has " . count($data['versions']) . ' versions', self::INFO);
+            $this->info("Theme $theme has " . count($data['versions']) . ' versions');
             $this->stats['versions'] += count($data['versions']);
         } elseif (isset($data['version'])) {
-            $this->writeMessage("Theme $theme has 1 version", self::INFO);
+            $this->info("Theme $theme has 1 version", self::INFO);
             $this->stats['versions'] += 1;
         } elseif (isset($data['skipped'])) {
-            $this->writeMessage($data['skipped'], self::NOTICE);
+            $this->notice($data['skipped'], self::NOTICE);
         } elseif (isset($data['error'])) {
-            $this->writeMessage("Error fetching metadata for theme $theme: " . $data['error'], self::ERROR);
+            $this->error("Error fetching metadata for theme $theme: " . $data['error']);
             if ('429' === (string) $data['error']) {
                 $this->progressiveBackoff($output);
                 $this->fetchThemeDetails($output, $theme, $versions);
@@ -112,7 +113,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
             }
             $this->stats['errors']++;
         } else {
-            $this->writeMessage("No versions found for theme $theme", self::NOTICE);
+            $this->notice("No versions found for theme $theme");
         }
 
         $this->iterateProgressiveBackoffLevel(self::ITERATE_DOWN);

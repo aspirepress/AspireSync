@@ -19,9 +19,11 @@ trait ErrorWritingTrait
 
     protected const FAILURE_MSG = 7;
 
+    protected const ALWAYS_WRITE = 8;
+
     private OutputInterface $io;
 
-    protected function writeMessage(string $message, int $level = self::SUCCESS): void
+    protected function writeMessage(string $message, int $level = self::ALWAYS_WRITE): void
     {
         switch ($level) {
             case self::ERROR:
@@ -52,8 +54,8 @@ trait ErrorWritingTrait
                 $this->io->writeln("<fg=black;bg=green>" . OutputManagementUtil::success($message) . "</>");
                 break;
 
-            default:
-                throw new \InvalidArgumentException('Invalid progress level');
+            case self::ALWAYS_WRITE:
+                $this->io->writeln("<fg=green>" . $message . "</>", Output::VERBOSITY_QUIET);
         }
     }
     protected function error(string $message): void
