@@ -155,7 +155,7 @@ class PluginMetadataService implements MetadataInterface
         }
     }
 
-    public function writeVersionsProcessed(UuidInterface $pluginId, array $versions, string $cdn): array
+    public function writeVersionProcessed(UuidInterface $pluginId, array $versions, string $cdn): array
     {
         $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version, created, processed) VALUES (:id, :plugin_id, :file_url, :type, :version, NOW(), NOW())';
 

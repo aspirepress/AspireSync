@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands;
 
 use AssetGrabber\Services\Interfaces\CallbackInterface;
+use AssetGrabber\Services\Plugins\PluginMetadataService;
+use AssetGrabber\Services\Themes\ThemesMetadataService;
 use AssetGrabber\Utilities\ListManagementUtil;
 use Exception;
 use InvalidArgumentException;
@@ -63,7 +65,7 @@ class UtilUploadCommand extends AbstractBaseCommand
         return $resultCode;
     }
 
-    private function upload(InputInterface $input, object $metadata): int
+    private function upload(InputInterface $input, ThemesMetadataService|PluginMetadataService $metadata): int
     {
         $itemRecords = ListManagementUtil::explodeCommaSeparatedList($input->getOption('slugs'));
         $cleanUp     = $input->getOption('clean');
@@ -88,7 +90,7 @@ class UtilUploadCommand extends AbstractBaseCommand
         }
 
         foreach ($files as $file) {
-            if (strpos($file, '.zip') === false) {
+            if (!str_contains($file, '.zip')) {
                 continue;
             }
 

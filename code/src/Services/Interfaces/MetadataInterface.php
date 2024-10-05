@@ -26,7 +26,7 @@ interface MetadataInterface
      */
     public function writeVersionsForPlugin(UuidInterface $pluginId, array $versions, string $cdn): array;
 
-    public function writeVersionsProcessed(UuidInterface $pluginId, array $versions, string $cdn);
+    public function writeVersionProcessed(UuidInterface $pluginId, array $versions, string $cdn);
 
     /**
      * @return array|string[]
