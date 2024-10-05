@@ -56,9 +56,10 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
             return Command::SUCCESS;
         }
 
-        $processes = [];
+        foreach($pluginsToUpdate as $plugin => $versions) {
+            $this->fetchPluginDetails($output, $plugin, $versions);
+        }
 
-        $aliases = $this->getAliases();
         $this->pluginListService->preserveRevision($this->getName());
         $this->endTimer();
 
@@ -88,25 +89,27 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         $data = $this->pluginListService->getItemMetadata($plugin);
 
         if (isset($data['versions']) && ! empty($data['versions'])) {
-            $output->writeln("Plugin $plugin has " . count($data['versions']) . ' versions');
+            $output->writeln("INFO - Plugin $plugin has " . count($data['versions']) . ' versions');
             $this->stats['versions'] += count($data['versions']);
         } elseif (isset($data['version'])) {
-            $output->writeln("Plugin $plugin has 1 version");
+            $output->writeln("INFO - Plugin $plugin has 1 version");
             $this->stats['versions'] += 1;
+        } else if (isset($data['skipped'])) {
+            $output->writeln("INFO - {$data['skipped']}");
         } elseif (isset($data['error'])) {
-            $output->writeln("Error fetching metadata for plugin $plugin: " . $data['error']);
+            $output->writeln("NOTICE - Error fetching metadata for plugin $plugin: " . $data['error']);
             if ('429' === (string) $data['error']) {
                 $this->stats['rate_limited']++;
                 $this->progressiveBackoff($output);
                 $this->fetchPluginDetails($output, $plugin, $versions);
                 return;
             }
-            if ('404' === (string) $data['error']) {
+            if ('Plugin not found.' === $data['error']) {
                 $this->pluginListService->markItemNotFound($plugin);
             }
             $this->stats['errors']++;
         } else {
-            $output->writeln("No versions found for plugin $plugin");
+            $output->writeln("INFO - No versions found for plugin $plugin");
         }
 
         $this->iterateProgressiveBackoffLevel(self::ITERATE_DOWN);

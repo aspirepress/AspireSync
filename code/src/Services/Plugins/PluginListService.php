@@ -43,6 +43,12 @@ class PluginListService implements ListServiceInterface
             mkdir('/opt/assetgrabber/data/plugin-raw-data');
         }
 
+        if ($this->isNotFound($item)) {
+            return [
+                'skipped' => $item . ' previously marked not found; skipping...'
+            ];
+        }
+
         $url    = 'https://api.wordpress.org/plugins/info/1.0/' . $item . '.json';
         $client = new Client();
         try {
