@@ -430,7 +430,7 @@ class PluginMetadataService
 
     public function getNotFoundPlugins(): array
     {
-        $sql = 'SELECT item_slug FROM not_found_items WHERE item_type = "plugin"';
+        $sql = "SELECT item_slug FROM not_found_items WHERE item_type = 'plugin'";
         return $this->pdo->fetchAll($sql);
     }
 
