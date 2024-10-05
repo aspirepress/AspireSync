@@ -29,6 +29,7 @@ class DownlloadPluginsCommand extends AbstractBaseCommand
     protected function configure(): void
     {
         $this->setName('download:plugins')
+            ->setAliases(['plugins:grab'])
             ->setDescription('Grabs plugins (with number of specified versions or explicitly specified plugins) from the origin repo')
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
             ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins to request')

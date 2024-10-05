@@ -29,6 +29,7 @@ class DownloadPluginsPartialCommand extends AbstractBaseCommand
     protected function configure(): void
     {
         $this->setName('download:plugins:partial')
+            ->setAliases(['plugins:partial'])
             ->setDescription('Pulls a partial number of plugins based on the full list of plugins')
             ->addArgument('num-to-pull', InputArgument::REQUIRED, 'Number of plugins to pull')
             ->addArgument('offset', InputArgument::OPTIONAL, 'Offset to start pulling from', 0)
