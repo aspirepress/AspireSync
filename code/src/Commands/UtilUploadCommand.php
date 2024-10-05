@@ -173,7 +173,7 @@ class UtilUploadCommand extends AbstractBaseCommand
                     $this->flysystem->writeStream('/plugins/' . $file, fopen($dir . '/' . $file, 'r'));
 
                     $versionInfo = [$version => '/plugins/' . $file];
-                    $this->pluginMetadata->writeVersionsForPlugin(Uuid::fromString($pluginId), $versionInfo, 'aws_s3');
+                    $this->pluginMetadata->writeVersionsProcessed(Uuid::fromString($pluginId), $versionInfo, 'aws_s3');
                     $output->writeln("SUCCESS - Uploaded and recorded $pluginName (v. $version)");
                     if ($cleanUp) {
                         $output->writeln('INFO - Removing file for ' . $pluginName);

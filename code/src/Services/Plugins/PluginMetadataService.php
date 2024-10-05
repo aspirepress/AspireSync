@@ -154,6 +154,39 @@ class PluginMetadataService
         }
     }
 
+    public function writeVersionsProcessed(UuidInterface $pluginId, array $versions , string $cdn)
+    {
+        $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version, created, processed) VALUES (:id, :plugin_id, :file_url, :type, :version, NOW(), NOW())';
+
+        if (! $this->pdo->inTransaction()) {
+            $ourTransaction = true;
+            $this->pdo->beginTransaction();
+        }
+
+        try {
+            foreach ($versions as $version => $url) {
+                $this->pdo->perform($sql, [
+                    'id'        => Uuid::uuid7()->toString(),
+                    'plugin_id' => $pluginId->toString(),
+                    'file_url'  => $url,
+                    'type'      => $cdn,
+                    'version'   => $version,
+                ]);
+            }
+
+            if (isset($ourTransaction)) {
+                $this->pdo->commit();
+            }
+
+            return ['error' => ''];
+        } catch (PDOException $e) {
+            if (isset($ourTransaction)) {
+                $this->pdo->rollBack();
+            }
+            return ['error' => $e->getMessage()];
+        }
+    }
+
     /**
      * @return array|string[]
      */
