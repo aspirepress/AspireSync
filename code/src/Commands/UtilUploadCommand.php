@@ -103,7 +103,7 @@ class UtilUploadCommand extends AbstractBaseCommand
                     $this->flysystem->writeStream('/themes/' . $file, fopen($dir . '/' . $file, 'r'));
 
                     $versionInfo = [$version => '/themes/' . $file];
-                    $this->themeMetadata->writeVersionsForTheme(Uuid::fromString($pluginId), $versionInfo, 'aws_s3');
+                    $this->themeMetadata->writeVersionProcessed(Uuid::fromString($pluginId), $versionInfo, 'aws_s3');
                     $output->writeln("SUCCESS - Uploaded and recorded $pluginName (v. $version)");
                     if ($cleanUp) {
                         $output->writeln('INFO - Removing file for ' . $pluginName);
