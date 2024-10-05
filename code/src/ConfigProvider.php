@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace AssetGrabber;
 
 use AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand;
-use AssetGrabber\Commands\Plugins\PluginsGrabCommand;
-use AssetGrabber\Commands\Plugins\PluginsImportMetaCommand;
-use AssetGrabber\Commands\Plugins\PluginsMetaCommand;
-use AssetGrabber\Commands\Plugins\PluginsPartialCommand;
+use AssetGrabber\Commands\Plugins\DownlloadPluginsCommand;
+use AssetGrabber\Commands\Plugins\MetaImportPluginsCommand;
+use AssetGrabber\Commands\Plugins\MetaDownloadPluginsCommand;
+use AssetGrabber\Commands\Plugins\DownloadPluginsPartialCommand;
+use AssetGrabber\Commands\Themes\ThemeImportMetaCommand;
 use AssetGrabber\Commands\Themes\ThemesMetaCommand;
 use AssetGrabber\Commands\UtilCleanDataCommand;
 use AssetGrabber\Commands\UtilUploadCommand;
@@ -20,11 +21,12 @@ use AssetGrabber\Factories\Plugins\InternalPluginDownloadCommandFactory;
 use AssetGrabber\Factories\Plugins\PluginDownloadFromWpServiceFactory;
 use AssetGrabber\Factories\Plugins\PluginListServiceFactory;
 use AssetGrabber\Factories\Plugins\PluginMetadataServiceFactory;
-use AssetGrabber\Factories\Plugins\PluginsGrabCommandFactory;
-use AssetGrabber\Factories\Plugins\PluginsImportMetaCommandFactory;
-use AssetGrabber\Factories\Plugins\PluginsMetaCommandFactory;
-use AssetGrabber\Factories\Plugins\PluginsPartialCommandFactory;
+use AssetGrabber\Factories\Plugins\DownloadPluginsCommandFactory;
+use AssetGrabber\Factories\Plugins\MetaImportPluginsCommandFactory;
+use AssetGrabber\Factories\Plugins\MetaDownloadPluginsCommandFactory;
+use AssetGrabber\Factories\Plugins\DownloadPluginsPartialCommandFactory;
 use AssetGrabber\Factories\RevisionMetadataServiceFactory;
+use AssetGrabber\Factories\Themes\ThemeImportMetaCommandFactory;
 use AssetGrabber\Factories\Themes\ThemeListServiceFactory;
 use AssetGrabber\Factories\Themes\ThemeMetaCommandFactory;
 use AssetGrabber\Factories\Themes\ThemeMetadataServiceFactory;
@@ -72,13 +74,14 @@ class ConfigProvider
                 ThemesMetadataService::class => ThemeMetadataServiceFactory::class,
 
                 // Commands
-                PluginsGrabCommand::class            => PluginsGrabCommandFactory::class,
+                DownlloadPluginsCommand::class            => DownloadPluginsCommandFactory::class,
                 InternalPluginDownloadCommand::class => InternalPluginDownloadCommandFactory::class,
-                PluginsPartialCommand::class         => PluginsPartialCommandFactory::class,
-                PluginsMetaCommand::class            => PluginsMetaCommandFactory::class,
-                PluginsImportMetaCommand::class      => PluginsImportMetaCommandFactory::class,
+                DownloadPluginsPartialCommand::class         => DownloadPluginsPartialCommandFactory::class,
+                MetaDownloadPluginsCommand::class            => MetaDownloadPluginsCommandFactory::class,
+                MetaImportPluginsCommand::class      => MetaImportPluginsCommandFactory::class,
                 UtilUploadCommand::class             => UtilUploadCommandFactory::class,
                 ThemesMetaCommand::class             => ThemeMetaCommandFactory::class,
+                ThemeImportMetaCommand::class        => ThemeImportMetaCommandFactory::class,
 
                 // Flysystem
                 Filesystem::class             => FilesystemFactory::class,

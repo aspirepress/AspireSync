@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class PluginsMetaCommand extends AbstractBaseCommand
+class MetaDownloadPluginsCommand extends AbstractBaseCommand
 {
     /** @var array<string, int> */
     private array $stats = [
@@ -28,7 +28,8 @@ class PluginsMetaCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('plugins:meta')
+        $this->setName('meta:download:plugins')
+            ->setAliases(['plugins:meta'])
             ->setDescription('Fetches the meta data of the plugins')
             ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all plugin meta-data; otherwise, we only update what has changed')
             ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins (separated by commas) to explicitly update');
@@ -61,7 +62,11 @@ class PluginsMetaCommand extends AbstractBaseCommand
             $this->fetchPluginDetails($output, $plugin, $versions);
         }
 
-        $this->pluginListService->preserveRevision('plugins:meta');
+        $aliases = $this->getAliases();
+        foreach ($aliases as $alias) {
+            $this->pluginListService->preserveRevision($alias);
+        }
+        $this->pluginListService->preserveRevision($this->getName());
         $this->endTimer();
 
         $output->writeln($this->getRunInfo($this->calculateStats()));

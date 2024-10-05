@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
-class PluginsPartialCommand extends AbstractBaseCommand
+class DownloadPluginsPartialCommand extends AbstractBaseCommand
 {
     use GetPluginsFromSourceTrait;
 
@@ -28,7 +28,7 @@ class PluginsPartialCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('plugins:partial')
+        $this->setName('download:plugins:partial')
             ->setDescription('Pulls a partial number of plugins based on the full list of plugins')
             ->addArgument('num-to-pull', InputArgument::REQUIRED, 'Number of plugins to pull')
             ->addArgument('offset', InputArgument::OPTIONAL, 'Offset to start pulling from', 0)

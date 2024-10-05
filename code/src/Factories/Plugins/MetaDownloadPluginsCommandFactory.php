@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Factories\Plugins;
 
-use AssetGrabber\Commands\Plugins\PluginsMetaCommand;
+use AssetGrabber\Commands\Plugins\MetaDownloadPluginsCommand;
 use AssetGrabber\Services\Plugins\PluginListService;
 use Laminas\ServiceManager\ServiceManager;
 
-class PluginsMetaCommandFactory
+class MetaDownloadPluginsCommandFactory
 {
-    public function __invoke(ServiceManager $serviceManager): PluginsMetaCommand
+    public function __invoke(ServiceManager $serviceManager): MetaDownloadPluginsCommand
     {
         $pluginListService = $serviceManager->get(PluginListService::class);
 
-        return new PluginsMetaCommand($pluginListService);
+        return new MetaDownloadPluginsCommand($pluginListService);
     }
 }

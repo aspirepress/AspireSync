@@ -28,7 +28,8 @@ class ThemesMetaCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('themes:meta')
+        $this->setName('meta:download:themes')
+            ->setAliases(['themes:meta'])
             ->setDescription('Fetches the meta data of the themes')
             ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all theme meta-data; otherwise, we only update what has changed')
             ->addOption('themes', null, InputOption::VALUE_OPTIONAL, 'List of themes (separated by commas) to explicitly update');

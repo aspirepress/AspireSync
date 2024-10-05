@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class PluginsImportMetaCommand extends AbstractBaseCommand
+class MetaImportPluginsCommand extends AbstractBaseCommand
 {
     /** @var array<string, int>  */
     private array $stats = [
@@ -30,7 +30,8 @@ class PluginsImportMetaCommand extends AbstractBaseCommand
 
     public function configure(): void
     {
-        $this->setName('plugins:import-meta')
+        $this->setName('meta:import:plugins')
+            ->setAliases(['plugins:import-meta'])
             ->setDescription('Import metadata from JSON files into Postgres')
             ->addOption('update-list', null, InputOption::VALUE_OPTIONAL, 'List the specific plugins to update');
     }

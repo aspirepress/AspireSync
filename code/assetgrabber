@@ -2,10 +2,11 @@
 <?php
 
 use AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand;
-use AssetGrabber\Commands\Plugins\PluginsGrabCommand;
-use AssetGrabber\Commands\Plugins\PluginsImportMetaCommand;
-use AssetGrabber\Commands\Plugins\PluginsMetaCommand;
-use AssetGrabber\Commands\Plugins\PluginsPartialCommand;
+use AssetGrabber\Commands\Plugins\DownlloadPluginsCommand;
+use AssetGrabber\Commands\Plugins\MetaImportPluginsCommand;
+use AssetGrabber\Commands\Plugins\MetaDownloadPluginsCommand;
+use AssetGrabber\Commands\Plugins\DownloadPluginsPartialCommand;
+use AssetGrabber\Commands\Themes\ThemeImportMetaCommand;
 use AssetGrabber\Commands\Themes\ThemesMetaCommand;
 use AssetGrabber\Commands\UtilCleanDataCommand;
 use AssetGrabber\Commands\UtilUploadCommand;
@@ -25,12 +26,13 @@ $container = new \Laminas\ServiceManager\ServiceManager($dependencies);
 $application = new Application();
 
 $application->add($container->get(InternalPluginDownloadCommand::class));
-$application->add($container->get(PluginsGrabCommand::class));
-$application->add($container->get(PluginsImportMetaCommand::class));
-$application->add($container->get(PluginsMetaCommand::class));
-$application->add($container->get(PluginsPartialCommand::class));
+$application->add($container->get(DownlloadPluginsCommand::class));
+$application->add($container->get(MetaImportPluginsCommand::class));
+$application->add($container->get(MetaDownloadPluginsCommand::class));
+$application->add($container->get(DownloadPluginsPartialCommand::class));
 
 $application->add($container->get(ThemesMetaCommand::class));
+$application->add($container->get(ThemeImportMetaCommand::class));
 
 $application->add($container->get(UtilCleanDataCommand::class));
 $application->add($container->get(UtilUploadCommand::class));

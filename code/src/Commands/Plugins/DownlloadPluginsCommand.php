@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
-class PluginsGrabCommand extends AbstractBaseCommand
+class DownlloadPluginsCommand extends AbstractBaseCommand
 {
     use GetPluginsFromSourceTrait;
 
@@ -28,7 +28,7 @@ class PluginsGrabCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('plugins:grab')
+        $this->setName('download:plugins')
             ->setDescription('Grabs plugins (with number of specified versions or explicitly specified plugins) from the origin repo')
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
             ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins to request')
