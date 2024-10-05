@@ -132,12 +132,11 @@ class ThemesMetadataService
             $versions       = $fileContents['versions'];
             $updatedAt      = date('c', strtotime($fileContents['last_updated']));
 
-            $sql = 'UPDATE themes SET metadata = :metadata, name = :name, current_version = :current_version, status = :status, updated = :updated, pulled_at = :pulled_at WHERE slug = :slug';
+            $sql = 'UPDATE themes SET metadata = :metadata, name = :name, current_version = :current_version, updated = :updated, pulled_at = :pulled_at WHERE slug = :slug';
             $this->pdo->perform($sql, [
                 'name'            => $name,
                 'slug'            => $slug,
                 'current_version' => $currentVersion,
-                'status'          => 'open',
                 'updated'         => $updatedAt,
                 'pulled_at'       => $pulledAt,
                 'metadata'        => json_encode($newMetadata),
