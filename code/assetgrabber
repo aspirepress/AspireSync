@@ -1,6 +1,14 @@
 #!/usr/bin/env php
 <?php
 
+use AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand;
+use AssetGrabber\Commands\Plugins\PluginsGrabCommand;
+use AssetGrabber\Commands\Plugins\PluginsImportMetaCommand;
+use AssetGrabber\Commands\Plugins\PluginsMetaCommand;
+use AssetGrabber\Commands\Plugins\PluginsPartialCommand;
+use AssetGrabber\Commands\Themes\ThemesMetaCommand;
+use AssetGrabber\Commands\UtilCleanDataCommand;
+use AssetGrabber\Commands\UtilUploadCommand;
 use Symfony\Component\Console\Application;
 
 require 'vendor/autoload.php';
@@ -16,13 +24,15 @@ $container = new \Laminas\ServiceManager\ServiceManager($dependencies);
 
 $application = new Application();
 
-$application->add($container->get(\AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand::class));
-$application->add($container->get(\AssetGrabber\Commands\Plugins\PluginsGrabCommand::class));
-$application->add($container->get(\AssetGrabber\Commands\Plugins\PluginsImportMetaCommand::class));
-$application->add($container->get(\AssetGrabber\Commands\Plugins\PluginsMetaCommand::class));
-$application->add($container->get(\AssetGrabber\Commands\Plugins\PluginsPartialCommand::class));
+$application->add($container->get(InternalPluginDownloadCommand::class));
+$application->add($container->get(PluginsGrabCommand::class));
+$application->add($container->get(PluginsImportMetaCommand::class));
+$application->add($container->get(PluginsMetaCommand::class));
+$application->add($container->get(PluginsPartialCommand::class));
 
-$application->add($container->get(\AssetGrabber\Commands\UtilCleanDataCommand::class));
-$application->add($container->get(\AssetGrabber\Commands\UtilUploadCommand::class));
+$application->add($container->get(ThemesMetaCommand::class));
+
+$application->add($container->get(UtilCleanDataCommand::class));
+$application->add($container->get(UtilUploadCommand::class));
 
 $application->run();

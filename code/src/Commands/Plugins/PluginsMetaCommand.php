@@ -18,6 +18,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
         'plugins'  => 0,
         'versions' => 0,
         'errors'   => 0,
+        'rate_limited' => 0,
     ];
 
     public function __construct(private PluginListService $pluginListService)
@@ -57,21 +58,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
         $processes = [];
 
         foreach ($pluginsToUpdate as $plugin => $versions) {
-            $this->stats['plugins']++;
-            $data = $this->pluginListService->getItemMetadata($plugin);
-
-            if (isset($data['versions']) && ! empty($data['versions'])) {
-                $output->writeln("Plugin $plugin has " . count($data['versions']) . ' versions');
-                $this->stats['versions'] += count($data['versions']);
-            } elseif (isset($data['version'])) {
-                $output->writeln("Plugin $plugin has 1 version");
-                $this->stats['versions'] += 1;
-            } elseif (isset($data['error'])) {
-                $output->writeln("Error fetching metadata for plugin $plugin: " . $data['error']);
-                $this->stats['errors']++;
-            } else {
-                $output->writeln("No versions found for plugin $plugin");
-            }
+            $this->fetchPluginDetails($output, $plugin, $versions);
         }
 
         $this->pluginListService->preserveRevision('plugins:meta');
@@ -93,4 +80,32 @@ class PluginsMetaCommand extends AbstractBaseCommand
             'Total Failed Downloads: ' . $this->stats['errors'],
         ];
     }
+
+    private function fetchPluginDetails(OutputInterface $output, string $plugin, array $versions): void
+    {
+        $this->stats['plugins']++;
+        $data = $this->pluginListService->getItemMetadata($plugin);
+
+        if (isset($data['versions']) && ! empty($data['versions'])) {
+            $output->writeln("Plugin $plugin has " . count($data['versions']) . ' versions');
+            $this->stats['versions'] += count($data['versions']);
+        } elseif (isset($data['version'])) {
+            $output->writeln("Plugin $plugin has 1 version");
+            $this->stats['versions'] += 1;
+        } elseif (isset($data['error'])) {
+            $output->writeln("Error fetching metadata for plugin $plugin: " . $data['error']);
+            if ('429' === (string) $data['error']) {
+                $this->stats['rate_limited']++;
+                $this->progressiveBackoff($output);
+                $this->fetchPluginDetails($output, $plugin, $versions);
+                return;
+            }
+            $this->stats['errors']++;
+        } else {
+            $output->writeln("No versions found for plugin $plugin");
+        }
+
+        $this->iterateProgressiveBackoffLevel(self::ITERATE_DOWN);
+    }
+
 }
