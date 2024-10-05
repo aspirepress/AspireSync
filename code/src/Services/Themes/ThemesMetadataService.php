@@ -339,7 +339,7 @@ class ThemesMetadataService
      */
     public function getData(array $filterBy = []): array
     {
-        if ($filterBy) {
+        if (! empty($filterBy)) {
             $sql    = "SELECT id, slug FROM themes WHERE slug IN (:themes)";
             $themes = $this->pdo->fetchAll($sql, ['themes' => $filterBy]);
         } else {

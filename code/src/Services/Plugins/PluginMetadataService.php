@@ -428,7 +428,7 @@ class PluginMetadataService implements MetadataInterface
      */
     public function getData(array $filterBy = []): array
     {
-        if ($filterBy) {
+        if (! empty($filterBy)) {
             $sql     = "SELECT id, slug FROM plugins WHERE status = 'open' AND slug IN (:plugins)";
             $plugins = $this->pdo->fetchAll($sql, ['plugins' => $filterBy]);
         } else {
