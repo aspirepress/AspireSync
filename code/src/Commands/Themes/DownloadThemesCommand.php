@@ -47,12 +47,12 @@ class DownloadThemesCommand extends AbstractBaseCommand
             $themesList = ListManagementUtil::explodeCommaSeparatedList($themesList);
         }
 
-        $output->writeln('Getting list of themes...');
+        $this->info('Getting list of themes...');
         $themesToUpdate = $this->themeListService->getUpdatedListOfItems($themesList);
 
-        $output->writeln(count($themesToUpdate) . ' themes to download...');
+        $this->info(count($themesToUpdate) . ' themes to download...');
         if (count($themesToUpdate) === 0) {
-            $output->writeln('No themes to download...exiting...');
+            $this->always('No themes to download...exiting...');
             return Command::SUCCESS;
         }
 
@@ -64,7 +64,7 @@ class DownloadThemesCommand extends AbstractBaseCommand
             $versionList = implode(',', $versions);
 
             if (empty($versionList)) {
-                $output->writeln('No downloadable versions found for ' . $theme . '...skipping...');
+                $this->notice('No downloadable versions found for ' . $theme . '...skipping...');
                 continue;
             }
 
@@ -85,27 +85,27 @@ class DownloadThemesCommand extends AbstractBaseCommand
 
             $processes[] = $process;
             if (count($processes) >= 24) {
-                $output->writeln('Max processes reached...waiting for space...');
+                $this->debug('Max processes reached...waiting for space...');
                 $stats = ProcessWaitUtil::wait($processes);
-                $output->writeln($stats);
+                $this->info($stats);
                 $this->processStats($stats);
-                $output->writeln('Process ended; starting another...');
+                $this->debug('Process ended; starting another...');
             }
         }
 
-        $output->writeln('Waiting for all processes to finish...');
+        $this->info('Waiting for all processes to finish...');
 
         $stats = ProcessWaitUtil::waitAtEndOfScript($processes);
         foreach ($stats as $stat) {
             $this->processStats($stat);
-            $output->writeln($stat);
+            $this->info($stat);
         }
 
-        $output->writeln('All processes finished...');
+        $this->info('All processes finished...');
 
         // Output statistics
         $this->endTimer();
-        $output->writeln($this->getRunInfo($this->getCalculatedStats()));
+        $this->always($this->getRunInfo($this->getCalculatedStats()));
         return Command::SUCCESS;
     }
 

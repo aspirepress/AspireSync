@@ -23,7 +23,7 @@ trait ErrorWritingTrait
 
     private OutputInterface $io;
 
-    protected function writeMessage(string $message, int $level = self::ALWAYS_WRITE): void
+    protected function writeMessage(string|Iterable $message, int $level = self::ALWAYS_WRITE): void
     {
         switch ($level) {
             case self::ERROR:
@@ -55,41 +55,41 @@ trait ErrorWritingTrait
                 break;
 
             case self::ALWAYS_WRITE:
-                $this->io->writeln("<fg=green>" . $message . "</>", Output::VERBOSITY_QUIET);
+                $this->io->writeln("<fg=green>" . OutputManagementUtil::generic($message) . "</>", Output::VERBOSITY_QUIET);
         }
     }
-    protected function error(string $message): void
+    protected function error(string|Iterable $message): void
     {
         $this->writeMessage($message, self::ERROR);
     }
-    protected function warning(string $message): void
+    protected function warning(string|Iterable $message): void
     {
         $this->writeMessage($message, self::WARNING);
     }
-    protected function notice(string $message): void
+    protected function notice(string|Iterable $message): void
     {
         $this->writeMessage($message, self::NOTICE);
     }
-    protected function debug(string $message): void
+    protected function debug(string|Iterable $message): void
     {
         $this->writeMessage($message, self::DEBUG);
     }
 
-    protected function info(string $message): void
+    protected function info(string|Iterable $message): void
     {
         $this->writeMessage($message, self::INFO);
     }
 
-    protected function success(string $message): void
+    protected function success(string|Iterable $message): void
     {
         $this->writeMessage($message, self::SUCCESS_MSG);
     }
-    protected function failure(string $message): void
+    protected function failure(string|Iterable $message): void
     {
         $this->writeMessage($message, self::FAILURE_MSG);
     }
 
-    protected function always(string $message): void
+    protected function always(string|Iterable $message): void
     {
         $this->writeMessage($message, self::ALWAYS_WRITE);
     }

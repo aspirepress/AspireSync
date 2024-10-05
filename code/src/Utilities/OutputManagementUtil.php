@@ -16,43 +16,64 @@ abstract class OutputManagementUtil
 
     private const FAILURE = '[FAILURE] ';
 
-    public static function error(string $message): string
+    public static function error(string|Iterable $message): string
     {
         return self::formatMessage(self::ERROR, $message);
     }
 
-    public static function warning(string $message): string
+    public static function warning(string|Iterable $message): string
     {
         return self::formatMessage(self::WARNING, $message);
     }
 
-    public static function notice(string $message): string
+    public static function notice(string|Iterable $message): string
     {
         return self::formatMessage(self::NOTICE, $message);
     }
 
-    public static function info(string $message): string
+    public static function info(string|Iterable $message): string
     {
         return self::formatMessage(self::INFO, $message);
     }
 
-    public static function debug(string $message): string
+    public static function debug(string|Iterable $message): string
     {
         return self::formatMessage(self::DEBUG, $message);
     }
 
-    public static function success(string $message): string
+    public static function success(string|Iterable $message): string
     {
         return self::formatMessage(self::SUCCESS, $message);
     }
 
-    public static function failure(string $message): string
+    public static function failure(string|Iterable $message): string
     {
         return self::formatMessage(self::FAILURE, $message);
     }
 
-    private static function formatMessage($type, $message)
+    private static function formatMessage(string $type, string|Iterable $messages)
     {
-        return $type . $message;
+        $output = '';
+        if (is_iterable($messages)) {
+            foreach ($messages as $msg) {
+                $output .= $type . $msg . PHP_EOL;
+            }
+            return $output;
+        }
+
+        return $type . $messages;
+    }
+
+    public static function generic(string|Iterable $messages): string
+    {
+        if (is_iterable($messages)) {
+            $output = '';
+            foreach ($messages as $msg) {
+                $output .= $msg . PHP_EOL;
+            }
+            return $output;
+        }
+
+        return $messages;
     }
 }
