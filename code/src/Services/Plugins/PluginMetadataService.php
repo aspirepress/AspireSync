@@ -154,7 +154,7 @@ class PluginMetadataService
         }
     }
 
-    public function writeVersionsProcessed(UuidInterface $pluginId, array $versions , string $cdn)
+    public function writeVersionsProcessed(UuidInterface $pluginId, array $versions, string $cdn)
     {
         $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version, created, processed) VALUES (:id, :plugin_id, :file_url, :type, :version, NOW(), NOW())';
 
@@ -361,7 +361,7 @@ class PluginMetadataService
     public function getVersionsForUnfinalizedPlugins(string $type = 'wp_cdn'): array
     {
         try {
-            $notFound = $this->getNotFoundPlugins();
+            $notFound    = $this->getNotFoundPlugins();
             $sql         = "SELECT plugins.id, slug, version, plugin_files.metadata as version_meta FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugin_files.type = :type AND plugins.status = 'open'";
             $result      = $this->pdo->fetchAll($sql, ['type' => $type]);
             $finalResult = [];
@@ -472,7 +472,7 @@ class PluginMetadataService
 
         if (! $noLimit) {
             $sql .= " AND created_at > NOW() - INTERVAL '1 WEEK'";
-        };
+        }
 
         $result = $this->pdo->fetchOne($sql, ['item' => $item]);
         return $result['count'] > 0;

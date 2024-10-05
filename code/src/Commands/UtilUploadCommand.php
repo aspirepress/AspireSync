@@ -54,7 +54,7 @@ class UtilUploadCommand extends AbstractBaseCommand
     private function uploadThemes(InputInterface $input, OutputInterface $output): int
     {
         $this->startTimer();
-        $themes = ListManagementUtil::explodeCommaSeparatedList($input->getOption('slugs'));
+        $themes  = ListManagementUtil::explodeCommaSeparatedList($input->getOption('slugs'));
         $cleanUp = $input->getOption('clean');
 
         $output->writeln('Preparing to upload files to S3...');

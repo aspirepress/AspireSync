@@ -56,7 +56,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
             return Command::SUCCESS;
         }
 
-        foreach($pluginsToUpdate as $plugin => $versions) {
+        foreach ($pluginsToUpdate as $plugin => $versions) {
             $this->fetchPluginDetails($output, $plugin, $versions);
         }
 
@@ -94,7 +94,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         } elseif (isset($data['version'])) {
             $output->writeln("INFO - Plugin $plugin has 1 version");
             $this->stats['versions'] += 1;
-        } else if (isset($data['skipped'])) {
+        } elseif (isset($data['skipped'])) {
             $output->writeln("INFO - {$data['skipped']}");
         } elseif (isset($data['error'])) {
             $output->writeln("NOTICE - Error fetching metadata for plugin $plugin: " . $data['error']);

@@ -45,7 +45,7 @@ class PluginListService implements ListServiceInterface
 
         if ($this->isNotFound($item)) {
             return [
-                'skipped' => $item . ' previously marked not found; skipping...'
+                'skipped' => $item . ' previously marked not found; skipping...',
             ];
         }
 

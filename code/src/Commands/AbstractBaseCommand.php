@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands;
 
 use InvalidArgumentException;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -50,8 +51,8 @@ abstract class AbstractBaseCommand extends Command
     {
         $sleep = $this->progressiveBackoffLevel * 2;
 
-        if ($sleep >=  120) {
-            throw new \RuntimeException('Progressive backoff exceeded maximum sleep time of 120 seconds...');
+        if ($sleep >= 120) {
+            throw new RuntimeException('Progressive backoff exceeded maximum sleep time of 120 seconds...');
         }
 
         $output->writeln('Backing Off; Sleeping for ' . $sleep . ' seconds...');

@@ -164,6 +164,7 @@ class ThemesMetadataService
             return ['error' => $e->getMessage()];
         }
     }
+
     public function writeVersionProcessed(UuidInterface $themeId, array $versions, string $cdn = 'wp_cdn'): array
     {
         $sql = 'INSERT INTO theme_files (id, theme_id, file_url, type, version, created, updated) VALUES (:id, :theme_id, :file_url, :type, :version, NOW(), NOW())';
@@ -275,7 +276,7 @@ class ThemesMetadataService
 
             $results = $this->pdo->fetchAll($sql, ['theme' => $theme, 'type' => $type, 'versions' => $versions]);
             $return  = [];
-            foreach($results as $result) {
+            foreach ($results as $result) {
                 $return[$result['version']] = $result['file_url'];
             }
             return $return;
@@ -289,14 +290,18 @@ class ThemesMetadataService
      */
     public function getVersionsForUnfinalizedThemes(string $type = 'wp_cdn'): array
     {
+        $notFound = $this->getNotFoundThemes();
+
         try {
             $sql         = "SELECT themes.id, slug, version FROM theme_files LEFT JOIN themes ON themes.id = theme_files.theme_id WHERE theme_files.type = :type";
             $result      = $this->pdo->fetchAll($sql, ['type' => $type]);
             $finalResult = [];
             foreach ($result as $row) {
-                $theme = $row['slug'];
+                $theme   = $row['slug'];
                 $version = $row['version'];
-                $finalResult[$theme][] = $version;
+                if (! in_array($version, $notFound)) {
+                    $finalResult[$theme][] = $version;
+                }
             }
             return $finalResult;
         } catch (PDOException $e) {
@@ -318,7 +323,7 @@ class ThemesMetadataService
         $sql  = 'SELECT * FROM theme_files WHERE theme_id = :theme_id AND type = :type';
         $args = [
             'theme_id' => $themeId,
-            'type'      => $type,
+            'type'     => $type,
         ];
         if ($version) {
             $sql            .= ' AND version = :version';
@@ -335,10 +340,10 @@ class ThemesMetadataService
     public function getThemeData(array $filterBy = []): array
     {
         if ($filterBy) {
-            $sql     = "SELECT id, slug FROM themes WHERE slug IN (:themes)";
+            $sql    = "SELECT id, slug FROM themes WHERE slug IN (:themes)";
             $themes = $this->pdo->fetchAll($sql, ['themes' => $filterBy]);
         } else {
-            $sql     = "SELECT id, slug FROM themes";
+            $sql    = "SELECT id, slug FROM themes";
             $themes = $this->pdo->fetchAll($sql);
         }
         $result = [];
@@ -347,5 +352,34 @@ class ThemesMetadataService
         }
 
         return $result;
+    }
+
+    public function getNotFoundThemes(): array
+    {
+        $sql = "SELECT item_slug FROM not_found_items WHERE item_type = 'theme'";
+        return $this->pdo->fetchAll($sql);
+    }
+
+    public function isNotFound(string $item, bool $noLimit = false): bool
+    {
+        $sql = "SELECT COUNT(*) FROM not_found_items WHERE item_slug = :item AND item_type = 'theme'";
+
+        if (! $noLimit) {
+            $sql .= " AND created_at > NOW() - INTERVAL '1 WEEK'";
+        }
+
+        $result = $this->pdo->fetchOne($sql, ['item' => $item]);
+        return $result['count'] > 0;
+    }
+
+    public function markItemNotFound(string $item): void
+    {
+        if ($this->isNotFound($item, true)) {
+            $sql = "UPDATE not_found_items SET updated_at = NOW() WHERE item_slug = :item AND item_type = 'theme'";
+            $this->pdo->perform($sql);
+        } else {
+            $sql = "INSERT INTO not_found_items (id, item_type, item_slug) VALUES (:id, 'theme', :item)";
+            $this->pdo->perform($sql, ['id' => Uuid::uuid7()->toString(), 'item' => $item]);
+        }
     }
 }

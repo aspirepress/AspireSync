@@ -12,7 +12,7 @@ class ThemeDownloadFromWpServiceFactory
 {
     public function __invoke(ServiceManager $serviceManager): ThemeDownloadFromWpService
     {
-        $ua                = $serviceManager->get('config')['user-agents'];
+        $ua            = $serviceManager->get('config')['user-agents'];
         $themeMetadata = $serviceManager->get(ThemesMetadataService::class);
         return new ThemeDownloadFromWpService($ua, $themeMetadata);
     }

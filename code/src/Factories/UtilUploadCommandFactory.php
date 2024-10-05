@@ -13,9 +13,9 @@ class UtilUploadCommandFactory
 {
     public function __invoke(ServiceManager $serviceManager): UtilUploadCommand
     {
-        $metadata  = $serviceManager->get(PluginMetadataService::class);
-        $themeMetadata  = $serviceManager->get(ThemesMetadataService::class);
-        $flysystem = $serviceManager->get('util:upload');
+        $metadata      = $serviceManager->get(PluginMetadataService::class);
+        $themeMetadata = $serviceManager->get(ThemesMetadataService::class);
+        $flysystem     = $serviceManager->get('util:upload');
         return new UtilUploadCommand($metadata, $themeMetadata, $flysystem);
     }
 }

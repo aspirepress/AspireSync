@@ -42,6 +42,12 @@ class ThemeListService implements ListServiceInterface
             mkdir('/opt/assetgrabber/data/theme-raw-data');
         }
 
+        if ($this->isNotFound($item)) {
+            return [
+                'skipped' => $item . ' previously marked not found; skipping...',
+            ];
+        }
+
         $url         = 'https://api.wordpress.org/themes/info/1.2/';
         $queryParams = [
             'action'   => 'theme_information',
@@ -205,5 +211,15 @@ class ThemeListService implements ListServiceInterface
         }
 
         return $filtered;
+    }
+
+    public function isNotFound(string $item): bool
+    {
+        return $this->themesMetadataService->isNotFound($item);
+    }
+
+    public function markItemNotFound(string $item): void
+    {
+        $this->themesMetadataService->markItemNotFound($item);
     }
 }

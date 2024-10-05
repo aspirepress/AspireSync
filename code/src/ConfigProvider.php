@@ -80,7 +80,7 @@ class ConfigProvider
                 PluginMetadataService::class       => PluginMetadataServiceFactory::class,
                 RevisionMetadataService::class     => RevisionMetadataServiceFactory::class,
                 ThemesMetadataService::class       => ThemeMetadataServiceFactory::class,
-                ThemeDownloadFromWpService::class => ThemeDownloadFromWpServiceFactory::class,
+                ThemeDownloadFromWpService::class  => ThemeDownloadFromWpServiceFactory::class,
 
                 // Commands
                 DownloadPluginsCommand::class        => DownloadPluginsCommandFactory::class,
@@ -92,8 +92,8 @@ class ConfigProvider
                 MetaDownloadThemesCommand::class     => MetaDownloadThemesCommandFactory::class,
                 MetaImportThemesCommand::class       => MetaImportThemesCommandFactory::class,
                 DownloadThemesCommand::class         => DownloadThemesCommandFactory::class,
-                InternalThemeDownloadCommand::class => InternalThemeDownloadCommandFactory::class,
-                DownloadThemesPartialCommand::class => DownloadThemesPartialCommandFactory::class,
+                InternalThemeDownloadCommand::class  => InternalThemeDownloadCommandFactory::class,
+                DownloadThemesPartialCommand::class  => DownloadThemesPartialCommandFactory::class,
                 // Flysystem
                 Filesystem::class             => FilesystemFactory::class,
                 LocalFilesystemAdapter::class => LocalFilesystemAdapterFactory::class,

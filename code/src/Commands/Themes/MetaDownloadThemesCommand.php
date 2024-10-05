@@ -6,6 +6,7 @@ namespace AssetGrabber\Commands\Themes;
 
 use AssetGrabber\Commands\AbstractBaseCommand;
 use AssetGrabber\Services\Themes\ThemeListService;
+use AssetGrabber\Utilities\OutputManagementUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -91,22 +92,27 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
         $data = $this->themeListService->getItemMetadata((string) $theme);
 
         if (isset($data['versions']) && ! empty($data['versions'])) {
-            $output->writeln("Theme $theme has " . count($data['versions']) . ' versions');
+            $output->writeln(OutputManagementUtil::info("Theme $theme has " . count($data['versions']) . ' versions'));
             $this->stats['versions'] += count($data['versions']);
         } elseif (isset($data['version'])) {
-            $output->writeln("Theme $theme has 1 version");
+            $output->writeln(OutputManagementUtil::info("Theme $theme has 1 version"));
             $this->stats['versions'] += 1;
+        } elseif (isset($data['skipped'])) {
+            $output->writeln(OutputManagementUtil::notice($data['skipped']));
         } elseif (isset($data['error'])) {
-            $output->writeln("Error fetching metadata for theme $theme: " . $data['error']);
+            $output->writeln(OutputManagementUtil::error("Error fetching metadata for theme $theme: " . $data['error']));
             if ('429' === (string) $data['error']) {
                 $this->progressiveBackoff($output);
                 $this->fetchThemeDetails($output, $theme, $versions);
                 $this->stats['rate_limited']++;
                 return;
             }
+            if ('404' === (string) $data['error']) {
+                $this->themeListService->markItemNotFound($theme);
+            }
             $this->stats['errors']++;
         } else {
-            $output->writeln("No versions found for theme $theme");
+            $output->writeln(OutputManagementUtil::info("No versions found for theme $theme"));
         }
 
         $this->iterateProgressiveBackoffLevel(self::ITERATE_DOWN);

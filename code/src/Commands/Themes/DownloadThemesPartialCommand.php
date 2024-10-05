@@ -21,7 +21,7 @@ class DownloadThemesPartialCommand extends AbstractBaseCommand
 {
     use getItemsFromSourceTrait;
 
-    public function __construct(private ThemeListService $themeListService, private ThemesMetadataService $themesMetadataService)
+    public function __construct(private themeListService $themeListService, private ThemesMetadataService $themesMetadataService)
     {
         parent::__construct();
     }

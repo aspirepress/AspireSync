@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Commands\Themes;
 
-use AssetGrabber\Services\Plugins\PluginDownloadFromWpService;
 use AssetGrabber\Services\Themes\ThemeDownloadFromWpService;
-use AssetGrabber\Services\Themes\ThemeListService;
-use AssetGrabber\Services\Themes\ThemesMetadataService;
 use AssetGrabber\Utilities\ListManagementUtil;
-use Aura\Sql\ExtendedPdoInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -36,7 +32,7 @@ class InternalThemeDownloadCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $theme      = $input->getArgument('theme');
+        $theme       = $input->getArgument('theme');
         $numVersions = $input->getArgument('num-versions');
 
         $output->writeln('Determining versions of ' . $theme . '...');
