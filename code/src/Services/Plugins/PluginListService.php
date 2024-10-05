@@ -73,28 +73,6 @@ class PluginListService implements ListServiceInterface
         return $this->filter($this->pluginService->getVersionsForUnfinalizedPlugins(), $explicitlyRequested);
     }
 
-    /**
-     * @return array<string, string>
-     */
-    public function getVersionsForItem(string $item): array
-    {
-        $data = $this->getItemMetadata($item);
-
-        if (isset($data['versions'])) {
-            $pluginData = $data['versions'];
-        } elseif (isset($data['version'])) {
-            $pluginData = [$data['version'] => $data['download_link']];
-        } else {
-            return [];
-        }
-
-        if (isset($pluginData['trunk'])) {
-            unset($pluginData['trunk']);
-        }
-
-        return $pluginData;
-    }
-
     public function identifyCurrentRevision(bool $force = false): int
     {
         if (! $force && file_exists('/opt/assetgrabber/data/raw-changelog') && filemtime('/opt/assetgrabber/data/raw-changelog') > time() - 86400) {
