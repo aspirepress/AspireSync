@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Process\Process;
 
-class UtilCleanCommand extends Command
+class UtilCleanCommand extends AbstractBaseCommand
 {
     /** @var int[] */
     private $filesDirsCount = [
@@ -29,7 +29,7 @@ class UtilCleanCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $output->writeln('Calculating the size and number of files in the data directory... (this may take a while)');
+        $this->always('Calculating the size and number of files in the data directory... (this may take a while)');
 
         $details = $this->countFilesAndDirectories('/opt/assetgrabber/data');
         $files   = $details['files'];
@@ -38,21 +38,21 @@ class UtilCleanCommand extends Command
 
         /** @var QuestionHelper $question */
         $question = $this->getHelper('question');
-        $output->writeln("There are $files files and $dirs directories totalling $size.");
+        $this->always("There are $files files and $dirs directories totalling $size.");
         $q = new ConfirmationQuestion('Are you SURE you want to clean data? THERE WILL BE NO OTHER CONFIRMATION.');
         if (! $question->ask($input, $output, $q)) {
-            $output->writeln('Aborting!');
+            $this->info('Aborting!');
             return self::SUCCESS;
         }
 
-        $output->writeln('Cleaning data directory...');
+        $this->info('Cleaning data directory...');
         $result = $this->deleteFilesAndDirectories('/opt/assetgrabber/data');
         if ($result) {
-            $output->writeln('Cleaned data directory.');
+            $this->success('Cleaned data directory.');
             return Command::SUCCESS;
         }
 
-        $output->writeln('Cleaned data directory failure!');
+        $this->error('Cleaned data directory failure!');
         return Command::FAILURE;
     }
 
