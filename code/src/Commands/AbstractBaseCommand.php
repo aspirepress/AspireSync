@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Commands;
 
+use AssetGrabber\Utilities\ErrorWritingTrait;
 use AssetGrabber\Utilities\OutputManagementUtil;
 use InvalidArgumentException;
 use RuntimeException;
@@ -15,11 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 abstract class AbstractBaseCommand extends Command
 {
-    protected const ERROR = 1;
-    protected const WARNING = 2;
-    protected const NOTICE = 3;
-    protected const INFO = 4;
-    protected const DEBUG = 5;
+    use ErrorWritingTrait;
 
     protected const ITERATE_UP   = 1;
     protected const ITERATE_DOWN = 2;
@@ -68,7 +65,7 @@ abstract class AbstractBaseCommand extends Command
             throw new RuntimeException('Progressive backoff exceeded maximum sleep time of 120 seconds...');
         }
 
-        $output->writeln('Backing Off; Sleeping for ' . $sleep . ' seconds...');
+        $this->info('Backing Off; Sleeping for ' . $sleep . ' seconds...');
         sleep($sleep);
         $this->iterateProgressiveBackoffLevel(self::ITERATE_UP);
     }
@@ -96,41 +93,5 @@ abstract class AbstractBaseCommand extends Command
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         $this->io = new SymfonyStyle($input, $output);
-    }
-
-    protected function writeMessage(string $message, int $level = self::SUCCESS): void
-    {
-        switch ($level) {
-            case self::ERROR:
-                $this->io->writeln("<fg=black;bg=red>" . OutputManagementUtil::error($message) . "</>");
-                break;
-
-            case self::FAILURE:
-                $this->io->writeln("<fg=black;bg=red>" . OutputManagementUtil::failure($message) . "</>",);
-                break;
-
-            case self::WARNING:
-                $this->io->writeln("<fg=black;bg=yellow>" . OutputManagementUtil::warning($message) . "</>", Output::VERBOSITY_VERBOSE);
-                break;
-
-            case self::INFO:
-                $this->io->writeln("<fg=green>" . OutputManagementUtil::info($message) . "</>", Output::VERBOSITY_VERBOSE);
-                break;
-
-            case self::NOTICE:
-                $this->io->writeln("<fg=yellow>" . OutputManagementUtil::notice($message) . "</>", Output::VERBOSITY_VERY_VERBOSE);
-                break;
-
-            case self::DEBUG:
-             $this->io->writeln("<fg=yellow>" . OutputManagementUtil::debug($message) . "</>", Output::VERBOSITY_DEBUG);
-                break;
-
-            case self::SUCCESS:
-                $this->io->writeln("<fg=black;bg=green>" . OutputManagementUtil::success($message) . "</>");
-                break;
-
-            default:
-                throw new \InvalidArgumentException('Invalid progress level');
-        }
     }
 }
