@@ -88,4 +88,9 @@ trait ErrorWritingTrait
     {
         $this->writeMessage($message, self::FAILURE_MSG);
     }
+
+    protected function always(string $message): void
+    {
+        $this->writeMessage($message, self::ALWAYS_WRITE);
+    }
 }
