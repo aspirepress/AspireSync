@@ -6,6 +6,7 @@ namespace AssetGrabber\Commands\Plugins;
 
 use AssetGrabber\Commands\AbstractBaseCommand;
 use AssetGrabber\Services\Plugins\PluginMetadataService;
+use AssetGrabber\Services\StatsMetadataService;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,7 +24,7 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
         'total'      => 0,
     ];
 
-    public function __construct(private PluginMetadataService $pluginMetadata)
+    public function __construct(private PluginMetadataService $pluginMetadata, private StatsMetadataService $statsMetadataService)
     {
         parent::__construct();
     }
@@ -117,7 +118,7 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
             'Skips:      ' . $this->stats['skips'],
             'Total:      ' . $this->stats['total'],
         ]));
-
+        $this->statsMetadataService->logStats($this->getName(), $this->stats);
         return self::SUCCESS;
     }
 

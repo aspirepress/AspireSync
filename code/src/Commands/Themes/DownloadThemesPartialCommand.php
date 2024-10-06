@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands\Themes;
 
 use AssetGrabber\Commands\AbstractBaseCommand;
+use AssetGrabber\Services\StatsMetadataService;
 use AssetGrabber\Services\Themes\ThemeListService;
 use AssetGrabber\Services\Themes\ThemesMetadataService;
 use AssetGrabber\Utilities\GetItemsFromSourceTrait;
@@ -21,7 +22,7 @@ class DownloadThemesPartialCommand extends AbstractBaseCommand
 {
     use GetItemsFromSourceTrait;
 
-    public function __construct(private ThemeListService $themeListService, private ThemesMetadataService $themesMetadataService)
+    public function __construct(private ThemeListService $themeListService, private ThemesMetadataService $themesMetadataService, private StatsMetadataService $statsMetadataService)
     {
         parent::__construct();
     }
@@ -113,7 +114,7 @@ class DownloadThemesPartialCommand extends AbstractBaseCommand
         $this->endTimer();
 
         $this->always($this->getRunInfo($this->getCalculatedStats()));
-
+        $this->statsMetadataService->logStats($this->getName(), $this->stats);
         return Command::SUCCESS;
     }
 

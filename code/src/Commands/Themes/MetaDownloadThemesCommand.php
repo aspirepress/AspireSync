@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands\Themes;
 
 use AssetGrabber\Commands\AbstractBaseCommand;
+use AssetGrabber\Services\StatsMetadataService;
 use AssetGrabber\Services\Themes\ThemeListService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,7 +22,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
         'rate_limited' => 0,
     ];
 
-    public function __construct(private ThemeListService $themeListService)
+    public function __construct(private ThemeListService $themeListService, private StatsMetadataService $statsMetadataService)
     {
         parent::__construct();
     }
@@ -66,6 +67,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
         $this->endTimer();
 
         $this->always($this->getRunInfo($this->calculateStats()));
+        $this->statsMetadataService->logStats($this->getName(), $this->stats);
         return Command::SUCCESS;
     }
 

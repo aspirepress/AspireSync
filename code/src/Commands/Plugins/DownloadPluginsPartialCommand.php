@@ -7,6 +7,7 @@ namespace AssetGrabber\Commands\Plugins;
 use AssetGrabber\Commands\AbstractBaseCommand;
 use AssetGrabber\Services\Plugins\PluginListService;
 use AssetGrabber\Services\Plugins\PluginMetadataService;
+use AssetGrabber\Services\StatsMetadataService;
 use AssetGrabber\Utilities\GetItemsFromSourceTrait;
 use AssetGrabber\Utilities\ProcessWaitUtil;
 use AssetGrabber\Utilities\VersionUtil;
@@ -21,7 +22,7 @@ class DownloadPluginsPartialCommand extends AbstractBaseCommand
 {
     use GetItemsFromSourceTrait;
 
-    public function __construct(private PluginListService $pluginListService, private PluginMetadataService $pluginMetadataService)
+    public function __construct(private PluginListService $pluginListService, private PluginMetadataService $pluginMetadataService, private StatsMetadataService $statsMetadataService)
     {
         parent::__construct();
     }
@@ -114,6 +115,7 @@ class DownloadPluginsPartialCommand extends AbstractBaseCommand
         $this->endTimer();
 
         $this->always($this->getRunInfo($this->getCalculatedStats()));
+        $this->statsMetadataService->logStats($this->getName(), $this->stats);
 
         return Command::SUCCESS;
     }

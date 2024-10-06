@@ -29,6 +29,7 @@ use AssetGrabber\Factories\Plugins\PluginDownloadFromWpServiceFactory;
 use AssetGrabber\Factories\Plugins\PluginListServiceFactory;
 use AssetGrabber\Factories\Plugins\PluginMetadataServiceFactory;
 use AssetGrabber\Factories\RevisionMetadataServiceFactory;
+use AssetGrabber\Factories\StatsMetadataServiceFactory;
 use AssetGrabber\Factories\Themes\DownloadThemesCommandFactory;
 use AssetGrabber\Factories\Themes\DownloadThemesPartialCommandFactory;
 use AssetGrabber\Factories\Themes\InternalThemeDownloadCommandFactory;
@@ -42,6 +43,7 @@ use AssetGrabber\Services\Plugins\PluginDownloadFromWpService;
 use AssetGrabber\Services\Plugins\PluginListService;
 use AssetGrabber\Services\Plugins\PluginMetadataService;
 use AssetGrabber\Services\RevisionMetadataService;
+use AssetGrabber\Services\StatsMetadataService;
 use AssetGrabber\Services\Themes\ThemeDownloadFromWpService;
 use AssetGrabber\Services\Themes\ThemeListService;
 use AssetGrabber\Services\Themes\ThemesMetadataService;
@@ -72,15 +74,18 @@ class ConfigProvider
                 UtilCleanCommand::class => UtilCleanCommand::class,
             ],
             'factories'  => [
+                // Metadata Services
+                RevisionMetadataService::class     => RevisionMetadataServiceFactory::class,
+                ThemesMetadataService::class       => ThemeMetadataServiceFactory::class,
+                PluginMetadataService::class       => PluginMetadataServiceFactory::class,
+                StatsMetadataService::class       =>  StatsMetadataServiceFactory::class,
+
                 // Services
                 PluginDownloadFromWpService::class => PluginDownloadFromWpServiceFactory::class,
                 ThemeListService::class            => ThemeListServiceFactory::class,
                 PluginListService::class           => PluginListServiceFactory::class,
-                ExtendedPdoInterface::class        => ExtendedPdoFactory::class,
-                PluginMetadataService::class       => PluginMetadataServiceFactory::class,
-                RevisionMetadataService::class     => RevisionMetadataServiceFactory::class,
-                ThemesMetadataService::class       => ThemeMetadataServiceFactory::class,
                 ThemeDownloadFromWpService::class  => ThemeDownloadFromWpServiceFactory::class,
+
 
                 // Commands
                 DownloadPluginsCommand::class        => DownloadPluginsCommandFactory::class,
@@ -94,6 +99,10 @@ class ConfigProvider
                 DownloadThemesCommand::class         => DownloadThemesCommandFactory::class,
                 InternalThemeDownloadCommand::class  => InternalThemeDownloadCommandFactory::class,
                 DownloadThemesPartialCommand::class  => DownloadThemesPartialCommandFactory::class,
+
+                // Database Services
+                ExtendedPdoInterface::class        => ExtendedPdoFactory::class,
+
                 // Flysystem
                 Filesystem::class             => FilesystemFactory::class,
                 LocalFilesystemAdapter::class => LocalFilesystemAdapterFactory::class,

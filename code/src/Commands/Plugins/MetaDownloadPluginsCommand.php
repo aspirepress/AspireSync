@@ -6,6 +6,7 @@ namespace AssetGrabber\Commands\Plugins;
 
 use AssetGrabber\Commands\AbstractBaseCommand;
 use AssetGrabber\Services\Plugins\PluginListService;
+use AssetGrabber\Services\StatsMetadataService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -21,7 +22,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         'rate_limited' => 0,
     ];
 
-    public function __construct(private PluginListService $pluginListService)
+    public function __construct(private PluginListService $pluginListService, private StatsMetadataService $statsMetadataService)
     {
         parent::__construct();
     }
@@ -66,6 +67,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         $this->endTimer();
 
         $this->always($this->getRunInfo($this->calculateStats()));
+        $this->statsMetadataService->logStats($this->getName(), $this->stats);
         return Command::SUCCESS;
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AssetGrabber\Commands\Themes;
 
 use AssetGrabber\Commands\AbstractBaseCommand;
+use AssetGrabber\Services\StatsMetadataService;
 use AssetGrabber\Services\Themes\ThemesMetadataService;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -23,7 +24,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
         'total'      => 0,
     ];
 
-    public function __construct(private ThemesMetadataService $themeMetadata)
+    public function __construct(private ThemesMetadataService $themeMetadata, private StatsMetadataService $statsMetadata)
     {
         parent::__construct();
     }
@@ -109,6 +110,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
             'Total:      ' . $this->stats['total'],
         ]));
 
+        $this->statsMetadata->logStats($this->getName(), $this->stats);
         return self::SUCCESS;
     }
 

@@ -6,6 +6,7 @@ namespace AssetGrabber\Commands;
 
 use AssetGrabber\Services\Interfaces\CallbackInterface;
 use AssetGrabber\Services\Plugins\PluginMetadataService;
+use AssetGrabber\Services\StatsMetadataService;
 use AssetGrabber\Services\Themes\ThemesMetadataService;
 use AssetGrabber\Utilities\ListManagementUtil;
 use Exception;
@@ -29,7 +30,7 @@ class UtilUploadCommand extends AbstractBaseCommand
         'total'    => 0,
     ];
 
-    public function __construct(CallbackInterface $callback, private Filesystem $flysystem)
+    public function __construct(CallbackInterface $callback, private Filesystem $flysystem, private StatsMetadataService $statsMetadata)
     {
         if (! is_callable($callback)) {
             throw new InvalidArgumentException('Callable object required for constructor!');
@@ -61,7 +62,7 @@ class UtilUploadCommand extends AbstractBaseCommand
         $this->endTimer();
 
         $this->always($this->getRunInfo($this->calcStats()));
-
+        $this->statsMetadata->logStats($this->getName() . ' ' . $action, $this->stats);
         return $resultCode;
     }
 

@@ -13,8 +13,8 @@ use Symfony\Component\Process\Process;
 
 class UtilCleanCommand extends AbstractBaseCommand
 {
-    /** @var int[] */
-    private $filesDirsCount = [
+    /** @var array<string, int> */
+    private array $filesDirsCount = [
         'files' => 0,
         'dirs'  => 0,
         'size'  => 0,
