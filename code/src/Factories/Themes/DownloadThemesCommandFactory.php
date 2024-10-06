@@ -16,7 +16,7 @@ class DownloadThemesCommandFactory
     {
         $metadata    = $serviceManager->get(ThemesMetadataService::class);
         $listService = $serviceManager->get(ThemeListService::class);
-        $statsMeta = $serviceManager->get(StatsMetadataService::class);
+        $statsMeta   = $serviceManager->get(StatsMetadataService::class);
 
         return new DownloadThemesCommand($listService, $metadata, $statsMeta);
     }

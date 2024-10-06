@@ -16,7 +16,7 @@ class DownloadPluginsPartialCommandFactory
     {
         $listService = $serviceManager->get(PluginListService::class);
         $metadata    = $serviceManager->get(PluginMetadataService::class);
-        $statsMeta = $serviceManager->get(StatsMetadataService::class);
+        $statsMeta   = $serviceManager->get(StatsMetadataService::class);
 
         return new DownloadPluginsPartialCommand($listService, $metadata, $statsMeta);
     }

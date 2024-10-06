@@ -7,7 +7,6 @@ namespace AssetGrabber\Factories;
 use AssetGrabber\Services\StatsMetadataService;
 use Aura\Sql\ExtendedPdoInterface;
 use Laminas\ServiceManager\ServiceManager;
-use PDO;
 
 class StatsMetadataServiceFactory
 {

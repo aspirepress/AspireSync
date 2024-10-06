@@ -14,7 +14,7 @@ class MetaImportThemesCommandFactory
     public function __invoke(ServiceManager $serviceManager): MetaImportThemesCommand
     {
         $metadataService = $serviceManager->get(ThemesMetadataService::class);
-        $statsMeta = $serviceManager->get(StatsMetadataService::class);
+        $statsMeta       = $serviceManager->get(StatsMetadataService::class);
 
         return new MetaImportThemesCommand($metadataService, $statsMeta);
     }

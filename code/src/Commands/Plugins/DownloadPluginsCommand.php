@@ -26,8 +26,7 @@ class DownloadPluginsCommand extends AbstractBaseCommand
         private PluginListService $pluginListService,
         private PluginMetadataService $pluginMetadataService,
         private StatsMetadataService $statsMetadataService
-    )
-    {
+    ) {
         parent::__construct();
     }
 

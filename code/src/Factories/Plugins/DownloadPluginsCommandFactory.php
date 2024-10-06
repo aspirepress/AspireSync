@@ -16,7 +16,7 @@ class DownloadPluginsCommandFactory
     {
         $metadata      = $serviceManager->get(PluginMetadataService::class);
         $pluginService = $serviceManager->get(PluginListService::class);
-        $statsMeta = $serviceManager->get(StatsMetadataService::class);
+        $statsMeta     = $serviceManager->get(StatsMetadataService::class);
         return new DownloadPluginsCommand($pluginService, $metadata, $statsMeta);
     }
 }

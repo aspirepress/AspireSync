@@ -75,17 +75,16 @@ class ConfigProvider
             ],
             'factories'  => [
                 // Metadata Services
-                RevisionMetadataService::class     => RevisionMetadataServiceFactory::class,
-                ThemesMetadataService::class       => ThemeMetadataServiceFactory::class,
-                PluginMetadataService::class       => PluginMetadataServiceFactory::class,
-                StatsMetadataService::class       =>  StatsMetadataServiceFactory::class,
+                RevisionMetadataService::class => RevisionMetadataServiceFactory::class,
+                ThemesMetadataService::class   => ThemeMetadataServiceFactory::class,
+                PluginMetadataService::class   => PluginMetadataServiceFactory::class,
+                StatsMetadataService::class    => StatsMetadataServiceFactory::class,
 
                 // Services
                 PluginDownloadFromWpService::class => PluginDownloadFromWpServiceFactory::class,
                 ThemeListService::class            => ThemeListServiceFactory::class,
                 PluginListService::class           => PluginListServiceFactory::class,
                 ThemeDownloadFromWpService::class  => ThemeDownloadFromWpServiceFactory::class,
-
 
                 // Commands
                 DownloadPluginsCommand::class        => DownloadPluginsCommandFactory::class,
@@ -101,7 +100,7 @@ class ConfigProvider
                 DownloadThemesPartialCommand::class  => DownloadThemesPartialCommandFactory::class,
 
                 // Database Services
-                ExtendedPdoInterface::class        => ExtendedPdoFactory::class,
+                ExtendedPdoInterface::class => ExtendedPdoFactory::class,
 
                 // Flysystem
                 Filesystem::class             => FilesystemFactory::class,

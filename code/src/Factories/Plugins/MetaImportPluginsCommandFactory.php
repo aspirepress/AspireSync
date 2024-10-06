@@ -14,7 +14,7 @@ class MetaImportPluginsCommandFactory
     public function __invoke(ServiceManager $serviceManager): MetaImportPluginsCommand
     {
         $metadataService = $serviceManager->get(PluginMetadataService::class);
-        $statsMeta = $serviceManager->get(StatsMetadataService::class);
+        $statsMeta       = $serviceManager->get(StatsMetadataService::class);
 
         return new MetaImportPluginsCommand($metadataService, $statsMeta);
     }

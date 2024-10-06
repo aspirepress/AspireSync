@@ -14,7 +14,7 @@ class MetaDownloadThemesCommandFactory
     public function __invoke(ServiceManager $serviceManager): MetaDownloadThemesCommand
     {
         $listSerivce = $serviceManager->get(ThemeListService::class);
-        $statsMeta = $serviceManager->get(StatsMetadataService::class);
+        $statsMeta   = $serviceManager->get(StatsMetadataService::class);
 
         return new MetaDownloadThemesCommand($listSerivce, $statsMeta);
     }

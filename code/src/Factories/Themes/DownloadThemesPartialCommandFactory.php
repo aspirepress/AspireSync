@@ -16,7 +16,7 @@ class DownloadThemesPartialCommandFactory
     {
         $listService = $serviceManager->get(ThemeListService::class);
         $metadata    = $serviceManager->get(ThemesMetadataService::class);
-        $statsMeta = $serviceManager->get(StatsMetadataService::class);
+        $statsMeta   = $serviceManager->get(StatsMetadataService::class);
 
         return new DownloadThemesPartialCommand($listService, $metadata, $statsMeta);
     }
