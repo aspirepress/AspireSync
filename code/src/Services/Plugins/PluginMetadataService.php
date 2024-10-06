@@ -329,8 +329,8 @@ class PluginMetadataService implements MetadataInterface
      */
     private function getNewlyDiscoveredVersionsList(string $id, array $versions): array
     {
-        $existingVersions = 'SELECT version FROM plugin_files WHERE plugin_id = :id';
-        $existingVersions = $this->pdo->fetchAll($existingVersions, ['id' => $id]);
+        $existingVersions = "SELECT version FROM plugin_files WHERE type = 'wp_cdn' AND plugin_id = :id";
+        $existingVersions = $this->pdo->fetchCol($existingVersions, ['id' => $id]);
 
         $newVersions = [];
         foreach ($versions as $version => $url) {

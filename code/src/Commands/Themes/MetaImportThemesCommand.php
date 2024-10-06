@@ -119,10 +119,10 @@ class MetaImportThemesCommand extends AbstractBaseCommand
     {
         if (! empty($result['error'])) {
             $this->error($result['error']);
-            $this->error('Unable to ' . $action . ' ' . $themeState . ' plugin ' . $slug);
+            $this->error('Unable to ' . $action . ' theme ' . $slug);
             $this->stats['error']++;
         } else {
-            $this->success('Completed ' . $action . ' for ' . $themeState . ' plugin ' . $slug);
+            $this->success('Completed ' . $action . ' for theme ' . $slug);
             $this->stats[$action]++;
             $this->stats['success']++;
         }

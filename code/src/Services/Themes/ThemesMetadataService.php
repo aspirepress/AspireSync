@@ -236,8 +236,8 @@ class ThemesMetadataService
      */
     private function getNewlyDiscoveredVersionsList(UuidInterface $id, array $versions): array
     {
-        $existingVersions = 'SELECT version FROM theme_files WHERE theme_id = :id';
-        $existingVersions = $this->pdo->fetchAll($existingVersions, ['id' => $id->toString()]);
+        $existingVersions = "SELECT version FROM theme_files WHERE type = 'wp_cdn' AND theme_id = :id";
+        $existingVersions = $this->pdo->fetchCol($existingVersions, ['id' => $id->toString()]);
 
         $newVersions = [];
         foreach ($versions as $version => $url) {
