@@ -7,6 +7,7 @@ namespace AssetGrabber\Factories\Plugins;
 use AssetGrabber\Commands\Plugins\DownloadPluginsCommand;
 use AssetGrabber\Services\Plugins\PluginListService;
 use AssetGrabber\Services\Plugins\PluginMetadataService;
+use AssetGrabber\Services\StatsMetadataService;
 use Laminas\ServiceManager\ServiceManager;
 
 class DownloadPluginsCommandFactory
@@ -15,6 +16,7 @@ class DownloadPluginsCommandFactory
     {
         $metadata      = $serviceManager->get(PluginMetadataService::class);
         $pluginService = $serviceManager->get(PluginListService::class);
-        return new DownloadPluginsCommand($pluginService, $metadata);
+        $statsMeta = $serviceManager->get(StatsMetadataService::class);
+        return new DownloadPluginsCommand($pluginService, $metadata, $statsMeta);
     }
 }

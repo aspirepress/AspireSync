@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AssetGrabber\Factories\Themes;
 
 use AssetGrabber\Commands\Themes\DownloadThemesPartialCommand;
+use AssetGrabber\Services\StatsMetadataService;
 use AssetGrabber\Services\Themes\ThemeListService;
 use AssetGrabber\Services\Themes\ThemesMetadataService;
 use Laminas\ServiceManager\ServiceManager;
@@ -15,6 +16,8 @@ class DownloadThemesPartialCommandFactory
     {
         $listService = $serviceManager->get(ThemeListService::class);
         $metadata    = $serviceManager->get(ThemesMetadataService::class);
-        return new DownloadThemesPartialCommand($listService, $metadata);
+        $statsMeta = $serviceManager->get(StatsMetadataService::class);
+
+        return new DownloadThemesPartialCommand($listService, $metadata, $statsMeta);
     }
 }
