@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AssetGrabber\Services;
 
 use Aura\Sql\ExtendedPdoInterface;
+use Ramsey\Uuid\Uuid;
 
 class StatsMetadataService
 {
