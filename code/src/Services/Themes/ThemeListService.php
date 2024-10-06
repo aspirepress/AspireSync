@@ -178,7 +178,8 @@ class ThemeListService implements ListServiceInterface
 
         foreach ($allThemes as $themeName => $themeVersion) {
             // Is this the first time we've seen the theme?
-            if (! $this->themesMetadataService->checkThemeInDatabase((string) $themeName) && ! $this->isNotFound($themeName)) {
+            $themeName = (string) $themeName;
+            if (! $this->themesMetadataService->checkThemeInDatabase($themeName) && ! $this->isNotFound($themeName)) {
                 $themesToUpdate[$themeName] = [];
             }
 
