@@ -71,7 +71,7 @@ docker-login-aws:
 	aws ecr get-login-password --region us-east-2 --profile ${AWS_PROFILE} | docker login --username AWS --password-stdin ${AWS_ECR_ENDPOINT}
 
 push:
-	docker push ${AWS_ECR_REGISTRY}:$(TAGNAME)
+	docker push ${AWS_ECR_REGISTRY}:$(TAG_NAME)
 	docker push ${AWS_ECR_REGISTRY}:latest
 
 push-dev:
