@@ -153,7 +153,7 @@ class ThemeListService implements ListServiceInterface
 
         $themesToReturn = [];
         foreach ($themes as $theme) {
-            $themesToReturn[$theme] = [];
+            $themesToReturn[(string) $theme] = [];
         }
 
         preg_match('/Revision ([0-9]+)\:/', $contents, $matches);
