@@ -6,6 +6,7 @@ namespace AssetGrabber\Services\Plugins;
 
 use AssetGrabber\Services\Interfaces\ListServiceInterface;
 use AssetGrabber\Services\RevisionMetadataService;
+use AssetGrabber\Services\SvnService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
@@ -15,7 +16,7 @@ class PluginListService implements ListServiceInterface
 {
     private int $prevRevision = 0;
 
-    public function __construct(private PluginMetadataService $pluginService, private RevisionMetadataService $revisionService)
+    public function __construct(private SvnService $svnService, private PluginMetadataService $pluginService, private RevisionMetadataService $revisionService)
     {
     }
 
@@ -124,47 +125,25 @@ class PluginListService implements ListServiceInterface
      */
     private function getPluginsToUpdate(?array $explicitlyRequested, string $lastRevision, string $action = 'default'): array
     {
-        $targetRev  = (int) $lastRevision;
-        $currentRev = 'HEAD';
+        $output = $this->svnService->getRevisionForType('plugins', (int) $this->prevRevision, (int) $lastRevision);
+        if ($output) {
+            $entries = $output->logentry;
 
-        if ($targetRev === $this->prevRevision) {
-            return $this->addNewAndRequestedPlugins($action, $explicitlyRequested, $explicitlyRequested);
-        }
-
-        $command = [
-            'svn',
-            'log',
-            '-v',
-            '-q',
-            '--xml',
-            'https://plugins.svn.wordpress.org',
-            "-r",
-            "$targetRev:$currentRev",
-        ];
-
-        $process = new Process($command);
-        $process->run();
-
-        if (! $process->isSuccessful()) {
-            throw new RuntimeException('Unable to get list of plugins to update' . $process->getErrorOutput());
-        }
-
-        $output  = simplexml_load_string($process->getOutput());
-        $entries = $output->logentry;
-
-        $pluginsToUpdate = [];
-        $revision        = $lastRevision;
-        foreach ($entries as $entry) {
-            $revision = (int) $entry->attributes()['revision'];
-            $path     = (string) $entry->paths->path[0];
-            preg_match('#/([A-z\-_]+)/#', $path, $matches);
-            if ($matches) {
-                $plugin                   = trim($matches[1]);
-                $pluginsToUpdate[$plugin] = [];
+            $pluginsToUpdate = [];
+            $revision = $lastRevision;
+            foreach ($entries as $entry) {
+                $revision = (int)$entry->attributes()['revision'];
+                $path = (string)$entry->paths->path[0];
+                preg_match('#/([A-z\-_]+)/#', $path, $matches);
+                if ($matches) {
+                    $plugin = trim($matches[1]);
+                    $pluginsToUpdate[$plugin] = [];
+                }
             }
+
+            $this->revisionService->setCurrentRevision($action, $revision);
         }
 
-        $this->revisionService->setCurrentRevision($action, $revision);
         $pluginsToUpdate = $this->addNewAndRequestedPlugins($action, $pluginsToUpdate, $explicitlyRequested);
 
         return $pluginsToUpdate;

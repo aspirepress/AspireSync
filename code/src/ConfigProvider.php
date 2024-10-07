@@ -44,6 +44,7 @@ use AssetGrabber\Services\Plugins\PluginListService;
 use AssetGrabber\Services\Plugins\PluginMetadataService;
 use AssetGrabber\Services\RevisionMetadataService;
 use AssetGrabber\Services\StatsMetadataService;
+use AssetGrabber\Services\SvnService;
 use AssetGrabber\Services\Themes\ThemeDownloadFromWpService;
 use AssetGrabber\Services\Themes\ThemeListService;
 use AssetGrabber\Services\Themes\ThemesMetadataService;
@@ -72,6 +73,7 @@ class ConfigProvider
         return [
             'invokables' => [
                 UtilCleanCommand::class => UtilCleanCommand::class,
+                SvnService::class => SvnService::class,
             ],
             'factories'  => [
                 // Metadata Services
