@@ -8,7 +8,7 @@ use SimpleXMLElement;
 
 interface SvnServiceInterface
 {
-    public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): ?SimpleXMLElement;
+    public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): array;
 
     /**
      * @return array{revision: int, items: array<string, array<int, string>>}

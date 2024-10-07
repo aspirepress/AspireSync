@@ -9,7 +9,7 @@ use SimpleXMLElement;
 
 class SvnServiceStub implements SvnServiceInterface
 {
-    public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): ?SimpleXMLElement
+    public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): array
     {
         // TODO: Implement getRevisionForType() method.
     }

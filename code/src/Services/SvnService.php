@@ -13,13 +13,16 @@ use Symfony\Component\Process\Process;
 
 class SvnService implements SvnServiceInterface
 {
-    public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): ?SimpleXMLElement
+    public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): array
     {
         $targetRev  = (int) $lastRevision;
         $currentRev = 'HEAD';
 
         if ($targetRev === $prevRevision) {
-            return null;
+            return [
+                'revision' => $targetRev,
+                'items' => [],
+            ];
         }
 
         $command = [
@@ -40,7 +43,25 @@ class SvnService implements SvnServiceInterface
             throw new RuntimeException('Unable to get list of ' . $type . ' to update' . $process->getErrorOutput());
         }
 
-        return simplexml_load_string($process->getOutput());
+        $output = simplexml_load_string($process->getOutput());
+
+        $itemsToUpdate = [];
+            $entries = $output->logentry;
+
+            $revision = $lastRevision;
+            foreach ($entries as $entry) {
+                $revision = (int) $entry->attributes()['revision'];
+                $path     = (string) $entry->paths->path[0];
+                preg_match('#/([A-z\-_]+)/#', $path, $matches);
+                if ($matches) {
+                    $item                   = trim($matches[1]);
+                    $itemsToUpdate[$item] = [];
+                }
+            }
+        return [
+            'revision' => $revision,
+            'items' => $itemsToUpdate,
+        ];
     }
 
     /**
