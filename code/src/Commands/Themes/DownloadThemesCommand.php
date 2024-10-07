@@ -32,9 +32,9 @@ class DownloadThemesCommand extends AbstractBaseCommand
     {
         $this->setName('download:themes')
             ->setAliases(['themes:grab'])
-            ->setDescription('Grabs themes (with number of specified versions or explicitly specified plugins) from the origin repo')
+            ->setDescription('Grabs themes (with number of specified versions or explicitly specified themes) from the origin repo')
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
-            ->addOption('themes', null, InputOption::VALUE_OPTIONAL, 'List of plugins to request')
+            ->addOption('themes', null, InputOption::VALUE_OPTIONAL, 'List of themes to request')
             ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists');
     }
 
