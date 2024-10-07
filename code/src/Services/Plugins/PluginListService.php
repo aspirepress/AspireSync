@@ -89,32 +89,9 @@ class PluginListService implements ListServiceInterface
      */
     private function pullWholePluginList(string $action = 'default'): array
     {
-        if (file_exists('/opt/assetgrabber/data/raw-svn-plugin-list') && filemtime('/opt/assetgrabber/data/raw-svn-plugin-list') > time() - 86400) {
-            $plugins  = file_get_contents('/opt/assetgrabber/data/raw-svn-plugin-list');
-            $contents = $plugins;
-        } else {
-            try {
-                $client   = new Client();
-                $plugins  = $client->get('https://plugins.svn.wordpress.org/', ['headers' => ['AssetGrabber']]);
-                $contents = $plugins->getBody()->getContents();
-                file_put_contents('/opt/assetgrabber/data/raw-svn-plugin-list', $contents);
-                $plugins = $contents;
-            } catch (ClientException $e) {
-                throw new RuntimeException('Unable to download plugin list: ' . $e->getMessage());
-            }
-        }
-        preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $plugins, $matches);
-        $plugins = $matches[1];
-
-        $pluginsToReturn = [];
-        foreach ($plugins as $plugin) {
-            $pluginsToReturn[$plugin] = [];
-        }
-
-        preg_match('/Revision ([0-9]+)\:/', $contents, $matches);
-        $revision = (int) $matches[1];
-
-        file_put_contents('/opt/assetgrabber/data/raw-plugin-list', implode(PHP_EOL, $plugins));
+        $result = $this->svnService->pullWholeItemsList('plugins');
+        $pluginsToReturn = $result['items'];
+        $revision = $result['revision'];
         $this->revisionService->setCurrentRevision($action, $revision);
         return $pluginsToReturn;
     }
