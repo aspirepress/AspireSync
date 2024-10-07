@@ -6,7 +6,7 @@ namespace AssetGrabber\Services\Interfaces;
 
 interface WpEndpointClientInterface
 {
-    public function getPlugniMetadata(string $plugin): string;
+    public function getPluginMetadata(string $plugin): string;
 
     public function getThemeMetadata(string $theme): string;
 

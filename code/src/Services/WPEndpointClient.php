@@ -10,7 +10,7 @@ use GuzzleHttp\Exception\ClientException;
 
 class WPEndpointClient implements WpEndpointClientInterface
 {
-    public function getPlugniMetadata(string $plugin): string
+    public function getPluginMetadata(string $plugin): string
     {
         $url    = 'https://api.wordpress.org/plugins/info/1.0/' . $plugin . '.json';
         $client = new Client();

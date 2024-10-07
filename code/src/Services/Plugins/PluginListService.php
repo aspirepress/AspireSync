@@ -51,7 +51,7 @@ class PluginListService implements ListServiceInterface
             ];
         }
 
-        $output = $this->wpClient->getPlugniMetadata($item);
+        $output = $this->wpClient->getPluginMetadata($item);
 
         file_put_contents('/opt/assetgrabber/data/plugin-raw-data/' . $item . '.json', $output);
 
