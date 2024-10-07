@@ -26,7 +26,11 @@ interface MetadataInterface
      */
     public function writeVersionsForPlugin(UuidInterface $pluginId, array $versions, string $cdn): array;
 
-    public function writeVersionProcessed(UuidInterface $pluginId, array $versions, string $cdn);
+    /**
+     * @param  array<int, string>  $versions
+     * @return array<string, string>
+     */
+    public function writeVersionProcessed(UuidInterface $pluginId, array $versions, string $cdn): array;
 
     /**
      * @return array|string[]
@@ -69,6 +73,9 @@ interface MetadataInterface
      */
     public function getVersionData(string $pluginId, ?string $version, string $type = 'wp_cdn'): array|bool;
 
+    /**
+     * @return array<int, string>
+     */
     public function getNotFoundPlugins(): array;
 
     public function isNotFound(string $item, bool $noLimit = false): bool;

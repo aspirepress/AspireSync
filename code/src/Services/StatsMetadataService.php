@@ -13,6 +13,9 @@ class StatsMetadataService
     {
     }
 
+    /**
+     * @param array<string, int> $stats
+     */
     public function logStats(string $command, array $stats = []): void
     {
         $id    = Uuid::uuid7();

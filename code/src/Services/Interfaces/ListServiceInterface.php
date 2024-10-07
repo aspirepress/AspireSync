@@ -13,7 +13,7 @@ interface ListServiceInterface
     public function getItemsForAction(array $filter, string $action): array;
 
     /**
-     * @return array<string, string|array<string, string>>
+     * @return array<string, string|int|array<string, string>>
      */
     public function getItemMetadata(string $item): array;
 

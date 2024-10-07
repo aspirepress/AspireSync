@@ -73,6 +73,9 @@ class RevisionMetadataService
         return null;
     }
 
+    /**
+     * @return array<string, array<string, string>>
+     */
     public function getRevisionData(): array
     {
         return $this->revisionData;

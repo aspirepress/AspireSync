@@ -470,6 +470,9 @@ class PluginMetadataService implements MetadataInterface
         return $this->pdo->fetchOne($sql, $args);
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getNotFoundPlugins(): array
     {
         $sql = "SELECT item_slug FROM not_found_items WHERE item_type = 'plugin'";

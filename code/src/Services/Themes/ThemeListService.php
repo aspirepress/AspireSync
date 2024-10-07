@@ -85,6 +85,10 @@ class ThemeListService implements ListServiceInterface
         $this->revisionService->preserveRevision($action);
     }
 
+    /**
+     * @param  array<int, string>  $explicitlyRequested
+     * @return array<string, string[]>
+     */
     private function getThemesToUpdate(?array $explicitlyRequested, string $lastRevision, string $action = 'default'): array
     {
         $targetRev  = (int) $lastRevision;

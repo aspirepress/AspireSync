@@ -42,6 +42,9 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
         return $outcomes;
     }
 
+    /**
+     * @return string[]
+     */
     private function runDownload(string $theme, string $version, string $url, bool $force): array
     {
         $client       = new Client();
