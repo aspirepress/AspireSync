@@ -83,39 +83,6 @@ class PluginListService implements ListServiceInterface
         return $this->filter($this->pluginService->getVersionsForUnfinalizedPlugins($revision), $explicitlyRequested);
     }
 
-    public function identifyCurrentRevision(bool $force = false): int
-    {
-        if (! $force && file_exists('/opt/assetgrabber/data/raw-changelog') && filemtime('/opt/assetgrabber/data/raw-changelog') > time() - 86400) {
-            $output = file_get_contents('/opt/assetgrabber/data/raw-changelog');
-        } else {
-            $command = [
-                'svn',
-                'log',
-                '-v',
-                '-q',
-                'https://plugins.svn.wordpress.org',
-                "-r",
-                "HEAD",
-            ];
-
-            $process = new Process($command);
-            $process->run();
-
-            if (! $process->isSuccessful()) {
-                throw new RuntimeException('Unable to get list of plugins to update' . $process->getErrorOutput());
-            }
-
-            $output = $process->getOutput();
-
-            file_put_contents('/opt/assetgrabber/data/raw-changelog', $output);
-        }
-
-        $output = explode(PHP_EOL, $output);
-        preg_match('/([0-9]+) \|/', $output[1], $matches);
-        $this->prevRevision = (int) $matches[1];
-        return (int) $matches[1];
-    }
-
     /**
      * @return array<string, string[]>
      */
