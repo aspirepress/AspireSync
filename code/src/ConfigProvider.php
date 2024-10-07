@@ -73,7 +73,7 @@ class ConfigProvider
         return [
             'invokables' => [
                 UtilCleanCommand::class => UtilCleanCommand::class,
-                SvnService::class => SvnService::class,
+                SvnService::class       => SvnService::class,
             ],
             'factories'  => [
                 // Metadata Services

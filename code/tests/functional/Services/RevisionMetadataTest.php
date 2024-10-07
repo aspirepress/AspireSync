@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AssetGrabber\Tests\Functional\Services;
 
 use AssetGrabber\Services\RevisionMetadataService;
 use AssetGrabber\Tests\Functional\AbstractFunctionalTestBase;
 use AssetGrabber\Tests\Helpers\FunctionalTestHelper;
+use RuntimeException;
 
 class RevisionMetadataTest extends AbstractFunctionalTestBase
 {
     public function testRevisionMetadataStartsEmpty(): void
     {
-        $sut = new RevisionMetadataService(FunctionalTestHelper::getDb());
+        $sut          = new RevisionMetadataService(FunctionalTestHelper::getDb());
         $revisionData = $sut->getRevisionData();
         $this->assertEmpty($revisionData);
     }
@@ -21,7 +24,7 @@ class RevisionMetadataTest extends AbstractFunctionalTestBase
         $revision->setCurrentRevision('foo:bar', 1234);
         $revision->preserveRevision('foo:bar');
 
-        $sut = new RevisionMetadataService(FunctionalTestHelper::getDb());
+        $sut      = new RevisionMetadataService(FunctionalTestHelper::getDb());
         $revision = $sut->getRevisionForAction('foo:bar');
         // TODO: Add date comparison
         $this->assertEquals(1234, $revision);
@@ -29,7 +32,7 @@ class RevisionMetadataTest extends AbstractFunctionalTestBase
 
     public function testPreserveRevisionWithoutRevisionInfoFails(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $sut = new RevisionMetadataService(FunctionalTestHelper::getDb());
         $sut->preserveRevision('foo:bar');
     }
@@ -43,7 +46,7 @@ class RevisionMetadataTest extends AbstractFunctionalTestBase
         $rs->preserveRevision('foo:baz');
         $rs = null;
 
-        $sut = new RevisionMetadataService(FunctionalTestHelper::getDb());
+        $sut      = new RevisionMetadataService(FunctionalTestHelper::getDb());
         $revision = $sut->getRevisionForAction('foo:bar');
         $this->assertEquals(1234, $revision);
 
@@ -52,12 +55,11 @@ class RevisionMetadataTest extends AbstractFunctionalTestBase
 //.       TODO: This doesn't work because we haven't overwritten the revision, just created a new one to update.
 //        $revision = $sut->getRevisionForAction('foo:bar');
 //        $this->assertEquals(9987, $revision);
-//
         $sut->preserveRevision('foo:bar');
 
         $sut = null;
 
-        $sut = new RevisionMetadataService(FunctionalTestHelper::getDb());
+        $sut      = new RevisionMetadataService(FunctionalTestHelper::getDb());
         $revision = $sut->getRevisionForAction('foo:bar');
         $this->assertEquals(9987, $revision);
     }

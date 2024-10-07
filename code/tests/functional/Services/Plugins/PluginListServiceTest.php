@@ -8,5 +8,4 @@ use AssetGrabber\Tests\Functional\AbstractFunctionalTestBase;
 
 class PluginListServiceTest extends AbstractFunctionalTestBase
 {
-
 }

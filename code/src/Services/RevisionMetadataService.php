@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AssetGrabber\Services;
 
 use Aura\Sql\ExtendedPdoInterface;
+use RuntimeException;
 
 class RevisionMetadataService
 {
@@ -33,8 +34,8 @@ class RevisionMetadataService
 
     public function preserveRevision(string $action): void
     {
-        if (!isset($this->currentRevision[$action])) {
-            throw new \RuntimeException('You did not specify a revision for action ' . $action);
+        if (! isset($this->currentRevision[$action])) {
+            throw new RuntimeException('You did not specify a revision for action ' . $action);
         }
 
         $data = [

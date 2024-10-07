@@ -7,11 +7,13 @@ namespace AssetGrabber\Services;
 use AssetGrabber\Services\Interfaces\SvnServiceInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use RuntimeException;
+use SimpleXMLElement;
 use Symfony\Component\Process\Process;
 
 class SvnService implements SvnServiceInterface
 {
-    public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): ?\SimpleXMLElement
+    public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): ?SimpleXMLElement
     {
         $targetRev  = (int) $lastRevision;
         $currentRev = 'HEAD';
@@ -35,27 +37,29 @@ class SvnService implements SvnServiceInterface
         $process->run();
 
         if (! $process->isSuccessful()) {
-            throw new \RuntimeException('Unable to get list of ' . $type . ' to update' . $process->getErrorOutput());
+            throw new RuntimeException('Unable to get list of ' . $type . ' to update' . $process->getErrorOutput());
         }
 
-        $output  = simplexml_load_string($process->getOutput());
-        return $output;
+        return simplexml_load_string($process->getOutput());
     }
 
+    /**
+     * @inheritDoc
+     */
     public function pullWholeItemsList(string $type): array
     {
         if (file_exists("/opt/assetgrabber/data/raw-svn-$type-list") && filemtime("/opt/assetgrabber/data/raw-svn-$type-list") > time() - 86400) {
-            $items  = file_get_contents("/opt/assetgrabber/data/raw-svn-$type-list");
+            $items    = file_get_contents("/opt/assetgrabber/data/raw-svn-$type-list");
             $contents = $items;
         } else {
             try {
                 $client   = new Client();
-                $items  = $client->get('https://' . $type . '.svn.wordpress.org/', ['headers' => ['AssetGrabber']]);
+                $items    = $client->get('https://' . $type . '.svn.wordpress.org/', ['headers' => ['AssetGrabber']]);
                 $contents = $items->getBody()->getContents();
                 file_put_contents("/opt/assetgrabber/data/raw-svn-$type-list", $contents);
                 $items = $contents;
             } catch (ClientException $e) {
-                throw new \RuntimeException("Unable to download $type list: " . $e->getMessage());
+                throw new RuntimeException("Unable to download $type list: " . $e->getMessage());
             }
         }
         preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $items, $matches);

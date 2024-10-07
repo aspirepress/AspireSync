@@ -9,8 +9,6 @@ use AssetGrabber\Services\RevisionMetadataService;
 use AssetGrabber\Services\SvnService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
-use RuntimeException;
-use Symfony\Component\Process\Process;
 
 class PluginListService implements ListServiceInterface
 {
@@ -89,9 +87,9 @@ class PluginListService implements ListServiceInterface
      */
     private function pullWholePluginList(string $action = 'default'): array
     {
-        $result = $this->svnService->pullWholeItemsList('plugins');
+        $result          = $this->svnService->pullWholeItemsList('plugins');
         $pluginsToReturn = $result['items'];
-        $revision = $result['revision'];
+        $revision        = $result['revision'];
         $this->revisionService->setCurrentRevision($action, $revision);
         return $pluginsToReturn;
     }
@@ -107,13 +105,13 @@ class PluginListService implements ListServiceInterface
             $entries = $output->logentry;
 
             $pluginsToUpdate = [];
-            $revision = $lastRevision;
+            $revision        = $lastRevision;
             foreach ($entries as $entry) {
-                $revision = (int)$entry->attributes()['revision'];
-                $path = (string)$entry->paths->path[0];
+                $revision = (int) $entry->attributes()['revision'];
+                $path     = (string) $entry->paths->path[0];
                 preg_match('#/([A-z\-_]+)/#', $path, $matches);
                 if ($matches) {
-                    $plugin = trim($matches[1]);
+                    $plugin                   = trim($matches[1]);
                     $pluginsToUpdate[$plugin] = [];
                 }
             }
