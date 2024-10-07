@@ -29,7 +29,8 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^11.3",
-        "phpstan/phpstan": "^1.12"
+        "phpstan/phpstan": "^1.12",
+        "robmorgan/phinx": "^0.16.5"
     },
     "config": {
         "allow-plugins": {

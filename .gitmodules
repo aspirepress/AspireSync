@@ -1,0 +1,3 @@
+[submodule "code/db"]
+	path = code/db
+	url = git@github.com:aspirepress/aspirecloud-migrations.git
