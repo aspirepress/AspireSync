@@ -10,12 +10,12 @@ use Laminas\ServiceManager\ServiceManager;
 abstract class FunctionalTestHelper
 {
     private static ServiceManager $container;
-    public static function setContainer(ServiceManager $container)
+    public static function setContainer(ServiceManager $container): void
     {
         self::$container = $container;
     }
 
-    public static function getService($name): mixed
+    public static function getService(string $name): mixed
     {
         return self::$container->get($name);
     }
@@ -25,7 +25,7 @@ abstract class FunctionalTestHelper
         return self::$container;
     }
 
-    public static function getDatabaseConnection(): \Aura\Sql\ExtendedPdoInterface
+    public static function getDatabaseConnection(): ExtendedPdoInterface
     {
         return self::$container->get(ExtendedPdoInterface::class);
     }

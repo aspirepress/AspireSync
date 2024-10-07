@@ -292,13 +292,13 @@ class ThemesMetadataService
         $notFound = $this->getNotFoundThemes();
 
         try {
-            $sql         = "SELECT themes.id, slug, version FROM theme_files LEFT JOIN themes ON themes.id = theme_files.theme_id WHERE theme_files.type = :type";
+            $sql  = "SELECT themes.id, slug, version FROM theme_files LEFT JOIN themes ON themes.id = theme_files.theme_id WHERE theme_files.type = :type";
             $args = ['type' => $type];
             if ($revDate) {
-                $sql .= ' AND themes.pulled_at >= :revDate';
+                $sql            .= ' AND themes.pulled_at >= :revDate';
                 $args['revDate'] = $revDate;
             }
-            $result      = $this->pdo->fetchAll($sql,$args);
+            $result      = $this->pdo->fetchAll($sql, $args);
             $finalResult = [];
             foreach ($result as $row) {
                 $theme   = $row['slug'];
