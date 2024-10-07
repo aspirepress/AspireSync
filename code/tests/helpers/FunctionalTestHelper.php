@@ -25,14 +25,14 @@ abstract class FunctionalTestHelper
         return self::$container;
     }
 
-    public static function getDatabaseConnection(): ExtendedPdoInterface
+    public static function getDb(): ExtendedPdoInterface
     {
         return self::$container->get(ExtendedPdoInterface::class);
     }
 
     public static function resetDatabase(): void
     {
-        $pdo = self::getDatabaseConnection();
+        $pdo = self::getDb();
         $pdo->perform('TRUNCATE plugins CASCADE');
         $pdo->perform('TRUNCATE themes CASCADE');
         $pdo->perform('TRUNCATE revisions CASCADE');

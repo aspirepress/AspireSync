@@ -33,6 +33,10 @@ class RevisionMetadataService
 
     public function preserveRevision(string $action): void
     {
+        if (!isset($this->currentRevision[$action])) {
+            throw new \RuntimeException('You did not specify a revision for action ' . $action);
+        }
+
         $data = [
             'id'       => $this->revisionData[$action]['id'] ?? null,
             'action'   => $action,
@@ -66,5 +70,10 @@ class RevisionMetadataService
         }
 
         return null;
+    }
+
+    public function getRevisionData(): array
+    {
+        return $this->revisionData;
     }
 }

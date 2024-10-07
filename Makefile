@@ -54,6 +54,12 @@ quality:
 test:
 	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpunit"
 
+unit:
+	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpunit --testsuite=unit"
+
+functional:
+	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpunit --testsuite=functional"
+
 cs:
 	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpcs"
 
