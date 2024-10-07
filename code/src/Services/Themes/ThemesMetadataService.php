@@ -391,4 +391,9 @@ class ThemesMetadataService
     {
         return '/opt/assetgrabber/data/themes';
     }
+
+    public function getS3Path(): string
+    {
+        return '/themes/';
+    }
 }

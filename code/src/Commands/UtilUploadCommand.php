@@ -71,7 +71,7 @@ class UtilUploadCommand extends AbstractBaseCommand
         $itemRecords = ListManagementUtil::explodeCommaSeparatedList($input->getOption('slugs'));
         $cleanUp     = $input->getOption('clean');
 
-        $this->debug('Preparing to upload files to S3...');
+        $this->debug('Preparing to upload files hemeso S3...');
 
         $itemRecords = $metadata->getData(filterBy: $itemRecords);
 
@@ -122,9 +122,9 @@ class UtilUploadCommand extends AbstractBaseCommand
 
                 try {
                     $this->info("Uploading $itemSlug (v. $version) to S3...");
-                    $this->flysystem->writeStream('/themes/' . $file, fopen($dir . '/' . $file, 'r'));
+                    $this->flysystem->writeStream($metadata->getS3Path() . $file, fopen($dir . '/' . $file, 'r'));
 
-                    $versionInfo = [$version => '/themes/' . $file];
+                    $versionInfo = [$version => $metadata->getS3Path() . $file];
                     $metadata->writeVersionProcessed(Uuid::fromString($itemId), $versionInfo, 'aws_s3');
                     $this->success("Uploaded and recorded $itemSlug (v. $version)");
                     $this->stats['uploaded']++;

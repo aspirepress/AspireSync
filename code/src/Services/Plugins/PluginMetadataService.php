@@ -499,4 +499,9 @@ class PluginMetadataService implements MetadataInterface
     {
         return '/opt/assetgrabber/data/plugins';
     }
+
+    public function getS3Path(): string
+    {
+        return '/plugins/';
+    }
 }
