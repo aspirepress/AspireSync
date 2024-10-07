@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AssertGrabber\Tests\Unit\Utilities;
+namespace AssetGrabber\Tests\Unit\Utilities;
 
 use AssetGrabber\Utilities\VersionUtil;
 use PHPUnit\Framework\Attributes\DataProvider;

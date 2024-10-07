@@ -22,9 +22,9 @@
     },
     "autoload-dev":{
         "psr-4": {
-            "AssertGrabber\\Tests\\Unit\\": "./tests/unit",
-            "AssertGrabber\\Tests\\Functional\\": "./tests/functional",
-            "AssertGrabber\\Tests\\Helpers\\": "./tests/helpers"
+            "AssetGrabber\\Tests\\Unit\\": "./tests/unit",
+            "AssetGrabber\\Tests\\Functional\\": "./tests/functional",
+            "AssetGrabber\\Tests\\Helpers\\": "./tests/helpers"
         }
     },
     "require-dev": {
