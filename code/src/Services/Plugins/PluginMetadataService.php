@@ -453,9 +453,9 @@ class PluginMetadataService implements MetadataInterface
     }
 
     /**
-     * @return string[]
+     * @return array<int, array<string, string>>
      */
-    public function getVersionData(string $pluginId, ?string $version, string $type = 'wp_cdn'): array|bool
+    public function getVersionData(string $pluginId, ?string $version = null, string $type = 'wp_cdn'): array|bool
     {
         $sql  = 'SELECT * FROM plugin_files WHERE plugin_id = :plugin_id AND type = :type';
         $args = [
@@ -467,7 +467,7 @@ class PluginMetadataService implements MetadataInterface
             $args['version'] = $version;
         }
 
-        return $this->pdo->fetchOne($sql, $args);
+        return $this->pdo->fetchAll($sql, $args);
     }
 
     /**

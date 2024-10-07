@@ -8,7 +8,6 @@ use AssetGrabber\Services\Interfaces\SvnServiceInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
-use SimpleXMLElement;
 use Symfony\Component\Process\Process;
 
 class SvnService implements SvnServiceInterface
@@ -21,7 +20,7 @@ class SvnService implements SvnServiceInterface
         if ($targetRev === $prevRevision) {
             return [
                 'revision' => $targetRev,
-                'items' => [],
+                'items'    => [],
             ];
         }
 
@@ -46,21 +45,21 @@ class SvnService implements SvnServiceInterface
         $output = simplexml_load_string($process->getOutput());
 
         $itemsToUpdate = [];
-            $entries = $output->logentry;
+            $entries   = $output->logentry;
 
             $revision = $lastRevision;
-            foreach ($entries as $entry) {
-                $revision = (int) $entry->attributes()['revision'];
-                $path     = (string) $entry->paths->path[0];
-                preg_match('#/([A-z\-_]+)/#', $path, $matches);
-                if ($matches) {
-                    $item                   = trim($matches[1]);
-                    $itemsToUpdate[$item] = [];
-                }
+        foreach ($entries as $entry) {
+            $revision = (int) $entry->attributes()['revision'];
+            $path     = (string) $entry->paths->path[0];
+            preg_match('#/([A-z\-_]+)/#', $path, $matches);
+            if ($matches) {
+                $item                 = trim($matches[1]);
+                $itemsToUpdate[$item] = [];
             }
+        }
         return [
             'revision' => $revision,
-            'items' => $itemsToUpdate,
+            'items'    => $itemsToUpdate,
         ];
     }
 

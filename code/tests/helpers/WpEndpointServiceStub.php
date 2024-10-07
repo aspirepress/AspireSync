@@ -8,7 +8,6 @@ use AssetGrabber\Services\Interfaces\WpEndpointClientInterface;
 
 class WpEndpointServiceStub implements WpEndpointClientInterface
 {
-
     public function getPluginMetadata(string $plugin): string
     {
         // TODO: Implement getPlugniMetadata() method.

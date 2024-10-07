@@ -49,7 +49,7 @@ init: build
 check: csfix cs quality test
 
 quality:
-	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpstan"
+	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpstan --memory-limit=2G"
 
 test:
 	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpunit"

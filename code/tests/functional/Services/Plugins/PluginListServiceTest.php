@@ -17,15 +17,15 @@ class PluginListServiceTest extends AbstractFunctionalTestBase
     private PluginListService $sut;
     protected function setUp(): void
     {
-        $svnStub = new SvnServiceStub();
-        $container = FunctionalTestHelper::getContainer();
-        $pluginMetadata = $container->get(PluginMetadataService::class);
+        $svnStub          = new SvnServiceStub();
+        $container        = FunctionalTestHelper::getContainer();
+        $pluginMetadata   = $container->get(PluginMetadataService::class);
         $revisionMetadata = $container->get(RevisionMetadataService::class);
-        $clientStub = new WpEndpointServiceStub();
-        $this->sut = new PluginListService($svnStub, $pluginMetadata, $revisionMetadata, $clientStub);
+        $clientStub       = new WpEndpointServiceStub();
+        $this->sut        = new PluginListService($svnStub, $pluginMetadata, $revisionMetadata, $clientStub);
     }
 
-    public function testGetAllItemsWIthNoRevisionGetsAllItems()
+    public function testGetAllItemsWIthNoRevisionGetsAllItems(): void
     {
         $items = $this->sut->getItemsForAction([], 'foo');
         $this->assertEquals(['foo', 'bar', 'baz'], array_keys($items));
