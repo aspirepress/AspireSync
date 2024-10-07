@@ -166,7 +166,7 @@ class ThemesMetadataService
 
     public function writeVersionProcessed(UuidInterface $themeId, array $versions, string $cdn = 'wp_cdn'): array
     {
-        $sql = 'INSERT INTO theme_files (id, theme_id, file_url, type, version, created, updated) VALUES (:id, :theme_id, :file_url, :type, :version, NOW(), NOW())';
+        $sql = 'INSERT INTO theme_files (id, theme_id, file_url, type, version, created, processed) VALUES (:id, :theme_id, :file_url, :type, :version, NOW(), NOW())';
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;
