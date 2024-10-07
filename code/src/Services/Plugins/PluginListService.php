@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace AssetGrabber\Services\Plugins;
 
 use AssetGrabber\Services\Interfaces\ListServiceInterface;
+use AssetGrabber\Services\Interfaces\SvnServiceInterface;
+use AssetGrabber\Services\Interfaces\WpEndpointClientInterface;
 use AssetGrabber\Services\RevisionMetadataService;
-use AssetGrabber\Services\SvnService;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
 
 class PluginListService implements ListServiceInterface
 {
     private int $prevRevision = 0;
 
-    public function __construct(private SvnService $svnService, private PluginMetadataService $pluginService, private RevisionMetadataService $revisionService)
-    {
+    public function __construct(
+        private SvnServiceInterface $svnService,
+        private PluginMetadataService $pluginService,
+        private RevisionMetadataService $revisionService,
+        private WpEndpointClientInterface $wpClient
+    ) {
     }
 
     /**
@@ -48,25 +51,11 @@ class PluginListService implements ListServiceInterface
             ];
         }
 
-        $url    = 'https://api.wordpress.org/plugins/info/1.0/' . $item . '.json';
-        $client = new Client();
-        try {
-            $response = $client->get($url);
-            $data     = json_decode($response->getBody()->getContents(), true);
-            file_put_contents(
-                '/opt/assetgrabber/data/plugin-raw-data/' . $item . '.json',
-                json_encode($data, JSON_PRETTY_PRINT)
-            );
-            return $data;
-        } catch (ClientException $e) {
-            if ($e->getCode() === 404) {
-                $content = $e->getResponse()->getBody()->getContents();
-                file_put_contents('/opt/assetgrabber/data/plugin-raw-data/' . $item . '.json', $content);
-                return json_decode($content, true);
-            }
-        }
+        $output = $this->wpClient->getPlugniMetadata($item);
 
-        return [];
+        file_put_contents('/opt/assetgrabber/data/plugin-raw-data/' . $item . '.json', $output);
+
+        return json_decode($output, true);
     }
 
     /**

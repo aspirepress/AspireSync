@@ -13,6 +13,7 @@ use RuntimeException;
 
 class ThemesMetadataService
 {
+    /** @var array<string, string[]> */
     private array $existing = [];
 
     public function __construct(private ExtendedPdoInterface $pdo)
@@ -32,6 +33,9 @@ class ThemesMetadataService
         return [];
     }
 
+    /**
+     * @return array<string, string[]>
+     */
     private function loadExistingThemes(): array
     {
         $sql    = 'SELECT slug, pulled_at FROM themes';
@@ -106,6 +110,10 @@ class ThemesMetadataService
         }
     }
 
+    /**
+     * @param  array<string, string|array<string, string>>  $fileContents
+     * @return string[]
+     */
     private function updateTheme(array $fileContents, string $pulledAt): array
     {
         $this->pdo->beginTransaction();
@@ -164,6 +172,10 @@ class ThemesMetadataService
         }
     }
 
+    /**
+     * @param  array<string, string[]>  $versions
+     * @return array|string[]
+     */
     public function writeVersionProcessed(UuidInterface $themeId, array $versions, string $cdn = 'wp_cdn'): array
     {
         $sql = 'INSERT INTO theme_files (id, theme_id, file_url, type, version, created, processed) VALUES (:id, :theme_id, :file_url, :type, :version, NOW(), NOW())';
@@ -197,6 +209,10 @@ class ThemesMetadataService
         }
     }
 
+    /**
+     * @param  string[] $versions
+     * @return array|string[]
+     */
     public function writeVersionsForTheme(UuidInterface $themeId, array $versions, string $cdn = 'wp_cdn'): array
     {
         $sql = 'INSERT INTO theme_files (id, theme_id, file_url, type, version, created) VALUES (:id, :theme_id, :file_url, :type, :version, NOW())';
@@ -358,6 +374,9 @@ class ThemesMetadataService
         return $result;
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getNotFoundThemes(): array
     {
         $sql = "SELECT item_slug FROM not_found_items WHERE item_type = 'theme'";

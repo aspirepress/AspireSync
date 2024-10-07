@@ -8,6 +8,7 @@ use AssetGrabber\Services\Plugins\PluginListService;
 use AssetGrabber\Services\Plugins\PluginMetadataService;
 use AssetGrabber\Services\RevisionMetadataService;
 use AssetGrabber\Services\SvnService;
+use AssetGrabber\Services\WPEndpointClient;
 use Laminas\ServiceManager\ServiceManager;
 
 class PluginListServiceFactory
@@ -17,6 +18,7 @@ class PluginListServiceFactory
         $pluginService   = $serviceManager->get(PluginMetadataService::class);
         $revisionService = $serviceManager->get(RevisionMetadataService::class);
         $svnService      = $serviceManager->get(SvnService::class);
-        return new PluginListService($svnService, $pluginService, $revisionService);
+        $wpClient        = $serviceManager->get(WPEndpointClient::class);
+        return new PluginListService($svnService, $pluginService, $revisionService, $wpClient);
     }
 }

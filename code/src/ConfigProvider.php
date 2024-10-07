@@ -48,6 +48,7 @@ use AssetGrabber\Services\SvnService;
 use AssetGrabber\Services\Themes\ThemeDownloadFromWpService;
 use AssetGrabber\Services\Themes\ThemeListService;
 use AssetGrabber\Services\Themes\ThemesMetadataService;
+use AssetGrabber\Services\WPEndpointClient;
 use Aura\Sql\ExtendedPdoInterface;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use League\Flysystem\Filesystem;
@@ -74,6 +75,7 @@ class ConfigProvider
             'invokables' => [
                 UtilCleanCommand::class => UtilCleanCommand::class,
                 SvnService::class       => SvnService::class,
+                WPEndpointClient::class => WPEndpointClient::class,
             ],
             'factories'  => [
                 // Metadata Services
