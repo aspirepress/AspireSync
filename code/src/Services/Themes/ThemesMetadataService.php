@@ -287,13 +287,18 @@ class ThemesMetadataService
     /**
      * @return array<string, string[]>
      */
-    public function getVersionsForUnfinalizedThemes(string $type = 'wp_cdn'): array
+    public function getVersionsForUnfinalizedThemes(?string $revDate, string $type = 'wp_cdn'): array
     {
         $notFound = $this->getNotFoundThemes();
 
         try {
             $sql         = "SELECT themes.id, slug, version FROM theme_files LEFT JOIN themes ON themes.id = theme_files.theme_id WHERE theme_files.type = :type";
-            $result      = $this->pdo->fetchAll($sql, ['type' => $type]);
+            $args = ['type' => $type];
+            if ($revDate) {
+                $sql .= ' AND themes.pulled_at >= :revDate';
+                $args['revDate'] = $revDate;
+            }
+            $result      = $this->pdo->fetchAll($sql,$args);
             $finalResult = [];
             foreach ($result as $row) {
                 $theme   = $row['slug'];

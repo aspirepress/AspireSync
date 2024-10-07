@@ -359,12 +359,17 @@ class PluginMetadataService implements MetadataInterface
     /**
      * @return array<string, string[]>
      */
-    public function getVersionsForUnfinalizedPlugins(string $type = 'wp_cdn'): array
+    public function getVersionsForUnfinalizedPlugins(?string $revDate, string $type = 'wp_cdn'): array
     {
         try {
             $notFound    = $this->getNotFoundPlugins();
             $sql         = "SELECT plugins.id, slug, version, plugin_files.metadata as version_meta FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugin_files.type = :type AND plugins.status = 'open'";
-            $result      = $this->pdo->fetchAll($sql, ['type' => $type]);
+            $args = ['type' => $type];
+            if ($revDate) {
+                $sql .= ' AND themes.pulled_at >= :revDate';
+                $args['revDate'] = $revDate;
+            }
+            $result      = $this->pdo->fetchAll($sql, $args);
             $finalResult = [];
             foreach ($result as $row) {
                 $plugin  = $row['slug'];

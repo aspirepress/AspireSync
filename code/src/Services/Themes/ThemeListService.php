@@ -71,9 +71,13 @@ class ThemeListService implements ListServiceInterface
     /**
      * @inheritDoc
      */
-    public function getUpdatedListOfItems(?array $explicitlyRequested): array
+    public function getUpdatedListOfItems(?array $explicitlyRequested, string $action = 'meta:download:themes'): array
     {
-        return $this->filter($this->themesMetadataService->getVersionsForUnfinalizedThemes(), $explicitlyRequested);
+        $revision = $this->revisionService->getRevisionDateForAction($action);
+        if ($revision) {
+            $revision = date('Y-m-d', strtotime($revision));
+        }
+        return $this->filter($this->themesMetadataService->getVersionsForUnfinalizedThemes($revision), $explicitlyRequested);
     }
 
     public function preserveRevision(string $action): void

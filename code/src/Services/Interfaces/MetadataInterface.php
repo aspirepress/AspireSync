@@ -42,7 +42,7 @@ interface MetadataInterface
     /**
      * @return array<string, string[]>
      */
-    public function getVersionsForUnfinalizedPlugins(string $type = 'wp_cdn'): array;
+    public function getVersionsForUnfinalizedPlugins(?string $revDate, string $type = 'wp_cdn'): array;
 
     /**
      * @param array<int, string> $versions
