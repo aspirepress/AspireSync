@@ -137,36 +137,36 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
     public function testGetDataFiltersWhenAsked(): void
     {
         $metadata = [
-            'name' => 'Foo',
-            'slug' => 'foo',
-            'version' => '1.0',
+            'name'          => 'Foo',
+            'slug'          => 'foo',
+            'version'       => '1.0',
             'download_link' => 'foo.com',
-            'last_updated' => '2024-01-01 00:00:00',
-            'versions' => [
+            'last_updated'  => '2024-01-01 00:00:00',
+            'versions'      => [
                 '1.0' => 'foo.com',
                 '0.9' => 'bar.com',
             ],
         ];
 
         $metadata2 = [
-            'name' => 'Bar',
-            'slug' => 'bar',
-            'version' => '1.0',
+            'name'          => 'Bar',
+            'slug'          => 'bar',
+            'version'       => '1.0',
             'download_link' => 'foo.com',
-            'last_updated' => '2024-01-01 00:00:00',
-            'versions' => [
+            'last_updated'  => '2024-01-01 00:00:00',
+            'versions'      => [
                 '1.0' => 'foo.com',
                 '0.9' => 'bar.com',
             ],
         ];
 
         $metadata3 = [
-            'name' => 'Baz',
-            'slug' => 'baz',
-            'version' => '1.0',
+            'name'          => 'Baz',
+            'slug'          => 'baz',
+            'version'       => '1.0',
             'download_link' => 'foo.com',
-            'last_updated' => '2024-01-01 00:00:00',
-            'versions' => [
+            'last_updated'  => '2024-01-01 00:00:00',
+            'versions'      => [
                 '1.0' => 'foo.com',
                 '0.9' => 'bar.com',
             ],
@@ -249,7 +249,6 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
             'slug'        => 'bar',
             'closed_date' => date('c'),
         ];
-
 
         $this->sut->saveOpenPluginFromWP($openMeta, date('c'));
         $this->sut->saveOpenPluginFromWP($currentlyOpenMeta, date('c'));
