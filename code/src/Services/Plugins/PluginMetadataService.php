@@ -476,7 +476,7 @@ class PluginMetadataService implements MetadataInterface
     public function getNotFoundPlugins(): array
     {
         $sql = "SELECT item_slug FROM not_found_items WHERE item_type = 'plugin'";
-        return $this->pdo->fetchAll($sql);
+        return $this->pdo->fetchCol($sql);
     }
 
     public function isNotFound(string $item, bool $noLimit = false): bool
@@ -495,7 +495,7 @@ class PluginMetadataService implements MetadataInterface
     {
         if ($this->isNotFound($item, true)) {
             $sql = "UPDATE not_found_items SET updated_at = NOW() WHERE item_slug = :item AND item_type = 'plugin'";
-            $this->pdo->perform($sql);
+            $this->pdo->perform($sql, ['item' => $item]);
         } else {
             $sql = "INSERT INTO not_found_items (id, item_type, item_slug) VALUES (:id, 'plugin', :item)";
             $this->pdo->perform($sql, ['id' => Uuid::uuid7()->toString(), 'item' => $item]);

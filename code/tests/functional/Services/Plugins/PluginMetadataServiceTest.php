@@ -133,4 +133,164 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
         $storageDir = $this->sut->getS3Path();
         $this->assertEquals('/plugins/', $storageDir);
     }
+
+    public function testGetDataFiltersWhenAsked(): void
+    {
+        $metadata = [
+            'name' => 'Foo',
+            'slug' => 'foo',
+            'version' => '1.0',
+            'download_link' => 'foo.com',
+            'last_updated' => '2024-01-01 00:00:00',
+            'versions' => [
+                '1.0' => 'foo.com',
+                '0.9' => 'bar.com',
+            ],
+        ];
+
+        $metadata2 = [
+            'name' => 'Bar',
+            'slug' => 'bar',
+            'version' => '1.0',
+            'download_link' => 'foo.com',
+            'last_updated' => '2024-01-01 00:00:00',
+            'versions' => [
+                '1.0' => 'foo.com',
+                '0.9' => 'bar.com',
+            ],
+        ];
+
+        $metadata3 = [
+            'name' => 'Baz',
+            'slug' => 'baz',
+            'version' => '1.0',
+            'download_link' => 'foo.com',
+            'last_updated' => '2024-01-01 00:00:00',
+            'versions' => [
+                '1.0' => 'foo.com',
+                '0.9' => 'bar.com',
+            ],
+        ];
+
+        $this->sut->saveOpenPluginFromWP($metadata, date('c'));
+        $this->sut->saveOpenPluginFromWP($metadata2, date('c'));
+        $this->sut->saveOpenPluginFromWP($metadata3, date('c'));
+
+        $data = $this->sut->getData();
+        $this->assertCount(3, $data);
+
+        $data = $this->sut->getData(['foo']);
+        $this->assertCount(1, $data);
+        $this->assertTrue(isset($data['foo']));
+
+        $data = $this->sut->getData(['foo', 'bar']);
+        $this->assertCount(2, $data);
+        $this->assertEquals(['foo', 'bar'], array_keys($data));
+    }
+
+    public function testCheckPluginInDatabaseWorksCorrectly(): void
+    {
+        $metadata = [
+            'name'          => 'Bar',
+            'slug'          => 'bar',
+            'version'       => '1.0',
+            'download_link' => 'foo.com',
+            'last_updated'  => '2024-01-01 00:00:00',
+            'versions'      => [
+                '1.0' => 'foo.com',
+                '0.9' => 'bar.com',
+            ],
+        ];
+
+        $this->sut->saveOpenPluginFromWP($metadata, date('c'));
+
+        // We need a new SUT because we load existing plugins at construct time
+        $sut = new PluginMetadataService(FunctionalTestHelper::getDb());
+        $this->assertEmpty($sut->checkPluginInDatabase('foo'));
+        $this->assertNotEmpty($sut->checkPluginInDatabase('bar'));
+    }
+
+    public function testUpdatePluginSelectsAndProcessesCorrectly(): void
+    {
+        $openMeta = [
+            'name'          => 'Foo',
+            'slug'          => 'foo',
+            'version'       => '1.0',
+            'download_link' => 'foo.com',
+            'last_updated'  => '2024-01-01 00:00:00',
+            'versions'      => [
+                '1.0' => 'foo.com',
+                '0.9' => 'bar.com',
+            ],
+        ];
+
+        $currentlyOpenMeta = [
+            'name'          => 'Bar',
+            'slug'          => 'bar',
+            'version'       => '1.0',
+            'download_link' => 'foo.com',
+            'last_updated'  => '2024-01-01 00:00:00',
+            'versions'      => [
+                '1.0' => 'foo.com',
+                '0.9' => 'bar.com',
+            ],
+        ];
+
+        $closedMeta = [
+            'error'       => 'closed',
+            'name'        => 'Baz',
+            'slug'        => 'baz',
+            'closed_date' => date('c'),
+        ];
+
+        $changeMeta = [
+            'error'       => 'closed',
+            'name'        => 'Bar',
+            'slug'        => 'bar',
+            'closed_date' => date('c'),
+        ];
+
+
+        $this->sut->saveOpenPluginFromWP($openMeta, date('c'));
+        $this->sut->saveOpenPluginFromWP($currentlyOpenMeta, date('c'));
+        $this->sut->saveClosedPluginFromWP($changeMeta, date('c'));
+
+        $data = $this->sut->getData();
+        $this->assertCount(2, $data);
+        $this->assertCount(2, $this->sut->getVersionData($data['foo']));
+
+        $openMeta['versions']['1.1'] = 'bingo.com';
+        $this->sut->updatePluginFromWP($openMeta, date('c'));
+        $this->sut->updatePluginFromWP($changeMeta, date('c'));
+
+        $data = $this->sut->getData();
+        $this->assertCount(1, $data);
+        $this->assertCount(0, $this->sut->getData(['bar']));
+
+        $versions = $this->sut->getVersionData($data['foo']);
+        $this->assertCount(3, $versions);
+    }
+
+    public function testNotFoundFunctionality(): void
+    {
+        $this->sut->markItemNotFound('foo');
+        $this->sut->markItemNotFound('bar');
+        $this->sut->markItemNotFound('baz');
+
+        $this->assertTrue($this->sut->isNotFound('bar'));
+        $this->assertFalse($this->sut->isNotFound('bingo'));
+
+        $this->assertEquals(
+            [
+                'foo',
+                'bar',
+                'baz',
+            ],
+            $this->sut->getNotFoundPlugins()
+        );
+
+        $this->sut->markItemNotFound('foo');
+
+        $this->assertCount(3, $this->sut->getNotFoundPlugins());
+    }
 }
