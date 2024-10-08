@@ -28,8 +28,8 @@ build:
 build-dev:
 	mkdir -p ./build && \
 	cp -r ./code/config ./code/src ./code/assetgrabber ./code/composer.* ./build && \
-	docker build --target basebuild -t assetgrabber-dev -f ./docker/Dockerfile . && \
-	docker build --target prodbuild -t assetgrabber-dev-build -t ${AWS_ECR_REGISTRY}:dev-build -t ${AWS_ECR_REGISTRY}:`git rev-parse --short HEAD` -f ./docker/Dockerfile . && \
+	docker build --target devbuild -t assetgrabber-dev -f ./docker/Dockerfile . && \
+	docker build --target devbuild -t assetgrabber-dev-build -t ${AWS_ECR_REGISTRY}:dev-build -t ${AWS_ECR_REGISTRY}:`git rev-parse --short HEAD` -f ./docker/Dockerfile . && \
 	rm -fr ./build
 
 run:
