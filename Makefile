@@ -19,19 +19,28 @@ endif
 
 DOCKER_DEV_RUN=docker run -it --rm --name assetgrabber-dev -v ./code:/opt/assetgrabber -v ./data:/opt/assetgrabber/data $(NETWORK_STR) --env-file ./.env assetgrabber-dev
 
-build:
+build-prod:
 	mkdir -p ./build && \
 	cp -r ./code/config ./code/src ./code/assetgrabber ./code/composer.* ./build && \
-	docker build --target prodbuild -t assetgrabber -t ${AWS_ECR_REGISTRY}:$(TAG_NAME) -t ${AWS_ECR_REGISTRY}:latest -f ./docker/Dockerfile . && \
+	docker build --target prodbuild -t assetgrabber -f ./docker/Dockerfile . && \
 	rm -fr ./build
 
 build-dev:
 	mkdir -p ./build && \
 	cp -r ./code/config ./code/src ./code/assetgrabber ./code/composer.* ./build && \
 	docker build --target devbuild -t assetgrabber-dev -f ./docker/Dockerfile . && \
-	docker build --target devbuild -t assetgrabber-dev-build -t ${AWS_ECR_REGISTRY}:dev-build -t ${AWS_ECR_REGISTRY}:`git rev-parse --short HEAD` -f ./docker/Dockerfile . && \
+	docker build --target devbuild -t assetgrabber-dev-build -f ./docker/Dockerfile . && \
 	rm -fr ./build
 
+build-prod-aws:
+	make build-prod && \
+	docker tag assetgrabber ${AWS_ECR_REGISTRY}:$(TAG_NAME) && \
+	docker tag assetgrabber ${AWS_ECR_REGISTRY}:latest
+
+build-dev-aws:
+	make build-dev && \
+	docker tag assetgrabber-dev-build ${AWS_ECR_REGISTRY}:dev-build && \
+	docker tag assetgrabber-dev-build ${AWS_ECR_REGISTRY}:`git rev-parse --short HEAD`
 run:
 	docker run -it --rm assetgrabber sh
 
@@ -44,7 +53,7 @@ dev-update-composer:
 run-dev:
 	${DOCKER_DEV_RUN} sh
 
-init: build
+init: build-dev dev-install-composer migrate seed
 
 check: csfix cs quality test
 
