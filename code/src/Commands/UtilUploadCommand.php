@@ -71,7 +71,7 @@ class UtilUploadCommand extends AbstractBaseCommand
         $itemRecords = ListManagementUtil::explodeCommaSeparatedList($input->getOption('slugs'));
         $cleanUp     = $input->getOption('clean');
 
-        $this->debug('Preparing to upload files hemeso S3...');
+        $this->debug('Preparing to upload files to S3...');
 
         $itemRecords = $metadata->getData(filterBy: $itemRecords);
 
