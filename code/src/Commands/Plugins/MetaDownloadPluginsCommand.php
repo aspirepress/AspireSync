@@ -111,6 +111,9 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
             if ('Plugin not found.' === $data['error']) {
                 $this->pluginListService->markItemNotFound($plugin);
             }
+            if ('Invalid plugin slug.' === $data['error']) {
+                $this->pluginListService->markItemNotFound($plugin);
+            }
             $this->stats['errors']++;
         } else {
             $this->info("No versions found for plugin $plugin");
