@@ -19,6 +19,12 @@ endif
 
 DOCKER_DEV_RUN=docker run -it --rm --name assetgrabber-dev -v ./code:/opt/assetgrabber -v ./data:/opt/assetgrabber/data $(NETWORK_STR) --env-file ./.env assetgrabber-dev
 
+build-all: build-prod build-dev
+
+build-all-aws: build-prod-aws build-dev-aws
+
+push-all: push push-dev
+
 build-prod:
 	mkdir -p ./build && \
 	cp -r ./code/config ./code/src ./code/assetgrabber ./code/composer.* ./build && \
