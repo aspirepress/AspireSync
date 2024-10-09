@@ -56,7 +56,7 @@ class RunAllCommand extends AbstractBaseCommand
         $commands = [
             'meta:download:plugins',
             'meta:import:plugins',
-            'plugins:download',
+            'download:plugins',
             'util:upload',
         ];
 
@@ -77,7 +77,7 @@ class RunAllCommand extends AbstractBaseCommand
             $commands = [
                 'meta:download:themes',
                 'meta:import:themes',
-                'themes:download',
+                'download:themes',
                 'util:upload',
             ];
 
@@ -98,7 +98,7 @@ class RunAllCommand extends AbstractBaseCommand
                 'command' => $command,
             ];
 
-        if ($commandArgs == 'util:upload') {
+        if ($command === 'util:upload') {
             $commandArgs['action'] = $type;
         }
 
