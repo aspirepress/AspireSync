@@ -21,7 +21,7 @@ trait ErrorWritingTrait
 
     protected const ALWAYS_WRITE = 8;
 
-    private OutputInterface $io;
+    protected OutputInterface $io;
 
     /**
      * @param string|iterable<int, string> $message

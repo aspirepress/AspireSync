@@ -25,7 +25,7 @@ abstract class AbstractBaseCommand extends Command
 
     private float $endTime;
 
-    private OutputInterface $io;
+    protected OutputInterface $io;
 
     protected function startTimer(): void
     {

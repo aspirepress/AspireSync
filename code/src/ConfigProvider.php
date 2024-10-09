@@ -9,6 +9,7 @@ use AssetGrabber\Commands\Plugins\DownloadPluginsPartialCommand;
 use AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand;
 use AssetGrabber\Commands\Plugins\MetaDownloadPluginsCommand;
 use AssetGrabber\Commands\Plugins\MetaImportPluginsCommand;
+use AssetGrabber\Commands\RunAllCommand;
 use AssetGrabber\Commands\Themes\DownloadThemesCommand;
 use AssetGrabber\Commands\Themes\DownloadThemesPartialCommand;
 use AssetGrabber\Commands\Themes\InternalThemeDownloadCommand;
@@ -76,6 +77,7 @@ class ConfigProvider
                 UtilCleanCommand::class => UtilCleanCommand::class,
                 SvnService::class       => SvnService::class,
                 WPEndpointClient::class => WPEndpointClient::class,
+                RunAllCommand::class    => RunAllCommand::class,
             ],
             'factories'  => [
                 // Metadata Services

@@ -1,0 +1,114 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AssetGrabber\Commands;
+
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+
+class RunAllCommand extends AbstractBaseCommand
+{
+    protected function configure(): void
+    {
+        $this->setName('run:all')
+            ->setDescription('Runs all commands for a particular call (plugins, themes, or all)')
+            ->addArgument('asset-type', InputArgument::OPTIONAL, 'What assets to get', 'all');
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $assetType = $input->getArgument('asset-type');
+
+        switch ($assetType) {
+            case 'plugins':
+                $this->always('Performing plugin commands...');
+                $result = $this->runPlugins();
+                break;
+
+            case 'themes':
+                $this->always('Performing theme commands...');
+                $result = $this->runThemes();
+                break;
+
+            case 'all':
+                $this->always('Performing all commands...');
+                $result1 = $this->runPlugins();
+                $result2 = $this->runThemes();
+                $result = ($result1 === $result2) ? self::SUCCESS : self::FAILURE;
+                break;
+
+            default:
+                $this->error('Unknown asset type: ' . $assetType);
+                return self::FAILURE;
+        }
+
+        return $result;
+    }
+
+    private function runPlugins(): int
+    {
+        $result = self::SUCCESS;
+        $commands = [
+            'meta:download:plugins',
+            'meta:import:plugins',
+            'plugins:download',
+            'util:upload',
+        ];
+
+        foreach ($commands as $command) {
+            $result = $this->runCommand($command, 'plugins');
+            if ($result) {
+                return $result;
+            }
+        }
+
+        return $result;
+    }
+
+    private function runThemes(): int
+    {
+        {
+            $result = self::SUCCESS;
+            $commands = [
+                'meta:download:themes',
+                'meta:import:themes',
+                'themes:download',
+                'util:upload',
+            ];
+
+            foreach ($commands as $command) {
+                $result = $this->runCommand($command, 'themes');
+                if ($result) {
+                    return $result;
+                }
+            }
+
+            return $result;
+        }
+    }
+
+    private function runCommand(string $command, string $type): int
+    {
+        $commandArgs = [
+                'command' => $command,
+            ];
+
+        if ($commandArgs == 'util:upload') {
+            $commandArgs['action'] = $type;
+        }
+
+        $command = new ArrayInput($commandArgs);
+
+        try {
+            return $this->getApplication()->doRun($command, $this->io);
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+            return self::FAILURE;
+        }
+    }
+}
