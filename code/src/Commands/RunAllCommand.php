@@ -23,20 +23,20 @@ class RunAllCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $assetType = $input->getArgument('asset-type');
-
+        $this->startTimer();
         switch ($assetType) {
             case 'plugins':
-                $this->always('Performing plugin commands...');
+                $this->always('RUN:ALL: Performing plugin commands...');
                 $result = $this->runPlugins();
                 break;
 
             case 'themes':
-                $this->always('Performing theme commands...');
+                $this->always('RUN:ALL: Performing theme commands...');
                 $result = $this->runThemes();
                 break;
 
             case 'all':
-                $this->always('Performing all commands...');
+                $this->always('RUN:ALL: Performing all commands...');
                 $result1 = $this->runPlugins();
                 $result2 = $this->runThemes();
                 $result = ($result1 === $result2) ? self::SUCCESS : self::FAILURE;
@@ -46,7 +46,9 @@ class RunAllCommand extends AbstractBaseCommand
                 $this->error('Unknown asset type: ' . $assetType);
                 return self::FAILURE;
         }
+        $this->endTimer();
 
+        $this->always(array_merge(['RUN:ALL: '], $this->getRunInfo()));
         return $result;
     }
 
