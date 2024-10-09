@@ -27,6 +27,16 @@ To install for development, follow these commands (once the prerequisites are me
 1. Run `make init`. This will run the build, install the Composer dependencies, and execute the migrations.
 2. Run `make run-dev` to run the container.
 
+## Configuration
+
+| Env Variable | Description                                    |
+|--------------|------------------------------------------------|
+| DB_USER      | The username for the database                  |
+| DB_PASS      | The password for the database                  |
+| DB_NAME      | Name of the database to insert the information |
+| DB_HOST      | The hostname of the database                   |
+| DB_SCHEMA    | The schema in the database to use              |
+
 ## Usage
 
 This package ships with the following commands;
