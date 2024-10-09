@@ -8,7 +8,7 @@ Content Delivery Network.
 To install, you need to have Docker or Docker Desktop with command line access. You also need `make` installed.
 Then, run the following commands:
 
-1. Run `make build` to build the Docker container.
+1. Run `make` to build the Docker container.
 2. Run `make run` to see available commands.
 3. Run `make run OPTS=<your command>` to execute your desired command.
 
