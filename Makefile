@@ -19,11 +19,11 @@ endif
 
 DOCKER_DEV_RUN=docker run -it --rm --name assetgrabber-dev -v ./code:/opt/assetgrabber -v ./data:/opt/assetgrabber/data $(NETWORK_STR) --env-file ./.env assetgrabber-dev
 
-build-all: build-prod build-dev
+build-local: build-prod build-dev ## Builds all the local containers for prod and dev
 
-build-all-aws: build-prod-aws build-dev-aws
+build-all: build-prod-aws build-dev-aws ## Builds all containers by way of building the AWS containers
 
-push-all: push push-dev
+push-all: push push-dev ## Pushes all prod and dev containers to AWS
 
 build-prod:
 	mkdir -p ./build && \
