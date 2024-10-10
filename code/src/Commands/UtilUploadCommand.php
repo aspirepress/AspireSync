@@ -30,7 +30,7 @@ class UtilUploadCommand extends AbstractBaseCommand
         'total'    => 0,
     ];
 
-    public function __construct(CallbackInterface $callback, private Filesystem $flysystem, private StatsMetadataService $statsMetadata)
+    public function __construct(private string $uploadType, CallbackInterface $callback, private Filesystem $flysystem, private StatsMetadataService $statsMetadata)
     {
         if (! is_callable($callback)) {
             throw new InvalidArgumentException('Callable object required for constructor!');
@@ -107,7 +107,7 @@ class UtilUploadCommand extends AbstractBaseCommand
                     continue;
                 }
 
-                $details = $metadata->getVersionData($itemId, $version, 'aws_s3');
+                $details = $metadata->getVersionData($itemId, $version, $this->uploadType);
                 if ($details) {
                     // We've already stored this file
                     $this->notice("Already uploaded $itemSlug; skipping...");
@@ -125,7 +125,7 @@ class UtilUploadCommand extends AbstractBaseCommand
                     $this->flysystem->writeStream($metadata->getS3Path() . $file, fopen($dir . '/' . $file, 'r'));
 
                     $versionInfo = [$version => $metadata->getS3Path() . $file];
-                    $metadata->writeVersionProcessed(Uuid::fromString($itemId), $versionInfo, 'aws_s3');
+                    $metadata->writeVersionProcessed(Uuid::fromString($itemId), $versionInfo, $this->uploadType);
                     $this->success("Uploaded and recorded $itemSlug (v. $version)");
                     $this->stats['uploaded']++;
                     $this->stats['total']++;

@@ -27,13 +27,13 @@ push-all: push push-dev ## Pushes all prod and dev containers to AWS
 
 build-prod:
 	mkdir -p ./build && \
-	cp -r ./code/config ./code/src ./code/assetgrabber ./code/composer.* ./build && \
+	cp -r ./code/config ./code/src ./code/bin ./code/composer.* ./build && \
 	docker build --platform=linux/amd64,linux/arm64 --target prodbuild -t aspirepress/assetgrabber:latest -t aspirepress/assetgrabber:$(TAG_NAME) --push -f ./docker/Dockerfile . && \
 	rm -fr ./build
 
 build-dev:
 	mkdir -p ./build && \
-	cp -r ./code/config ./code/src ./code/assetgrabber ./code/composer.* ./build && \
+	cp -r ./code/config ./code/src ./code/bin ./code/composer.* ./build && \
 	docker build --target devbuild -t assetgrabber-dev -f ./docker/Dockerfile . && \
 	docker build --target devbuild -t assetgrabber-dev-build -f ./docker/Dockerfile . && \
 	rm -fr ./build

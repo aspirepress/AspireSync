@@ -27,7 +27,7 @@ return [
         'schema' => $_ENV['DB_SCHEMA'],
     ],
     'flysystem'   => [
-        'util:upload' => $_ENV['UPLOAD_ASSETS_ADAPTER'] ?? LocalFilesystemAdapter::class,
+        'util:upload' => $_ENV['UPLOAD_ASSETS_ADAPTER'] ?? 'upload_local_filesystem',
     ],
     'amazon'      => [
         's3' => [
@@ -38,4 +38,7 @@ return [
             'secret'   => $_ENV['AWS_S3_SECRET'] ?? null,
         ],
     ],
+    'local_filesystem' => [
+        'upload_dir' => $_ENV['UPLOAD_DIR'] ?? '/opt/assetgrabber/data/uploads',
+    ]
 ];

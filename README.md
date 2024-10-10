@@ -3,6 +3,16 @@
 AssetGrabber is designed to enumerate and download the plugins and themes stored in the WordPress SVN repository and
 Content Delivery Network.
 
+## Features
+
+* Download themes and plugins from the WordPress .org repository and upload them to local or S3 storage.
+* Store metadata and other information about every version of every plugin.
+* Download the latest version of a plugin/theme, or all versions, or a subset.
+* Handles closed and not found plugins/themes.
+* Updates only those items that are updated in SVN, so you don't have to pull the entire dataset.
+* Supports Postgres out of the box for metadata retention (SQLite coming eventually)
+* Runs downloads in parallel tasks (24 max) to allow for speedy download of assets.
+
 ## Prerequisites
 
 This project depends on a Postgres database, but does not supply container for it. You can use a Postgres instance
@@ -12,7 +22,7 @@ joins a network, and then define the network in the .env file.
 1. Run `make` to build the Docker container.
 2. Run `make run` to see available commands.
 3. Run `make run` which will run the container.
-4. Type `./assetgrabber <command>` to execute your desired command.
+4. Type `assetgrabber <command>` to execute your desired command.
 
 You'll need to copy the .env.dist file and populate it with credentials for the database. You can also define the
 network that the database is on, if you're using a Docker container.
@@ -29,6 +39,11 @@ To install for development, follow these commands (once the prerequisites are me
 
 ## Configuration
 
+### Database
+
+The AssetGrabber makes use of a Postgres database for storing information about each asset it pulls. These configuration
+values are **required**.
+
 | Env Variable | Description                                    |
 |--------------|------------------------------------------------|
 | DB_USER      | The username for the database                  |
@@ -36,6 +51,23 @@ To install for development, follow these commands (once the prerequisites are me
 | DB_NAME      | Name of the database to insert the information |
 | DB_HOST      | The hostname of the database                   |
 | DB_SCHEMA    | The schema in the database to use              |
+
+### Uploads
+
+AssetGrabber also uploads files to a location of your choosing, either in S3(-compatible) storage or local storage
+somewhere on disk.
+
+You can configure the following enviornment variables to determine where uploads are placed.
+
+| Env Variable          | Description                                                                                                                                                 |
+|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| UPLOAD_ASSETS_ADAPTER | Which adapter to use for file system uploads (current options are `upload_local_filesystem` or `upload_aws_s3`)                                             |
+| UPLOAD_DIR            | The fully qualified directory path to upload files into if UPLOAD_ASSETS_ADAPTER is set to `upload_local_filesystem`                                        |
+| AWS_BUCKET            | The bucket to use for Amazon S3 uploads                                                                                                                     |
+| AWS_REGION            | Defaults to `us-east-2`, this is the Amazon region to use                                                                                                   |
+| AWS_S3_ENDPOINT       | This is a hard-coded bucket endpoint, useful for S3-compatible storage. This is not a required parameter and will default to `null`                         |
+| AWS_S3_KEY            | For users of access keys with AWS IAM, this is the access key. If this is not provided, the client will attempt authenticaton through an attached IAM role. |
+| AWS_S3_SECRET         | The companion secret to the `AWS_S3_KEY`; this is optional and if omitted will default to IAM role authentication.                                          |
 
 ## Usage
 

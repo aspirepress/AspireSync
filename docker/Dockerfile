@@ -1,5 +1,7 @@
 FROM php:8.3-cli-alpine AS basebuild
 
+ENV PATH="/opt/assetgrabber/bin:$PATH"
+
 COPY ./build /opt/assetgrabber
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
