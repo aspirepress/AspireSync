@@ -3,3 +3,6 @@
 /old_code
 /build
 .env
+
+node_modules/
+vendor/
