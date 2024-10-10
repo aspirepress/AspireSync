@@ -122,10 +122,15 @@ class UtilUploadCommand extends AbstractBaseCommand
 
                 try {
                     $this->info("Uploading $itemSlug (v. $version) to S3...");
-                    $this->flysystem->writeStream($metadata->getS3Path() . $file, fopen($dir . '/' . $file, 'r'));
+                    $args = [
+                        'ChecksumAlgorithm' => 'SHA256',
+                        'ChecksumSHA256' => $hash,
+                    ];
+                    $hash = $metadata->getHashForId($itemId, $version);
+                    $this->flysystem->writeStream($metadata->getS3Path() . $file, fopen($dir . '/' . $file, 'r'), $args);
 
                     $versionInfo = [$version => $metadata->getS3Path() . $file];
-                    $metadata->writeVersionProcessed(Uuid::fromString($itemId), $versionInfo, $this->uploadType);
+                    $metadata->writeVersionProcessed(Uuid::fromString($itemId), $versionInfo, $hash, $this->uploadType);
                     $this->success("Uploaded and recorded $itemSlug (v. $version)");
                     $this->stats['uploaded']++;
                     $this->stats['total']++;

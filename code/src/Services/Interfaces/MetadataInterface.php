@@ -30,7 +30,7 @@ interface MetadataInterface
      * @param  array<int, string>  $versions
      * @return array<string, string>
      */
-    public function writeVersionProcessed(UuidInterface $pluginId, array $versions, string $cdn): array;
+    public function writeVersionProcessed(UuidInterface $pluginId, array $versions, string $hash, string $cdn): array;
 
     /**
      * @return array|string[]
@@ -54,7 +54,7 @@ interface MetadataInterface
      */
     public function getDownloadUrlsForVersions(string $plugin, array $versions, string $type = 'wp_cdn'): array;
 
-    public function setVersionToDownloaded(string $plugin, string $version, string $type = 'wp_cdn'): void;
+    public function setVersionToDownloaded(string $plugin, string $version, ?string $hash = null, string $type = 'wp_cdn'): void;
 
     /**
      * @param string[] $versions

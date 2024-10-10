@@ -176,9 +176,9 @@ class ThemesMetadataService
      * @param  array<string, string[]>  $versions
      * @return array|string[]
      */
-    public function writeVersionProcessed(UuidInterface $themeId, array $versions, string $cdn = 'wp_cdn'): array
+    public function writeVersionProcessed(UuidInterface $themeId, array $versions, string $hash, string $cdn = 'wp_cdn'): array
     {
-        $sql = 'INSERT INTO theme_files (id, theme_id, file_url, type, version, created, processed) VALUES (:id, :theme_id, :file_url, :type, :version, NOW(), NOW())';
+        $sql = 'INSERT INTO theme_files (id, theme_id, file_url, type, version, created, processed, hash) VALUES (:id, :theme_id, :file_url, :type, :version, NOW(), NOW(), :hash)';
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;
@@ -193,6 +193,7 @@ class ThemesMetadataService
                     'file_url' => $url,
                     'type'     => $cdn,
                     'version'  => $version,
+                    'hash'     => $hash,
                 ]);
             }
 
@@ -329,10 +330,10 @@ class ThemesMetadataService
         }
     }
 
-    public function setVersionToDownloaded(string $theme, string $version, string $type = 'wp_cdn'): void
+    public function setVersionToDownloaded(string $theme, string $version, ?string $hash = null, string $type = 'wp_cdn'): void
     {
-        $sql = 'UPDATE theme_files SET processed = NOW() WHERE version = :version AND type = :type AND theme_id = (SELECT id FROM themes WHERE slug = :theme)';
-        $this->pdo->perform($sql, ['theme' => $theme, 'type' => $type, 'version' => $version]);
+        $sql = 'UPDATE theme_files SET processed = NOW(), hash = :hash WHERE version = :version AND type = :type AND theme_id = (SELECT id FROM themes WHERE slug = :theme)';
+        $this->pdo->perform($sql, ['theme' => $theme, 'type' => $type, 'hash' => $hash, 'version' => $version]);
     }
 
     /**
@@ -414,5 +415,12 @@ class ThemesMetadataService
     public function getS3Path(): string
     {
         return '/themes/';
+    }
+
+    public function getHashForId(string $themeId, string $version): string
+    {
+        $sql = 'SELECT hash FROM theme_files WHERE id = :item_id';
+        $hashArray =  $this->pdo->fetchOne($sql, ['item_id' => $themeId, 'version' => $version]);
+        return $hashArray['hash'];
     }
 }

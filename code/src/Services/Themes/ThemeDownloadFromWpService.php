@@ -7,6 +7,7 @@ namespace AspirePress\AspireSync\Services\Themes;
 use AspirePress\AspireSync\Services\Interfaces\DownloadServiceInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use Symfony\Component\Process\Process;
 
 class ThemeDownloadFromWpService implements DownloadServiceInterface
 {
@@ -52,7 +53,8 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
         $filePath     = sprintf($downloadFile, $theme, $version);
 
         if (file_exists($filePath) && ! $force) {
-            $this->themeMetadataService->setVersionToDownloaded($theme, (string) $version);
+            $hash = $this->calculateHash($filePath);
+            $this->themeMetadataService->setVersionToDownloaded($theme, (string) $version, $hash);
             return ['status' => '304 Not Modified', 'version' => $version];
         }
         try {
@@ -60,7 +62,8 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
             if (filesize($filePath) === 0) {
                 unlink($filePath);
             }
-            $this->themeMetadataService->setVersionToDownloaded($theme, (string) $version);
+            $hash = $this->calculateHash($filePath);
+            $this->themeMetadataService->setVersionToDownloaded($theme, (string) $version, $hash);
         } catch (ClientException $e) {
             if (method_exists($e, 'getResponse')) {
                 $response = $e->getResponse();
@@ -77,8 +80,26 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
 
             unlink($filePath);
             return ['status' => $e->getMessage(), 'version' => $version];
+        } catch (\RuntimeException $e) {
+            $outcomes[$e->getMessage()][] = $version;
+            @unlink($filePath);
         }
 
         return ['status' => $response->getStatusCode() . ' ' . $response->getReasonPhrase(), 'version' => $version];
+    }
+
+    private function calculateHash(string $filePath): string
+    {
+        $process = new Process([
+            'unzip',
+            '-t',
+            $filePath
+        ]);
+        $process->run();
+        if ($process->isSuccessful()) {
+            return hash_file('sha256', $filePath);
+        }
+
+        throw new \RuntimeException($process->getErrorOutput());
     }
 }

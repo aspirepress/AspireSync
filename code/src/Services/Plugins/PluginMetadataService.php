@@ -159,9 +159,9 @@ class PluginMetadataService implements MetadataInterface
      * @param  array<int, string>  $versions
      * @return array|string[]
      */
-    public function writeVersionProcessed(UuidInterface $pluginId, array $versions, string $cdn): array
+    public function writeVersionProcessed(UuidInterface $pluginId, array $versions, string $hash, string $cdn): array
     {
-        $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version, created, processed) VALUES (:id, :plugin_id, :file_url, :type, :version, NOW(), NOW())';
+        $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version, created, processed, hash) VALUES (:id, :plugin_id, :file_url, :type, :version, NOW(), NOW(), :hash)';
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;
@@ -176,6 +176,7 @@ class PluginMetadataService implements MetadataInterface
                     'file_url'  => $url,
                     'type'      => $cdn,
                     'version'   => $version,
+                    'hash' => $hash,
                 ]);
             }
 
@@ -411,10 +412,10 @@ class PluginMetadataService implements MetadataInterface
         }
     }
 
-    public function setVersionToDownloaded(string $plugin, string $version, string $type = 'wp_cdn'): void
+    public function setVersionToDownloaded(string $plugin, string $version, ?string $hash = null, string $type = 'wp_cdn'): void
     {
-        $sql = 'UPDATE plugin_files SET processed = NOW() WHERE version = :version AND type = :type AND plugin_id = (SELECT id FROM plugins WHERE slug = :plugin)';
-        $this->pdo->perform($sql, ['plugin' => $plugin, 'type' => $type, 'version' => $version]);
+        $sql = 'UPDATE plugin_files SET processed = NOW(), hash = :hash WHERE version = :version AND type = :type AND plugin_id = (SELECT id FROM plugins WHERE slug = :plugin)';
+        $this->pdo->perform($sql, ['plugin' => $plugin, 'type' => $type, 'hash' => $hash, 'version' => $version]);
     }
 
     /**
@@ -511,5 +512,12 @@ class PluginMetadataService implements MetadataInterface
     public function getS3Path(): string
     {
         return '/plugins/';
+    }
+
+    public function getHashForId(string $pluginId, string $version): string
+    {
+        $sql = "SELECT hash FROM plugin_files WHERE plugin_id = :item_id AND version = :version AND type = 'wp_cdn'";
+        $hashArray =  $this->pdo->fetchOne($sql, ['item_id' => $pluginId, 'version' => $version]);
+        return $hashArray['hash'] ?? '';
     }
 }
