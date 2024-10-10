@@ -23,8 +23,8 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
      */
     public function download(string $theme, array $versions, string $numToDownload = 'all', bool $force = false): array
     {
-        if (! file_exists('/opt/assetgrabber/data/themes')) {
-            mkdir('/opt/assetgrabber/data/themes');
+        if (! file_exists('/opt/aspiresync/data/themes')) {
+            mkdir('/opt/aspiresync/data/themes');
         }
 
         $outcomes     = [];
@@ -48,7 +48,7 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
     private function runDownload(string $theme, string $version, string $url, bool $force): array
     {
         $client       = new Client();
-        $downloadFile = '/opt/assetgrabber/data/themes/%s.%s.zip';
+        $downloadFile = '/opt/aspiresync/data/themes/%s.%s.zip';
         $filePath     = sprintf($downloadFile, $theme, $version);
 
         if (file_exists($filePath) && ! $force) {

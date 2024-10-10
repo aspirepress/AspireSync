@@ -17,7 +17,7 @@ ifdef NETWORK
 	NETWORK_STR=--network=${NETWORK}
 endif
 
-DOCKER_DEV_RUN=docker run -it --rm --name assetgrabber-dev -v ./code:/opt/assetgrabber -v ./data:/opt/assetgrabber/data $(NETWORK_STR) --env-file ./.env assetgrabber-dev
+DOCKER_DEV_RUN=docker run -it --rm --name aspiresync-dev -v ./code:/opt/aspiresync -v ./data:/opt/aspiresync/data $(NETWORK_STR) --env-file ./.env aspiresync-dev
 
 build-local: build-prod build-dev ## Builds all the local containers for prod and dev
 
@@ -28,27 +28,30 @@ push-all: push push-dev ## Pushes all prod and dev containers to AWS
 build-prod:
 	mkdir -p ./build && \
 	cp -r ./code/config ./code/src ./code/bin ./code/composer.* ./build && \
-	docker build --platform=linux/amd64,linux/arm64 --target prodbuild -t aspirepress/assetgrabber:latest -t aspirepress/assetgrabber:$(TAG_NAME) -f ./docker/Dockerfile . && \
+	docker build --platform=linux/amd64,linux/arm64 --target prodbuild -t aspirepress/aspiresync:latest -t aspirepress/aspiresync:$(TAG_NAME) -f ./docker/Dockerfile . && \
 	rm -fr ./build
 
 build-dev:
 	mkdir -p ./build && \
 	cp -r ./code/config ./code/src ./code/bin ./code/composer.* ./build && \
-	docker build --target devbuild -t assetgrabber-dev -f ./docker/Dockerfile . && \
-	docker build --target devbuild -t assetgrabber-dev-build -f ./docker/Dockerfile . && \
+	docker build --target devbuild -t aspiresync-dev -f ./docker/Dockerfile . && \
+	docker build --target devbuild -t aspiresync-dev-build -f ./docker/Dockerfile . && \
 	rm -fr ./build
 
 build-prod-aws:
 	make build-prod && \
-	docker tag aspirepress/assetgrabber:$(TAG_NAME) ${AWS_ECR_REGISTRY}:$(TAG_NAME) && \
-	docker tag aspirepress/assetgrabber:latest ${AWS_ECR_REGISTRY}:latest
+	docker tag aspirepress/aspiresync:$(TAG_NAME) ${AWS_ECR_REGISTRY}:$(TAG_NAME) && \
+	docker tag aspirepress/aspiresync:latest ${AWS_ECR_REGISTRY}:latest  && \
+	rm -fr ./build
 
 build-dev-aws:
 	make build-dev && \
-	docker tag assetgrabber-dev-build ${AWS_ECR_REGISTRY}:dev-build && \
-	docker tag assetgrabber-dev-build ${AWS_ECR_REGISTRY}:`git rev-parse --short HEAD`
+	docker tag aspiresync-dev-build ${AWS_ECR_REGISTRY}:dev-build && \
+	docker tag aspiresync-dev-build ${AWS_ECR_REGISTRY}:`git rev-parse --short HEAD` && \
+	rm -fr ./build
+
 run:
-	docker run -it --rm assetgrabber sh
+	docker run -it --rm aspiresync sh
 
 dev-install-composer:
 	${DOCKER_DEV_RUN} composer install

@@ -408,7 +408,7 @@ class ThemesMetadataService
 
     public function getStorageDir(): string
     {
-        return '/opt/assetgrabber/data/themes';
+        return '/opt/aspiresync/data/themes';
     }
 
     public function getS3Path(): string

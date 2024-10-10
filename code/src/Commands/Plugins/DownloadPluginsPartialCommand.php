@@ -78,7 +78,7 @@ class DownloadPluginsPartialCommand extends AbstractBaseCommand
             }
 
             $command = [
-                'assetgrabber',
+                'aspiresync',
                 'internal:plugin-download',
                 $plugin,
                 $versionList,

@@ -24,10 +24,10 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
     public function download(string $theme, array $versions, string $numToDownload = 'all', bool $force = false): array
     {
         $client       = new Client();
-        $downloadFile = '/opt/assetgrabber/data/plugins/%s.%s.zip';
+        $downloadFile = '/opt/aspiresync/data/plugins/%s.%s.zip';
 
-        if (! file_exists('/opt/assetgrabber/data/plugins')) {
-            mkdir('/opt/assetgrabber/data/plugins');
+        if (! file_exists('/opt/aspiresync/data/plugins')) {
+            mkdir('/opt/aspiresync/data/plugins');
         }
 
         $outcomes     = [];

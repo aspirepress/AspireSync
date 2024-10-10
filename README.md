@@ -1,6 +1,6 @@
-# AssetGrabber
+# AspireSync
 
-AssetGrabber is designed to enumerate and download the plugins and themes stored in the WordPress SVN repository and
+AspireSync is designed to enumerate and download the plugins and themes stored in the WordPress SVN repository and
 Content Delivery Network.
 
 ## Features
@@ -22,7 +22,7 @@ joins a network, and then define the network in the .env file.
 1. Run `make` to build the Docker container.
 2. Run `make run` to see available commands.
 3. Run `make run` which will run the container.
-4. Type `assetgrabber <command>` to execute your desired command.
+4. Type `aspiresync <command>` to execute your desired command.
 
 You'll need to copy the .env.dist file and populate it with credentials for the database. You can also define the
 network that the database is on, if you're using a Docker container.
@@ -41,7 +41,7 @@ To install for development, follow these commands (once the prerequisites are me
 
 ### Database
 
-The AssetGrabber makes use of a Postgres database for storing information about each asset it pulls. These configuration
+The AspireSync makes use of a Postgres database for storing information about each asset it pulls. These configuration
 values are **required**.
 
 | Env Variable | Description                                    |
@@ -54,7 +54,7 @@ values are **required**.
 
 ### Uploads
 
-AssetGrabber also uploads files to a location of your choosing, either in S3(-compatible) storage or local storage
+AspireSync also uploads files to a location of your choosing, either in S3(-compatible) storage or local storage
 somewhere on disk.
 
 You can configure the following enviornment variables to determine where uploads are placed.
@@ -87,7 +87,7 @@ This package ships with the following commands;
 
 ## License
 
-The AssetGrabber tool is licensed under the MIT license. You may use and distribute it freely.
+The AspireSync tool is licensed under the MIT license. You may use and distribute it freely.
 
 The code that this tool is designed to download is likely licensed under the GPL. Please respect that license. However,
 because this tool does not implement GPL components, it is not required to be licensed under the GPL.

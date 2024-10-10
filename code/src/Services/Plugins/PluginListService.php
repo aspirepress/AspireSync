@@ -41,8 +41,8 @@ class PluginListService implements ListServiceInterface
      */
     public function getItemMetadata(string $item): array
     {
-        if (! file_exists('/opt/assetgrabber/data/plugin-raw-data')) {
-            mkdir('/opt/assetgrabber/data/plugin-raw-data');
+        if (! file_exists('/opt/aspiresync/data/plugin-raw-data')) {
+            mkdir('/opt/aspiresync/data/plugin-raw-data');
         }
 
         if ($this->isNotFound($item)) {
@@ -53,7 +53,7 @@ class PluginListService implements ListServiceInterface
 
         $output = $this->wpClient->getPluginMetadata($item);
 
-        file_put_contents('/opt/assetgrabber/data/plugin-raw-data/' . $item . '.json', $output);
+        file_put_contents('/opt/aspiresync/data/plugin-raw-data/' . $item . '.json', $output);
 
         return json_decode($output, true);
     }

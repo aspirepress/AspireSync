@@ -42,8 +42,8 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
         $this->always("Running command {$this->getName()}");
 
         $this->startTimer();
-        if (file_exists('/opt/assetgrabber/data/plugin-raw-data') && is_readable('/opt/assetgrabber/data/plugin-raw-data')) {
-            $files = scandir('/opt/assetgrabber/data/plugin-raw-data');
+        if (file_exists('/opt/aspiresync/data/plugin-raw-data') && is_readable('/opt/aspiresync/data/plugin-raw-data')) {
+            $files = scandir('/opt/aspiresync/data/plugin-raw-data');
         } else {
             $this->error('Unable to read source directory for plugin metadata!');
             return self::FAILURE;
@@ -70,10 +70,10 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
 
             $this->stats['total']++;
 
-            $fileContents = file_get_contents('/opt/assetgrabber/data/plugin-raw-data/' . $file);
+            $fileContents = file_get_contents('/opt/aspiresync/data/plugin-raw-data/' . $file);
             $fileContents = json_decode($fileContents, true);
 
-            $pulledAt = date('c', filemtime('/opt/assetgrabber/data/plugin-raw-data/' . $file));
+            $pulledAt = date('c', filemtime('/opt/aspiresync/data/plugin-raw-data/' . $file));
 
             // Check for existing
             $existing = $this->pluginMetadata->checkPluginInDatabase($fileContents['slug'] ?? '');

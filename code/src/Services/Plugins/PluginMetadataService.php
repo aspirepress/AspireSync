@@ -505,7 +505,7 @@ class PluginMetadataService implements MetadataInterface
 
     public function getStorageDir(): string
     {
-        return '/opt/assetgrabber/data/plugins';
+        return '/opt/aspiresync/data/plugins';
     }
 
     public function getS3Path(): string

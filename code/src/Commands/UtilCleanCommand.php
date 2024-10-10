@@ -31,7 +31,7 @@ class UtilCleanCommand extends AbstractBaseCommand
     {
         $this->always('Calculating the size and number of files in the data directory... (this may take a while)');
 
-        $details = $this->countFilesAndDirectories('/opt/assetgrabber/data');
+        $details = $this->countFilesAndDirectories('/opt/aspiresync/data');
         $files   = $details['files'];
         $dirs    = $details['dirs'];
         $size    = $this->convertBytesToUnit($details['size']);
@@ -46,7 +46,7 @@ class UtilCleanCommand extends AbstractBaseCommand
         }
 
         $this->info('Cleaning data directory...');
-        $result = $this->deleteFilesAndDirectories('/opt/assetgrabber/data');
+        $result = $this->deleteFilesAndDirectories('/opt/aspiresync/data');
         if ($result) {
             $this->success('Cleaned data directory.');
             return Command::SUCCESS;

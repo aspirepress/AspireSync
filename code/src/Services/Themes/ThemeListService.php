@@ -38,8 +38,8 @@ class ThemeListService implements ListServiceInterface
      */
     public function getItemMetadata(string $item): array
     {
-        if (! file_exists('/opt/assetgrabber/data/theme-raw-data')) {
-            mkdir('/opt/assetgrabber/data/theme-raw-data');
+        if (! file_exists('/opt/aspiresync/data/theme-raw-data')) {
+            mkdir('/opt/aspiresync/data/theme-raw-data');
         }
 
         if ($this->isNotFound($item)) {
@@ -59,7 +59,7 @@ class ThemeListService implements ListServiceInterface
             $response = $client->get($url, ['query' => $queryParams]);
             $data     = json_decode($response->getBody()->getContents(), true);
             file_put_contents(
-                '/opt/assetgrabber/data/theme-raw-data/' . $item . '.json',
+                '/opt/aspiresync/data/theme-raw-data/' . $item . '.json',
                 json_encode($data, JSON_PRETTY_PRINT)
             );
             return $data;
@@ -142,15 +142,15 @@ class ThemeListService implements ListServiceInterface
      */
     private function pullWholeThemeList(string $action = 'default'): array
     {
-        if (file_exists('/opt/assetgrabber/data/raw-svn-theme-list') && filemtime('/opt/assetgrabber/data/raw-svn-theme-list') > time() - 43200) {
-            $themes   = file_get_contents('/opt/assetgrabber/data/raw-svn-theme-list');
+        if (file_exists('/opt/aspiresync/data/raw-svn-theme-list') && filemtime('/opt/aspiresync/data/raw-svn-theme-list') > time() - 43200) {
+            $themes   = file_get_contents('/opt/aspiresync/data/raw-svn-theme-list');
             $contents = $themes;
         } else {
             try {
                 $client   = new Client();
-                $themes   = $client->get('https://themes.svn.wordpress.org/', ['headers' => ['User-Agent' => 'AssetGrabber']]);
+                $themes   = $client->get('https://themes.svn.wordpress.org/', ['headers' => ['User-Agent' => 'AspireSync']]);
                 $contents = $themes->getBody()->getContents();
-                file_put_contents('/opt/assetgrabber/data/raw-svn-theme-list', $contents);
+                file_put_contents('/opt/aspiresync/data/raw-svn-theme-list', $contents);
                 $themes = $contents;
             } catch (ClientException $e) {
                 throw new RuntimeException('Unable to download theme list: ' . $e->getMessage());
@@ -167,7 +167,7 @@ class ThemeListService implements ListServiceInterface
         preg_match('/Revision ([0-9]+)\:/', $contents, $matches);
         $revision = (int) $matches[1];
 
-        file_put_contents('/opt/assetgrabber/data/raw-theme-list', implode(PHP_EOL, $themes));
+        file_put_contents('/opt/aspiresync/data/raw-theme-list', implode(PHP_EOL, $themes));
         $this->revisionService->setCurrentRevision($action, $revision);
         return $themesToReturn;
     }

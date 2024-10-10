@@ -40,8 +40,8 @@ class MetaImportThemesCommand extends AbstractBaseCommand
     public function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->startTimer();
-        if (file_exists('/opt/assetgrabber/data/theme-raw-data') && is_readable('/opt/assetgrabber/data/theme-raw-data')) {
-            $files = scandir('/opt/assetgrabber/data/theme-raw-data');
+        if (file_exists('/opt/aspiresync/data/theme-raw-data') && is_readable('/opt/aspiresync/data/theme-raw-data')) {
+            $files = scandir('/opt/aspiresync/data/theme-raw-data');
         } else {
             $this->error('Unable to open source directory for theme metadata!');
             return self::FAILURE;
@@ -68,7 +68,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
 
             $this->stats['total']++;
 
-            $fileContents = file_get_contents('/opt/assetgrabber/data/theme-raw-data/' . $file);
+            $fileContents = file_get_contents('/opt/aspiresync/data/theme-raw-data/' . $file);
             $fileContents = json_decode($fileContents, true);
 
             if (isset($fileContents['error'])) {
@@ -77,7 +77,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
                 continue;
             }
 
-            $pulledAt = date('c', filemtime('/opt/assetgrabber/data/theme-raw-data/' . $file));
+            $pulledAt = date('c', filemtime('/opt/aspiresync/data/theme-raw-data/' . $file));
 
             // Check for existing
             $existing = $this->themeMetadata->checkThemeInDatabase($fileContents['slug'] ?? '');

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 return [
     'paths'            => [
-        'basePath'     => '/opt/assetgrabber',
-        'downloadPath' => '/opt/assetgrabber/data/plugins',
+        'basePath'     => '/opt/aspiresync',
+        'downloadPath' => '/opt/aspiresync/data/plugins',
     ],
     'urls'             => [
         'pluginUrl' => 'https://downloads.wordpress.org/plugin/%s.%s.zip',
@@ -37,6 +37,6 @@ return [
         ],
     ],
     'local_filesystem' => [
-        'upload_dir' => $_ENV['UPLOAD_DIR'] ?? '/opt/assetgrabber/data/uploads',
+        'upload_dir' => $_ENV['UPLOAD_DIR'] ?? '/opt/aspiresync/data/uploads',
     ],
 ];
