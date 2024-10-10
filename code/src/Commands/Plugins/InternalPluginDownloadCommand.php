@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Commands\Plugins;
+namespace AspirePress\AspireSync\Commands\Plugins;
 
-use AssetGrabber\Commands\AbstractBaseCommand;
-use AssetGrabber\Services\Plugins\PluginDownloadFromWpService;
+use AspirePress\AspireSync\Commands\AbstractBaseCommand;
+use AspirePress\AspireSync\Services\Plugins\PluginDownloadFromWpService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

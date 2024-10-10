@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Factories;
+namespace AspirePress\AspireSync\Factories;
 
 use Aura\Sql\ExtendedPdo;
 use Laminas\ServiceManager\ServiceManager;

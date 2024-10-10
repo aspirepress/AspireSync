@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services;
+namespace AspirePress\AspireSync\Services;
 
-use AssetGrabber\Services\Interfaces\WpEndpointClientInterface;
+use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 

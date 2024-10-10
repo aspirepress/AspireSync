@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services\Themes;
+namespace AspirePress\AspireSync\Services\Themes;
 
-use AssetGrabber\Services\Interfaces\ListServiceInterface;
-use AssetGrabber\Services\RevisionMetadataService;
+use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
+use AspirePress\AspireSync\Services\RevisionMetadataService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use RuntimeException;

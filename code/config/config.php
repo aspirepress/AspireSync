@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use AssetGrabber\ConfigProvider;
+use AspirePress\AspireSync\ConfigProvider;
 use Laminas\ConfigAggregator\ConfigAggregator;
 use Laminas\ConfigAggregator\PhpFileProvider;
 

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Factories\Plugins;
+namespace AspirePress\AspireSync\Factories\Plugins;
 
-use AssetGrabber\Services\Plugins\PluginListService;
-use AssetGrabber\Services\Plugins\PluginMetadataService;
-use AssetGrabber\Services\RevisionMetadataService;
-use AssetGrabber\Services\SvnService;
-use AssetGrabber\Services\WPEndpointClient;
+use AspirePress\AspireSync\Services\Plugins\PluginListService;
+use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
+use AspirePress\AspireSync\Services\RevisionMetadataService;
+use AspirePress\AspireSync\Services\SvnService;
+use AspirePress\AspireSync\Services\WPEndpointClient;
 use Laminas\ServiceManager\ServiceManager;
 
 class PluginListServiceFactory

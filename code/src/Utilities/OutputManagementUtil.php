@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Utilities;
+namespace AspirePress\AspireSync\Utilities;
 
 abstract class OutputManagementUtil
 {

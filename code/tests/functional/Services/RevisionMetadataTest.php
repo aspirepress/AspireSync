@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Tests\Functional\Services;
+namespace AspirePress\AspireSync\Tests\Functional\Services;
 
-use AssetGrabber\Services\RevisionMetadataService;
-use AssetGrabber\Tests\Functional\AbstractFunctionalTestBase;
-use AssetGrabber\Tests\Helpers\FunctionalTestHelper;
+use AspirePress\AspireSync\Services\RevisionMetadataService;
+use AspirePress\AspireSync\Tests\Functional\AbstractFunctionalTestBase;
+use AspirePress\AspireSync\Tests\Helpers\FunctionalTestHelper;
 use RuntimeException;
 
 class RevisionMetadataTest extends AbstractFunctionalTestBase

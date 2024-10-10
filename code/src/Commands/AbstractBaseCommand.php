@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Commands;
+namespace AspirePress\AspireSync\Commands;
 
-use AssetGrabber\Utilities\ErrorWritingTrait;
+use AspirePress\AspireSync\Utilities\ErrorWritingTrait;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services\Plugins;
+namespace AspirePress\AspireSync\Services\Plugins;
 
-use AssetGrabber\Services\Interfaces\DownloadServiceInterface;
+use AspirePress\AspireSync\Services\Interfaces\DownloadServiceInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
@@ -53,7 +53,6 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
                 }
                 $this->pluginMetadataService->setVersionToDownloaded($theme, (string) $version);
             } catch (ClientException $e) {
-                throw $e;
                 if (method_exists($e, 'getResponse')) {
                     $response = $e->getResponse();
                     $outcomes[$response->getStatusCode() . ' ' . $response->getReasonPhrase()][] = $version;

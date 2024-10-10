@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Factories\Plugins;
+namespace AspirePress\AspireSync\Factories\Plugins;
 
-use AssetGrabber\Commands\Plugins\MetaDownloadPluginsCommand;
-use AssetGrabber\Services\Plugins\PluginListService;
-use AssetGrabber\Services\StatsMetadataService;
+use AspirePress\AspireSync\Commands\Plugins\MetaDownloadPluginsCommand;
+use AspirePress\AspireSync\Services\Plugins\PluginListService;
+use AspirePress\AspireSync\Services\StatsMetadataService;
 use Laminas\ServiceManager\ServiceManager;
 
 class MetaDownloadPluginsCommandFactory

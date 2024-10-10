@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services\Themes;
+namespace AspirePress\AspireSync\Services\Themes;
 
 use Aura\Sql\ExtendedPdoInterface;
 use Exception;

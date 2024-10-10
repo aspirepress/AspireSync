@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Tests\Functional\Services;
+namespace AspirePress\AspireSync\Tests\Functional\Services;
 
-use AssetGrabber\Services\SvnService;
-use AssetGrabber\Tests\Functional\AbstractFunctionalTestBase;
+use AspirePress\AspireSync\Services\SvnService;
+use AspirePress\AspireSync\Tests\Functional\AbstractFunctionalTestBase;
 
 class SvnServiceTest extends AbstractFunctionalTestBase
 {

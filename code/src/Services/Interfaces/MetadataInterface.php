@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services\Interfaces;
+namespace AspirePress\AspireSync\Services\Interfaces;
 
 use Ramsey\Uuid\UuidInterface;
 

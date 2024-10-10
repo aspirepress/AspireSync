@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Factories;
+namespace AspirePress\AspireSync\Factories;
 
-use AssetGrabber\Commands\UtilUploadCommand;
-use AssetGrabber\Services\Interfaces\CallbackInterface;
-use AssetGrabber\Services\Plugins\PluginMetadataService;
-use AssetGrabber\Services\StatsMetadataService;
-use AssetGrabber\Services\Themes\ThemesMetadataService;
+use AspirePress\AspireSync\Commands\UtilUploadCommand;
+use AspirePress\AspireSync\Services\Interfaces\CallbackInterface;
+use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
+use AspirePress\AspireSync\Services\StatsMetadataService;
+use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
 use Laminas\ServiceManager\ServiceManager;
 use RuntimeException;
 

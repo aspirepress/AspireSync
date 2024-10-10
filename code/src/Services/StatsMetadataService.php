@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services;
+namespace AspirePress\AspireSync\Services;
 
 use Aura\Sql\ExtendedPdoInterface;
 use Ramsey\Uuid\Uuid;

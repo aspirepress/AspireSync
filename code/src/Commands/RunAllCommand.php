@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Commands;
+namespace AspirePress\AspireSync\Commands;
 
 use Exception;
 use Symfony\Component\Console\Input\ArrayInput;

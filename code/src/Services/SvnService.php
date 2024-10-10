@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services;
+namespace AspirePress\AspireSync\Services;
 
-use AssetGrabber\Services\Interfaces\SvnServiceInterface;
+use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use RuntimeException;

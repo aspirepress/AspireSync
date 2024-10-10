@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Tests\Unit\Utilities;
+namespace AspirePress\AspireSync\Tests\Unit\Utilities;
 
-use AssetGrabber\Utilities\VersionUtil;
+use AspirePress\AspireSync\Utilities\VersionUtil;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

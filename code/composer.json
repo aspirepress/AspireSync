@@ -17,14 +17,14 @@
     },
     "autoload": {
         "psr-4": {
-            "AssetGrabber\\": "./src"
+            "AspirePress\\AspireSync\\": "./src"
         }
     },
     "autoload-dev":{
         "psr-4": {
-            "AssetGrabber\\Tests\\Unit\\": "./tests/unit",
-            "AssetGrabber\\Tests\\Functional\\": "./tests/functional",
-            "AssetGrabber\\Tests\\Helpers\\": "./tests/helpers"
+            "AspirePress\\AspireSync\\Tests\\Unit\\": "./tests/unit",
+            "AspirePress\\AspireSync\\Tests\\Functional\\": "./tests/functional",
+            "AspirePress\\AspireSync\\Tests\\Helpers\\": "./tests/helpers"
         }
     },
     "require-dev": {

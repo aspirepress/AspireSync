@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Factories\Themes;
+namespace AspirePress\AspireSync\Factories\Themes;
 
-use AssetGrabber\Services\RevisionMetadataService;
-use AssetGrabber\Services\Themes\ThemeListService;
-use AssetGrabber\Services\Themes\ThemesMetadataService;
+use AspirePress\AspireSync\Services\RevisionMetadataService;
+use AspirePress\AspireSync\Services\Themes\ThemeListService;
+use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
 use Laminas\ServiceManager\ServiceManager;
 
 class ThemeListServiceFactory

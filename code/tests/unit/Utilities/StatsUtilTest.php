@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Tests\Unit\Utilities;
+namespace AspirePress\AspireSync\Tests\Unit\Utilities;
 
-use AssetGrabber\Utilities\StatsUtil;
+use AspirePress\AspireSync\Utilities\StatsUtil;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 

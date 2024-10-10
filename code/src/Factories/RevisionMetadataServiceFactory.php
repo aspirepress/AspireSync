@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Factories;
+namespace AspirePress\AspireSync\Factories;
 
-use AssetGrabber\Services\RevisionMetadataService;
+use AspirePress\AspireSync\Services\RevisionMetadataService;
 use Aura\Sql\ExtendedPdoInterface;
 use Laminas\ServiceManager\ServiceManager;
 

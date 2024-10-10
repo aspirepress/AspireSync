@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Factories\Flysystem;
+namespace AspirePress\AspireSync\Factories\Flysystem;
 
 use Aws\S3\S3Client;
 use Laminas\ServiceManager\ServiceManager;

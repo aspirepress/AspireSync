@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Factories\Themes;
+namespace AspirePress\AspireSync\Factories\Themes;
 
-use AssetGrabber\Commands\Themes\DownloadThemesPartialCommand;
-use AssetGrabber\Services\StatsMetadataService;
-use AssetGrabber\Services\Themes\ThemeListService;
-use AssetGrabber\Services\Themes\ThemesMetadataService;
+use AspirePress\AspireSync\Commands\Themes\DownloadThemesPartialCommand;
+use AspirePress\AspireSync\Services\StatsMetadataService;
+use AspirePress\AspireSync\Services\Themes\ThemeListService;
+use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
 use Laminas\ServiceManager\ServiceManager;
 
 class DownloadThemesPartialCommandFactory

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use AssetGrabber\Tests\Helpers\FunctionalTestHelper;
+use AspirePress\AspireSync\Tests\Helpers\FunctionalTestHelper;
 use Laminas\ServiceManager\ServiceManager;
 
 require_once __DIR__ . '/../vendor/autoload.php';

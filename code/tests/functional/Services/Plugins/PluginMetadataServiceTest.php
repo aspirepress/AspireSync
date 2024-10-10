@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Tests\Functional\Services\Plugins;
+namespace AspirePress\AspireSync\Tests\Functional\Services\Plugins;
 
-use AssetGrabber\Services\Plugins\PluginMetadataService;
-use AssetGrabber\Tests\Functional\AbstractFunctionalTestBase;
-use AssetGrabber\Tests\Helpers\FunctionalTestHelper;
+use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
+use AspirePress\AspireSync\Tests\Functional\AbstractFunctionalTestBase;
+use AspirePress\AspireSync\Tests\Helpers\FunctionalTestHelper;
 
 class PluginMetadataServiceTest extends AbstractFunctionalTestBase
 {

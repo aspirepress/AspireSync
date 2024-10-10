@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Commands\Themes;
+namespace AspirePress\AspireSync\Commands\Themes;
 
-use AssetGrabber\Commands\AbstractBaseCommand;
-use AssetGrabber\Services\StatsMetadataService;
-use AssetGrabber\Services\Themes\ThemeListService;
+use AspirePress\AspireSync\Commands\AbstractBaseCommand;
+use AspirePress\AspireSync\Services\StatsMetadataService;
+use AspirePress\AspireSync\Services\Themes\ThemeListService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;

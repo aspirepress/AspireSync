@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services\Plugins;
+namespace AspirePress\AspireSync\Services\Plugins;
 
-use AssetGrabber\Services\Interfaces\MetadataInterface;
+use AspirePress\AspireSync\Services\Interfaces\MetadataInterface;
 use Aura\Sql\ExtendedPdoInterface;
 use Exception;
 use PDOException;
@@ -369,7 +369,7 @@ class PluginMetadataService implements MetadataInterface
             $notFound = $this->getNotFoundPlugins();
             $sql      = "SELECT plugins.id, slug, version, plugin_files.metadata as version_meta FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugin_files.type = :type AND plugins.status = 'open'";
             $args     = ['type' => $type];
-            if (!empty($revDate)) {
+            if (! empty($revDate)) {
                 $sql            .= ' AND plugins.pulled_at >= :revDate';
                 $args['revDate'] = $revDate;
             }

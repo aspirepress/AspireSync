@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services\Themes;
+namespace AspirePress\AspireSync\Services\Themes;
 
-use AssetGrabber\Services\Interfaces\DownloadServiceInterface;
+use AspirePress\AspireSync\Services\Interfaces\DownloadServiceInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 

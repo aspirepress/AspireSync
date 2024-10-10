@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Factories\Themes;
+namespace AspirePress\AspireSync\Factories\Themes;
 
-use AssetGrabber\Commands\Themes\MetaDownloadThemesCommand;
-use AssetGrabber\Services\StatsMetadataService;
-use AssetGrabber\Services\Themes\ThemeListService;
+use AspirePress\AspireSync\Commands\Themes\MetaDownloadThemesCommand;
+use AspirePress\AspireSync\Services\StatsMetadataService;
+use AspirePress\AspireSync\Services\Themes\ThemeListService;
 use Laminas\ServiceManager\ServiceManager;
 
 class MetaDownloadThemesCommandFactory

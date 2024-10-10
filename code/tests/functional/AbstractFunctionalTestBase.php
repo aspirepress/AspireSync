@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Tests\Functional;
+namespace AspirePress\AspireSync\Tests\Functional;
 
-use AssetGrabber\Tests\Helpers\FunctionalTestHelper;
+use AspirePress\AspireSync\Tests\Helpers\FunctionalTestHelper;
 use PHPUnit\Framework\TestCase;
 
 abstract class AbstractFunctionalTestBase extends TestCase

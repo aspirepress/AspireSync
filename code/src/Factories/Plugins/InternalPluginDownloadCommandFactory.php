@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Factories\Plugins;
+namespace AspirePress\AspireSync\Factories\Plugins;
 
-use AssetGrabber\Commands\Plugins\InternalPluginDownloadCommand;
-use AssetGrabber\Services\Plugins\PluginDownloadFromWpService;
+use AspirePress\AspireSync\Commands\Plugins\InternalPluginDownloadCommand;
+use AspirePress\AspireSync\Services\Plugins\PluginDownloadFromWpService;
 use Laminas\ServiceManager\ServiceManager;
 
 class InternalPluginDownloadCommandFactory

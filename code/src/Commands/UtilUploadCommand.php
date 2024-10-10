@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Commands;
+namespace AspirePress\AspireSync\Commands;
 
-use AssetGrabber\Services\Interfaces\CallbackInterface;
-use AssetGrabber\Services\Plugins\PluginMetadataService;
-use AssetGrabber\Services\StatsMetadataService;
-use AssetGrabber\Services\Themes\ThemesMetadataService;
-use AssetGrabber\Utilities\ListManagementUtil;
+use AspirePress\AspireSync\Services\Interfaces\CallbackInterface;
+use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
+use AspirePress\AspireSync\Services\StatsMetadataService;
+use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
+use AspirePress\AspireSync\Utilities\ListManagementUtil;
 use Exception;
 use InvalidArgumentException;
 use League\Flysystem\Filesystem;

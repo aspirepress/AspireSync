@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Tests\Helpers;
+namespace AspirePress\AspireSync\Tests\Helpers;
 
-use AssetGrabber\Services\Interfaces\SvnServiceInterface;
+use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
 
 class SvnServiceStub implements SvnServiceInterface
 {

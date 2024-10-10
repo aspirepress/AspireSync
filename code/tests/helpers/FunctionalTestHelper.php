@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Tests\Helpers;
+namespace AspirePress\AspireSync\Tests\Helpers;
 
 use Aura\Sql\ExtendedPdoInterface;
 use Laminas\ServiceManager\ServiceManager;

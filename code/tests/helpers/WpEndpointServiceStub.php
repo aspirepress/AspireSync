@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Tests\Helpers;
+namespace AspirePress\AspireSync\Tests\Helpers;
 
-use AssetGrabber\Services\Interfaces\WpEndpointClientInterface;
+use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 
 class WpEndpointServiceStub implements WpEndpointClientInterface
 {

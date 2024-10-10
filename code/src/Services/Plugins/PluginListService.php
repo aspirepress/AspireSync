@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Services\Plugins;
+namespace AspirePress\AspireSync\Services\Plugins;
 
-use AssetGrabber\Services\Interfaces\ListServiceInterface;
-use AssetGrabber\Services\Interfaces\SvnServiceInterface;
-use AssetGrabber\Services\Interfaces\WpEndpointClientInterface;
-use AssetGrabber\Services\RevisionMetadataService;
+use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
+use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
+use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
+use AspirePress\AspireSync\Services\RevisionMetadataService;
 
 class PluginListService implements ListServiceInterface
 {

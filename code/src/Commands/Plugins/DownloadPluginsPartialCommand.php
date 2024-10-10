@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Commands\Plugins;
+namespace AspirePress\AspireSync\Commands\Plugins;
 
-use AssetGrabber\Commands\AbstractBaseCommand;
-use AssetGrabber\Services\Plugins\PluginListService;
-use AssetGrabber\Services\Plugins\PluginMetadataService;
-use AssetGrabber\Services\StatsMetadataService;
-use AssetGrabber\Utilities\GetItemsFromSourceTrait;
-use AssetGrabber\Utilities\ProcessWaitUtil;
-use AssetGrabber\Utilities\VersionUtil;
+use AspirePress\AspireSync\Commands\AbstractBaseCommand;
+use AspirePress\AspireSync\Services\Plugins\PluginListService;
+use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
+use AspirePress\AspireSync\Services\StatsMetadataService;
+use AspirePress\AspireSync\Utilities\GetItemsFromSourceTrait;
+use AspirePress\AspireSync\Utilities\ProcessWaitUtil;
+use AspirePress\AspireSync\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

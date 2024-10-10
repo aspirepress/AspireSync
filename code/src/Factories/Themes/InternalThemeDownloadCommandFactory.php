@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AssetGrabber\Factories\Themes;
+namespace AspirePress\AspireSync\Factories\Themes;
 
-use AssetGrabber\Commands\Themes\InternalThemeDownloadCommand;
-use AssetGrabber\Services\Themes\ThemeDownloadFromWpService;
+use AspirePress\AspireSync\Commands\Themes\InternalThemeDownloadCommand;
+use AspirePress\AspireSync\Services\Themes\ThemeDownloadFromWpService;
 use Laminas\ServiceManager\ServiceManager;
 
 class InternalThemeDownloadCommandFactory
