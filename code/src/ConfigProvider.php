@@ -118,7 +118,7 @@ class ConfigProvider
 
                 // Upload Configuration Aliases
                 'upload_local_filesystem' => LocalFilesystemAdapterFactory::class,
-                'upload_aws_s3' => AwsS3V3AdapterFactory::class,
+                'upload_aws_s3'           => AwsS3V3AdapterFactory::class,
             ],
         ];
     }

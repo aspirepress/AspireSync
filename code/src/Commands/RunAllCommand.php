@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace AssetGrabber\Commands;
 
-use Symfony\Component\Console\Command\Command;
+use Exception;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class RunAllCommand extends AbstractBaseCommand
@@ -39,7 +38,7 @@ class RunAllCommand extends AbstractBaseCommand
                 $this->always('RUN:ALL: Performing all commands...');
                 $result1 = $this->runPlugins();
                 $result2 = $this->runThemes();
-                $result = ($result1 === $result2) ? self::SUCCESS : self::FAILURE;
+                $result  = $result1 === $result2 ? self::SUCCESS : self::FAILURE;
                 break;
 
             default:
@@ -54,7 +53,7 @@ class RunAllCommand extends AbstractBaseCommand
 
     private function runPlugins(): int
     {
-        $result = self::SUCCESS;
+        $result   = self::SUCCESS;
         $commands = [
             'meta:download:plugins',
             'meta:import:plugins',
@@ -75,7 +74,7 @@ class RunAllCommand extends AbstractBaseCommand
     private function runThemes(): int
     {
         {
-            $result = self::SUCCESS;
+            $result   = self::SUCCESS;
             $commands = [
                 'meta:download:themes',
                 'meta:import:themes',
@@ -91,14 +90,14 @@ class RunAllCommand extends AbstractBaseCommand
             }
 
             return $result;
-        }
+            }
     }
 
     private function runCommand(string $command, string $type): int
     {
         $commandArgs = [
-                'command' => $command,
-            ];
+            'command' => $command,
+        ];
 
         if ($command === 'util:upload') {
             $commandArgs['action'] = $type;
@@ -108,7 +107,7 @@ class RunAllCommand extends AbstractBaseCommand
 
         try {
             return $this->getApplication()->doRun($command, $this->io);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error($e->getMessage());
             return self::FAILURE;
         }

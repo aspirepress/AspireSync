@@ -11,7 +11,7 @@ class LocalFilesystemAdapterFactory
 {
     public function __invoke(ServiceManager $serviceManager): LocalFilesystemAdapter
     {
-        $config = $serviceManager->get('config');
+        $config    = $serviceManager->get('config');
         $uploadDir = $config['local_filesystem']['upload_dir'];
         return new LocalFilesystemAdapter($uploadDir);
     }

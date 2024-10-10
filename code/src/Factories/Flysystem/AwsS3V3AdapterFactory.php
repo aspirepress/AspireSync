@@ -20,7 +20,7 @@ class AwsS3V3AdapterFactory
             'version' => 'latest',
         ];
 
-        if (!empty($s3config['endpoint'])) {
+        if (! empty($s3config['endpoint'])) {
             $passedConfig['bucket_endpoint'] = $s3config['endpoint'];
         }
 

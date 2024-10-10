@@ -35,11 +35,11 @@ class UtilUploadCommandFactory
             }
         };
 
-        $flysystem = $serviceManager->get('util:upload');
-        $statsMeta = $serviceManager->get(StatsMetadataService::class);
-        $config = $serviceManager->get('config');
+        $flysystem    = $serviceManager->get('util:upload');
+        $statsMeta    = $serviceManager->get(StatsMetadataService::class);
+        $config       = $serviceManager->get('config');
         $uploadDriver = $config['flysystem']['util:upload'];
-        $uploadType = str_replace('upload_', '', $uploadDriver);
+        $uploadType   = str_replace('upload_', '', $uploadDriver);
 
         return new UtilUploadCommand($uploadType, $callback, $flysystem, $statsMeta);
     }
