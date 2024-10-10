@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# reinstalls aspiresync from scratch.
+
+. $(dirname $0)/prelude.bash
+
+function main() {
+  copy_to_build
+
+  dc down --remove-orphans --volumes --rmi local
+  dc up --build --remove-orphans -d
+
+  dcx composer install
+  dcx ./vendor/bin/phinx migrate -c db/phinx.php
+}
+
+function dc() {
+  docker compose "$@"
+}
+
+function dcx() {
+  dc exec aspiresync "$@"
+}
+
+function copy_to_build() {
+  rm -rf ./build
+  mkdir ./build
+  cp -r ./code/config ./code/src ./code/bin ./code/composer.* ./build
+}
+
+main "$@"
+

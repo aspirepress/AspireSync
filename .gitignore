@@ -3,3 +3,5 @@
 /old_code
 /build
 .env
+
+vendor/
