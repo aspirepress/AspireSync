@@ -71,7 +71,7 @@ class DownloadThemesCommand extends AbstractBaseCommand
             }
 
             $command = [
-                './assetgrabber',
+                'assetgrabber',
                 'internal:theme-download',
                 $theme,
                 $versionList,

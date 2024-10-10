@@ -78,7 +78,7 @@ class DownloadPluginsPartialCommand extends AbstractBaseCommand
             }
 
             $command = [
-                './assetgrabber',
+                'assetgrabber',
                 'internal:plugin-download',
                 $plugin,
                 $versionList,

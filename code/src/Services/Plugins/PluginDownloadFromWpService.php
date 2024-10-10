@@ -53,6 +53,7 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
                 }
                 $this->pluginMetadataService->setVersionToDownloaded($theme, (string) $version);
             } catch (ClientException $e) {
+                throw $e;
                 if (method_exists($e, 'getResponse')) {
                     $response = $e->getResponse();
                     $outcomes[$response->getStatusCode() . ' ' . $response->getReasonPhrase()][] = $version;

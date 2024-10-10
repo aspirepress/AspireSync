@@ -76,7 +76,7 @@ class DownloadPluginsCommand extends AbstractBaseCommand
             }
 
             $command = [
-                './assetgrabber',
+                'assetgrabber',
                 'internal:plugin-download',
                 $plugin,
                 $versionList,

@@ -369,10 +369,11 @@ class PluginMetadataService implements MetadataInterface
             $notFound = $this->getNotFoundPlugins();
             $sql      = "SELECT plugins.id, slug, version, plugin_files.metadata as version_meta FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugin_files.type = :type AND plugins.status = 'open'";
             $args     = ['type' => $type];
-            if ($revDate) {
+            if (!empty($revDate)) {
                 $sql            .= ' AND plugins.pulled_at >= :revDate';
                 $args['revDate'] = $revDate;
             }
+
             $result      = $this->pdo->fetchAll($sql, $args);
             $finalResult = [];
             foreach ($result as $row) {
