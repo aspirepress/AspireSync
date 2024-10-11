@@ -419,8 +419,8 @@ class ThemesMetadataService
 
     public function getHashForId(string $themeId, string $version): string
     {
-        $sql       = 'SELECT hash FROM theme_files WHERE id = :item_id';
+        $sql       = "SELECT hash FROM theme_files WHERE theme_id = :item_id AND version = :version AND type = 'wp_cdn'";
         $hashArray = $this->pdo->fetchOne($sql, ['item_id' => $themeId, 'version' => $version]);
-        return $hashArray['hash'];
+        return $hashArray['hash'] ?? '';
     }
 }
