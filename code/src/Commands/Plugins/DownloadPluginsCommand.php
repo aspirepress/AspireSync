@@ -37,7 +37,8 @@ class DownloadPluginsCommand extends AbstractBaseCommand
             ->setDescription('Grabs plugins (with number of specified versions or explicitly specified plugins) from the origin repo')
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
             ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins to request')
-            ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists');
+            ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists')
+            ->addOption('download-all', 'd', InputOption::VALUE_NONE, 'Download all plugins');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -55,7 +56,13 @@ class DownloadPluginsCommand extends AbstractBaseCommand
         }
 
         $this->debug('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems($pluginList);
+
+        if ($input->getOption('download-all')) {
+            $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems($pluginList, 'default');
+        } else {
+            $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems($pluginList);
+        }
+
 
         $this->debug(count($pluginsToUpdate) . ' plugins to download...');
         if (count($pluginsToUpdate) === 0) {

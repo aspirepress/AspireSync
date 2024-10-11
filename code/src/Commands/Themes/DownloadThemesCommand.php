@@ -35,7 +35,8 @@ class DownloadThemesCommand extends AbstractBaseCommand
             ->setDescription('Grabs themes (with number of specified versions or explicitly specified themes) from the origin repo')
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
             ->addOption('themes', null, InputOption::VALUE_OPTIONAL, 'List of themes to request')
-            ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists');
+            ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists')
+            ->addOption('download-all', 'd', InputOption::VALUE_NONE, 'Download all themes');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -50,7 +51,11 @@ class DownloadThemesCommand extends AbstractBaseCommand
         }
 
         $this->info('Getting list of themes...');
-        $themesToUpdate = $this->themeListService->getUpdatedListOfItems($themesList);
+        if ($input->getOption('download-all')) {
+            $themesToUpdate = $this->themeListService->getUpdatedListOfItems($themesList, 'default');
+        } else {
+            $themesToUpdate = $this->themeListService->getUpdatedListOfItems($themesList);
+        }
 
         $this->info(count($themesToUpdate) . ' themes to download...');
         if (count($themesToUpdate) === 0) {
