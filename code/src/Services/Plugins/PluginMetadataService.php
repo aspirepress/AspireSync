@@ -176,7 +176,7 @@ class PluginMetadataService implements MetadataInterface
                     'file_url'  => $url,
                     'type'      => $cdn,
                     'version'   => $version,
-                    'hash' => $hash,
+                    'hash'      => $hash,
                 ]);
             }
 
@@ -516,8 +516,8 @@ class PluginMetadataService implements MetadataInterface
 
     public function getHashForId(string $pluginId, string $version): string
     {
-        $sql = "SELECT hash FROM plugin_files WHERE plugin_id = :item_id AND version = :version AND type = 'wp_cdn'";
-        $hashArray =  $this->pdo->fetchOne($sql, ['item_id' => $pluginId, 'version' => $version]);
+        $sql       = "SELECT hash FROM plugin_files WHERE plugin_id = :item_id AND version = :version AND type = 'wp_cdn'";
+        $hashArray = $this->pdo->fetchOne($sql, ['item_id' => $pluginId, 'version' => $version]);
         return $hashArray['hash'] ?? '';
     }
 }

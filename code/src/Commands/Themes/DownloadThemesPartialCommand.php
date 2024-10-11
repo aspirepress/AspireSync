@@ -35,7 +35,8 @@ class DownloadThemesPartialCommand extends AbstractBaseCommand
             ->addArgument('num-to-pull', InputArgument::REQUIRED, 'Number of themes to pull')
             ->addArgument('offset', InputArgument::OPTIONAL, 'Offset to start pulling from', 0)
             ->AddOption('versions', null, InputOption::VALUE_OPTIONAL, 'Number of versions to request', 'latest')
-            ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists');
+            ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists')
+            ->addOption('download-all', 'd', InputOption::VALUE_NONE, 'Download all themes (limited by offset and limit)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -47,7 +48,11 @@ class DownloadThemesPartialCommand extends AbstractBaseCommand
         $offset      = (int) $input->getArgument('offset');
 
         $this->debug('Getting list of themes...');
-        $themesToUpdate = $this->themeListService->getUpdatedListOfItems([]);
+        if ($input->getOption('download-all')) {
+            $themesToUpdate = $this->themeListService->getUpdatedListOfItems([], 'default');
+        } else {
+            $themesToUpdate = $this->themeListService->getUpdatedListOfItems([]);
+        }
 
         $totalthemes = count($themesToUpdate);
 

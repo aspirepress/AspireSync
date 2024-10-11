@@ -7,6 +7,7 @@ namespace AspirePress\AspireSync\Services\Themes;
 use AspirePress\AspireSync\Services\Interfaces\DownloadServiceInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use RuntimeException;
 use Symfony\Component\Process\Process;
 
 class ThemeDownloadFromWpService implements DownloadServiceInterface
@@ -44,13 +45,14 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
     }
 
     /**
-     * @return string[]
+     * @return array<string, string>
      */
     private function runDownload(string $theme, string $version, string $url, bool $force): array
     {
         $client       = new Client();
         $downloadFile = '/opt/aspiresync/data/themes/%s.%s.zip';
         $filePath     = sprintf($downloadFile, $theme, $version);
+        $outcomes     = [];
 
         if (file_exists($filePath) && ! $force) {
             $hash = $this->calculateHash($filePath);
@@ -80,12 +82,12 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
 
             unlink($filePath);
             return ['status' => $e->getMessage(), 'version' => $version];
-        } catch (\RuntimeException $e) {
-            $outcomes[$e->getMessage()][] = $version;
+        } catch (RuntimeException $e) {
             @unlink($filePath);
+            return ['status' => $e->getMessage(), 'version' => $version];
         }
 
-        return ['status' => $response->getStatusCode() . ' ' . $response->getReasonPhrase(), 'version' => $version];
+        return [];
     }
 
     private function calculateHash(string $filePath): string
@@ -93,13 +95,13 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
         $process = new Process([
             'unzip',
             '-t',
-            $filePath
+            $filePath,
         ]);
         $process->run();
         if ($process->isSuccessful()) {
             return hash_file('sha256', $filePath);
         }
 
-        throw new \RuntimeException($process->getErrorOutput());
+        throw new RuntimeException($process->getErrorOutput());
     }
 }

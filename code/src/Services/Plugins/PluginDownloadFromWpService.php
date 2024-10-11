@@ -7,6 +7,7 @@ namespace AspirePress\AspireSync\Services\Plugins;
 use AspirePress\AspireSync\Services\Interfaces\DownloadServiceInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use RuntimeException;
 use Symfony\Component\Process\Process;
 
 class PluginDownloadFromWpService implements DownloadServiceInterface
@@ -43,7 +44,7 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
 
             if (file_exists($filePath) && ! $force) {
                 $outcomes['304 Not Modified'][] = $version;
-                $hash = $this->calculateHash($filePath);
+                $hash                           = $this->calculateHash($filePath);
                 $this->pluginMetadataService->setVersionToDownloaded($theme, (string) $version, $hash);
                 continue;
             }
@@ -66,7 +67,7 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
                     $outcomes[$e->getMessage()][] = $version;
                 }
                 unlink($filePath);
-            } catch (\RuntimeException $e) {
+            } catch (RuntimeException $e) {
                 $outcomes[$e->getMessage()][] = $version;
                 @unlink($filePath);
             }
@@ -80,13 +81,13 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
         $process = new Process([
             'unzip',
             '-t',
-            $filePath
+            $filePath,
         ]);
         $process->run();
         if ($process->isSuccessful()) {
             return hash_file('sha256', $filePath);
         }
 
-        throw new \RuntimeException($process->getErrorOutput());
+        throw new RuntimeException($process->getErrorOutput());
     }
 }

@@ -63,7 +63,6 @@ class DownloadPluginsCommand extends AbstractBaseCommand
             $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems($pluginList);
         }
 
-
         $this->debug(count($pluginsToUpdate) . ' plugins to download...');
         if (count($pluginsToUpdate) === 0) {
             $this->success('No plugins to download...exiting...');

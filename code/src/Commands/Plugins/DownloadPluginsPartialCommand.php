@@ -35,7 +35,8 @@ class DownloadPluginsPartialCommand extends AbstractBaseCommand
             ->addArgument('num-to-pull', InputArgument::REQUIRED, 'Number of plugins to pull')
             ->addArgument('offset', InputArgument::OPTIONAL, 'Offset to start pulling from', 0)
             ->AddOption('versions', null, InputOption::VALUE_OPTIONAL, 'Number of versions to request', 'latest')
-            ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists');
+            ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists')
+            ->addOption('download-all', 'd', InputOption::VALUE_NONE, 'Download all plugins (limited by offset and limit)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -48,7 +49,11 @@ class DownloadPluginsPartialCommand extends AbstractBaseCommand
         $offset      = (int) $input->getArgument('offset');
 
         $this->debug('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems([]);
+        if ($input->getOption('download-all')) {
+            $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems([], 'default');
+        } else {
+            $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems([]);
+        }
 
         $totalPlugins = count($pluginsToUpdate);
 
