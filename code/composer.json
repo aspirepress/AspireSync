@@ -1,4 +1,10 @@
 {
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/aspirepress/aspirecloud-migrations.git"
+        }
+    ],
     "require": {
         "php": "^8.3",
         "ext-simplexml": "*",
@@ -13,7 +19,8 @@
         "aura/sql": "^5.0",
         "ramsey/uuid": "^4.7",
         "league/flysystem": "^3.29",
-        "league/flysystem-aws-s3-v3": "^3.0"
+        "league/flysystem-aws-s3-v3": "^3.0",
+        "aspirepress/aspirecloud-migrations": "dev-main"
     },
     "autoload": {
         "psr-4": {
