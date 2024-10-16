@@ -103,25 +103,25 @@ push-dev:
 	docker push ${AWS_ECR_REGISTRY}:`git rev-parse --short HEAD`
 
 migrate: ## Run database migrations
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx migrate -c db/phinx.php"
+	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx migrate -c vendor/aspirepress/aspirecloud-migrations/phinx.php"
 
 migration-rollback: ## Rollback database migrations
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx rollback -e development -c db/phinx.php"
+	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx rollback -e development -c vendor/aspirepress/aspirecloud-migrations/phinx.php"
 
 seed: ## Run database seeds
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx seed:run -c db/phinx.php"
+	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx seed:run -c vendor/aspirepress/aspirecloud-migrations/phinx.php"
 
 _empty-database: # internal target to empty database
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx migrate -c db/phinx.php -t 0"
+	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx migrate -c vendor/aspirepress/aspirecloud-migrations/phinx.php -t 0"
 
 migrate-testing: ## Run database migrations
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx migrate -e testing -c db/phinx.php"
+	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx migrate -e testing -c vendor/aspirepress/aspirecloud-migrations/phinx.php"
 
 seed-testing: ## Run database seeds
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx seed:run -e testing -c db/phinx.php"
+	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx seed:run -e testing -c vendor/aspirepress/aspirecloud-migrations/phinx.php"
 
 _empty-testing-database: # internal target to empty database
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx migrate -e testing -c db/phinx.php -t 0"
+	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx migrate -e testing -c vendor/aspirepress/aspirecloud-migrations/phinx.php -t 0"
 
 reset-database: _empty-database migrate seed ## Clean database, run migrations and seeds
 
