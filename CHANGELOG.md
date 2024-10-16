@@ -2,10 +2,13 @@
 
 ## Unreleased
 
+## 1.0 Alpha 5
+
 * [ADDED] Docker Compose support.
 * [CHANGED] Added hashing for files to upload and storage
 * [ADDED] Created the --download-all/-d options to plugins and themes to ignore created date and download all unprocessed plugins
 * [FIXED] Resolved an issue where the item was missing from the theme command to mark an item not found.
+
 ## 1.0 Alpha 4
 
 * [CHANGED] Renamed the project from AssetGrabber to AspireSync to keep with our branding.
