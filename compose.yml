@@ -5,35 +5,20 @@ services:
       dockerfile: docker/Dockerfile
       target: devbuild
     environment:
-      DB_HOST: db
-      DB_NAME: aspiresync
-      DB_USER: aspiresync
+      DB_HOST: db.aspiredev.org
+      DB_NAME: aspirecloud
+      DB_USER: postgres
       DB_PASS: password
       DB_SCHEMA: public
     networks:
       - app-net
+      - aspire-net
     volumes:
       - ./code:/opt/aspiresync
     # entrypoint: ['/opt/aspiresync/bin/aspiresync']  # good for prod, annoying in dev
     tty: true   # keeps the container running
 
-  # https://hub.docker.com/_/postgres
-  db:
-    image: postgres:16
-    restart: always
-    shm_size: 128mb
-    environment:
-      POSTGRES_PASSWORD: password
-    ports:
-      - "${LOCAL_DB_PORT:-54321}:5432"
-    volumes:
-      - dbdata:/var/lib/postgresql/data
-      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
-    networks:
-      - app-net
-
-volumes:
-  dbdata: ~
-
 networks:
   app-net: ~
+  aspire-net:
+    external: true

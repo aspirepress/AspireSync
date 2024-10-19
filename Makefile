@@ -17,7 +17,7 @@ ifdef NETWORK
 	NETWORK_STR=--network=${NETWORK}
 endif
 
-DOCKER_DEV_RUN=docker run -it --rm --name aspiresync-dev -v ./code:/opt/aspiresync -v ./data:/opt/aspiresync/data $(NETWORK_STR) --env-file ./.env aspiresync-dev
+DOCKER_RUN=docker compose run -it --rm aspiresync
 
 build-local: build-prod build-dev ## Builds all the local containers for prod and dev
 
@@ -51,38 +51,35 @@ build-dev-aws:
 	rm -fr ./build
 
 run:
-	docker run -it --rm aspiresync sh
+	${DOCKER_RUN} bash
 
-dev-install-composer:
-	${DOCKER_DEV_RUN} composer install
+composer-install:
+	${DOCKER_RUN} composer install
 
-dev-update-composer:
-	${DOCKER_DEV_RUN} composer update
+composer-update:
+	${DOCKER_RUN} composer update
 
-run-dev:
-	${DOCKER_DEV_RUN} sh
-
-init: build-dev dev-install-composer migrate seed
+init: down build-dev composer-install
 
 check: csfix cs quality test
 
 quality:
-	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpstan --memory-limit=2G"
+	${DOCKER_RUN} ./vendor/bin/phpstan --memory-limit=2G
 
 test:
-	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpunit"
+	${DOCKER_RUN} ./vendor/bin/phpunit
 
 unit:
-	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpunit --testsuite=unit"
+	${DOCKER_RUN} ./vendor/bin/phpunit --testsuite=unit
 
 functional:
-	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpunit --testsuite=functional"
+	${DOCKER_RUN} ./vendor/bin/phpunit --testsuite=functional
 
 cs:
-	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpcs"
+	${DOCKER_RUN} ./vendor/bin/phpcs
 
 csfix:
-	${DOCKER_DEV_RUN} sh -c "./vendor/bin/phpcbf"
+	${DOCKER_RUN} ./vendor/bin/phpcbf
 
 authenticate: authenticate-aws docker-login-aws
 
@@ -102,27 +99,3 @@ push-dev:
 	docker push ${AWS_ECR_REGISTRY}:dev-build
 	docker push ${AWS_ECR_REGISTRY}:`git rev-parse --short HEAD`
 
-migrate: ## Run database migrations
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx migrate -c vendor/aspirepress/aspirecloud-migrations/phinx.php"
-
-migration-rollback: ## Rollback database migrations
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx rollback -e development -c vendor/aspirepress/aspirecloud-migrations/phinx.php"
-
-seed: ## Run database seeds
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx seed:run -c vendor/aspirepress/aspirecloud-migrations/phinx.php"
-
-_empty-database: # internal target to empty database
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx migrate -c vendor/aspirepress/aspirecloud-migrations/phinx.php -t 0"
-
-migrate-testing: ## Run database migrations
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx migrate -e testing -c vendor/aspirepress/aspirecloud-migrations/phinx.php"
-
-seed-testing: ## Run database seeds
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx seed:run -e testing -c vendor/aspirepress/aspirecloud-migrations/phinx.php"
-
-_empty-testing-database: # internal target to empty database
-	${DOCKER_DEV_RUN} sh -c "vendor/bin/phinx migrate -e testing -c vendor/aspirepress/aspirecloud-migrations/phinx.php -t 0"
-
-reset-database: _empty-database migrate seed ## Clean database, run migrations and seeds
-
-reset-testing-database: _empty-testing-database migrate-testing seed-testing
