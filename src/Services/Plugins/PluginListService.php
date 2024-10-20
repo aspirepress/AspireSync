@@ -53,8 +53,10 @@ class PluginListService implements ListServiceInterface
 
         $filename = "/opt/aspiresync/data/plugin-raw-data/{$item}.json";
         $tmpname = $filename . ".tmp";
-        $this->filesystem->write($tmpname, $output);
-        $this->filesystem->move($tmpname, $filename);
+        // $this->filesystem->write($tmpname, $output);
+        // $this->filesystem->move($tmpname, $filename);
+        file_put_contents($tmpname, $output);
+        rename($tmpname, $filename);
 
         return json_decode($output, true);
     }

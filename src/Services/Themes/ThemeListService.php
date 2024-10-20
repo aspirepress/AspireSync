@@ -61,8 +61,10 @@ class ThemeListService implements ListServiceInterface
             $data     = json_decode($response->getBody()->getContents(), true);
             $filename = "/opt/aspiresync/data/theme-raw-data/{$item}.json";
             $tmpname  = $filename . ".tmp";
-            $this->filesystem->write($tmpname, json_encode($data, JSON_PRETTY_PRINT));
-            $this->filesystem->move($tmpname, $filename);
+            // $this->filesystem->write($tmpname, json_encode($data, JSON_PRETTY_PRINT));
+            // $this->filesystem->move($tmpname, $filename);
+            file_put_contents($tmpname, json_encode($data, JSON_PRETTY_PRINT));
+            rename($tmpname, $filename);
 
             return $data;
         } catch (ClientException $e) {
@@ -154,8 +156,10 @@ class ThemeListService implements ListServiceInterface
                 $themes   = $this->guzzle->get('https://themes.svn.wordpress.org/', ['headers' => ['User-Agent' => 'AspireSync']]);
                 $contents = $themes->getBody()->getContents();
                 $tmpname  = $filename . ".tmp";
-                $fs->write($tmpname, $contents);
-                $fs->move($tmpname, $filename);
+                // $fs->write($tmpname, $contents);
+                // $fs->move($tmpname, $filename);
+                file_put_contents($tmpname, $contents);
+                rename($tmpname, $filename);
                 $themes = $contents;
             } catch (ClientException $e) {
                 throw new RuntimeException('Unable to download theme list: ' . $e->getMessage());
@@ -174,8 +178,10 @@ class ThemeListService implements ListServiceInterface
 
         $filename = '/opt/aspiresync/data/raw-theme-list';
         $tmpname  = $filename . ".tmp";
-        $fs->write($tmpname, implode(PHP_EOL, $themes));
-        $fs->move($tmpname, $filename);
+        // $fs->write($tmpname, implode(PHP_EOL, $themes));
+        // $fs->move($tmpname, $filename);
+        file_put_contents($tmpname, implode(PHP_EOL, $themes));
+        rename($tmpname, $filename);
         $this->revisionService->setCurrentRevision($action, $revision);
         return $themesToReturn;
     }

@@ -85,8 +85,10 @@ class SvnService implements SvnServiceInterface
             try {
                 $items    = $this->guzzle->get('https://' . $type . '.svn.wordpress.org/', ['headers' => ['AspireSync']]);
                 $contents = $items->getBody()->getContents();
-                $fs->write($tmpname, $contents);
-                $fs->move($tmpname, $filename);
+                // $fs->write($tmpname, $contents);
+                // $fs->move($tmpname, $filename);
+                file_put_contents($filename, $contents);
+                rename($tmpname, $filename);
                 $items = $contents;
             } catch (ClientException $e) {
                 throw new RuntimeException("Unable to download $type list: " . $e->getMessage());
@@ -105,8 +107,10 @@ class SvnService implements SvnServiceInterface
 
         $filename = "/opt/aspiresync/data/raw-$type-list";
         $tmpname = $filename . ".tmp";
-        $fs->write($tmpname, implode(PHP_EOL, $items));
-        $fs->move($tmpname, $filename);
+        // $fs->write($tmpname, implode(PHP_EOL, $items));
+        // $fs->move($tmpname, $filename);
+        file_put_contents($filename, implode(PHP_EOL, $items));
+        rename($tmpname, $filename);
 
         return ['items' => $itemsToReturn, 'revision' => $revision];
     }
