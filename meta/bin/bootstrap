@@ -5,13 +5,14 @@
 . $(dirname $0)/prelude.bash
 
 function main() {
+  [[ -f .env ]] || cp -v .env.dist .env
+
   copy_to_build
 
   dc down --remove-orphans --volumes --rmi local
   dc up --build --remove-orphans -d
 
   dcx composer install
-  dcx ./vendor/bin/phinx migrate -c db/phinx.php
 }
 
 function dc() {

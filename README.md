@@ -13,35 +13,19 @@ Content Delivery Network.
 * Supports Postgres out of the box for metadata retention (SQLite coming eventually)
 * Runs downloads in parallel tasks (24 max) to allow for speedy download of assets.
 
-## Prerequisites
+## Quick Start
 
-This project depends on a Postgres database, but does not supply container for it. You can use a Postgres instance
-installed locally, or use a Docker container. If you use a Docker container, you'll want to make sure that it
-joins a network, and then define the network in the .env file.
+AspireSync requires a running instance of [AspireCloud](https://github.com/AspirePress/AspireCloud).  Simply clone it and start it up with `make init`.
 
-1. Run `make` to build the Docker container.
-2. Run `make run` to see available commands.
-3. Run `make run` which will run the container.
-4. Type `aspiresync <command>` to execute your desired command.
+Once you have AspireCloud started, start the AspireSync service by running `meta/bin/bootstrap`
 
-You'll need to copy the .env.dist file and populate it with credentials for the database. You can also define the
-network that the database is on, if you're using a Docker container.
-
-If you plan to push the containers to Amazon, you'll need to provide an endpoint for AWS and the name of your Elastic
-Container Registry. You can also populate other container registries here if you would like.
-
-## Installation (Development)
-
-To install for development, follow these commands (once the prerequisites are met);
-
-1. Run `make init`. This will run the build, install the Composer dependencies, and execute the migrations.
-2. Run `make run-dev` to run the container.
+Get a shell by typing `make run`.  Once in the shell, type `aspiresync` without arguments for help.
 
 ## Configuration
 
 ### Database
 
-The AspireSync makes use of a Postgres database for storing information about each asset it pulls. These configuration
+AspireSync makes use of a Postgres database for storing information about each asset it pulls. These configuration
 values are **required**.
 
 | Env Variable | Description                                    |
