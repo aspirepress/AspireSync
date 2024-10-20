@@ -33,6 +33,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
             ->setAliases(['plugins:meta'])
             ->setDescription('Fetches the meta data of the plugins')
             ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all plugin meta-data; otherwise, we only update what has changed')
+            ->addOption('skip-existing', null, InputOption::VALUE_NONE, 'Skip downloading metadata files that already exist')
             ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins (separated by commas) to explicitly update');
     }
 
@@ -90,7 +91,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
     private function fetchPluginDetails(InputInterface $input, OutputInterface $output, string $plugin, array $versions): void
     {
         $filename = "/opt/aspiresync/data/plugin-raw-data/{$plugin}.json";
-        if (file_exists($filename) && !$input->getOption('update-all')) {
+        if (file_exists($filename) && $input->getOption('skip-existing')) {
             $this->info("Skipping Plugin $plugin (metadata file already exists)");
             return;
         }

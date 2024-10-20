@@ -33,6 +33,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
             ->setAliases(['themes:meta'])
             ->setDescription('Fetches the meta data of the themes')
             ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all theme meta-data; otherwise, we only update what has changed')
+            ->addOption('skip-existing', null, InputOption::VALUE_NONE, 'Skip downloading metadata files that already exist')
             ->addOption('themes', null, InputOption::VALUE_OPTIONAL, 'List of themes (separated by commas) to explicitly update');
     }
 
@@ -91,7 +92,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
     private function fetchThemeDetails(InputInterface $input, OutputInterface $output, string $theme, array $versions): void
     {
         $filename = "/opt/aspiresync/data/theme-raw-data/{$theme}.json";
-        if (file_exists($filename) && !$input->getOption('update-all')) {
+        if (file_exists($filename) && $input->getOption('skip-existing')) {
             $this->info("Skipping Theme $theme (metadata file already exists)");
             return;
         }
