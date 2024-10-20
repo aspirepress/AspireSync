@@ -59,7 +59,13 @@ composer-install:
 composer-update:
 	${DOCKER_RUN} composer update
 
-init: down build-dev composer-install
+init: down build-dev up composer-install
+
+down:
+	docker compose down --remove-orphans
+
+up:
+	docker compose up -d
 
 check: csfix cs quality test
 
