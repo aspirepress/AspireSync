@@ -26,29 +26,19 @@ build-all: build-prod-aws build-dev-aws ## Builds all containers by way of build
 push-all: push push-dev ## Pushes all prod and dev containers to AWS
 
 build-prod:
-	mkdir -p ./build && \
-	cp -r ./code/config ./code/src ./code/bin ./code/composer.* ./build && \
-	docker build --platform=linux/amd64,linux/arm64 --target prodbuild -t aspirepress/aspiresync:latest -t aspirepress/aspiresync:$(TAG_NAME) -f ./docker/Dockerfile . && \
-	rm -fr ./build
+	docker build --platform=linux/amd64,linux/arm64 --target prodbuild -t aspirepress/aspiresync:latest -t aspirepress/aspiresync:$(TAG_NAME) -f ./docker/Dockerfile .
 
 build-dev:
-	mkdir -p ./build && \
-	cp -r ./code/config ./code/src ./code/bin ./code/composer.* ./build && \
-	docker build --target devbuild -t aspiresync-dev -f ./docker/Dockerfile . && \
-	docker build --target devbuild -t aspiresync-dev-build -f ./docker/Dockerfile . && \
-	rm -fr ./build
+	docker build --target devbuild -t aspiresync-dev -f ./docker/Dockerfile .
+	docker build --target devbuild -t aspiresync-dev-build -f ./docker/Dockerfile .
 
-build-prod-aws:
-	make build-prod && \
-	docker tag aspirepress/aspiresync:$(TAG_NAME) ${AWS_ECR_REGISTRY}:$(TAG_NAME) && \
-	docker tag aspirepress/aspiresync:latest ${AWS_ECR_REGISTRY}:latest  && \
-	rm -fr ./build
+build-prod-aws: build-prod
+	docker tag aspirepress/aspiresync:$(TAG_NAME) ${AWS_ECR_REGISTRY}:$(TAG_NAME)
+	docker tag aspirepress/aspiresync:latest ${AWS_ECR_REGISTRY}:latest
 
-build-dev-aws:
-	make build-dev && \
-	docker tag aspiresync-dev-build ${AWS_ECR_REGISTRY}:dev-build && \
-	docker tag aspiresync-dev-build ${AWS_ECR_REGISTRY}:`git rev-parse --short HEAD` && \
-	rm -fr ./build
+build-dev-aws: build-dev
+	docker tag aspiresync-dev-build ${AWS_ECR_REGISTRY}:dev-build
+	docker tag aspiresync-dev-build ${AWS_ECR_REGISTRY}:`git rev-parse --short HEAD`
 
 run:
 	${DOCKER_RUN} bash

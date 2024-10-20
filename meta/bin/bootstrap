@@ -7,8 +7,6 @@
 function main() {
   [[ -f .env ]] || cp -v .env.dist .env
 
-  copy_to_build
-
   dc down --remove-orphans --volumes --rmi local
   dc up --build --remove-orphans -d
 
@@ -21,12 +19,6 @@ function dc() {
 
 function dcx() {
   dc exec aspiresync "$@"
-}
-
-function copy_to_build() {
-  rm -rf ./build
-  mkdir ./build
-  cp -r ./code/config ./code/src ./code/bin ./code/composer.* ./build
 }
 
 main "$@"
