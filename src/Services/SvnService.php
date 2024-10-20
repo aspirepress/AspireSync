@@ -7,11 +7,14 @@ namespace AspirePress\AspireSync\Services;
 use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use League\Flysystem\Filesystem;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
 class SvnService implements SvnServiceInterface
 {
+    public function __construct(private readonly Filesystem $filesystem) {}
+
     public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): array
     {
         $targetRev  = (int) $lastRevision;
@@ -68,15 +71,19 @@ class SvnService implements SvnServiceInterface
      */
     public function pullWholeItemsList(string $type): array
     {
-        if (file_exists("/opt/aspiresync/data/raw-svn-$type-list") && filemtime("/opt/aspiresync/data/raw-svn-$type-list") > time() - 86400) {
-            $items    = file_get_contents("/opt/aspiresync/data/raw-svn-$type-list");
+        $fs = $this->filesystem;
+        $filename = "/opt/aspiresync/data/raw-svn-$type-list";
+        $tmpname = $filename . ".tmp";
+        if ($fs->fileExists($filename) && $fs->lastModified($filename) > time() - 86400) {
+            $items    = $fs->read($filename);
             $contents = $items;
         } else {
             try {
                 $client   = new Client();
                 $items    = $client->get('https://' . $type . '.svn.wordpress.org/', ['headers' => ['AspireSync']]);
                 $contents = $items->getBody()->getContents();
-                file_put_contents("/opt/aspiresync/data/raw-svn-$type-list", $contents);
+                $fs->write($tmpname, $contents);
+                $fs->move($tmpname, $filename);
                 $items = $contents;
             } catch (ClientException $e) {
                 throw new RuntimeException("Unable to download $type list: " . $e->getMessage());
@@ -93,7 +100,11 @@ class SvnService implements SvnServiceInterface
         preg_match('/Revision ([0-9]+)\:/', $contents, $matches);
         $revision = (int) $matches[1];
 
-        file_put_contents("/opt/aspiresync/data/raw-$type-list", implode(PHP_EOL, $items));
+        $filename = "/opt/aspiresync/data/raw-$type-list";
+        $tmpname = $filename . ".tmp";
+        $fs->write($tmpname, implode(PHP_EOL, $items));
+        $fs->move($tmpname, $filename);
+
         return ['items' => $itemsToReturn, 'revision' => $revision];
     }
 }
