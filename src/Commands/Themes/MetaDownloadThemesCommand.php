@@ -60,7 +60,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
 
         $previous = null;
         foreach ($themesToUpdate as $theme => $versions) {
-            $this->fetchThemeDetails($output, (string) $theme, $versions);
+            $this->fetchThemeDetails($input, $output, (string) $theme, $versions);
         }
 
         $this->themeListService->preserveRevision($this->getName());
@@ -88,8 +88,14 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
     /**
      * @param array<int, string> $versions
      */
-    private function fetchThemeDetails(OutputInterface $output, string $theme, array $versions): void
+    private function fetchThemeDetails(InputInterface $input, OutputInterface $output, string $theme, array $versions): void
     {
+        $filename = "/opt/aspiresync/data/theme-raw-data/{$theme}.json";
+        if (file_exists($filename) && !$input->getOption('update-all')) {
+            $this->info("Skipping Theme $theme (metadata file already exists)");
+            return;
+        }
+
         $this->stats['themes']++;
         $data = $this->themeListService->getItemMetadata((string) $theme);
 
@@ -105,7 +111,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
             $this->error("Error fetching metadata for theme $theme: " . $data['error']);
             if ('429' === (string) $data['error']) {
                 $this->progressiveBackoff($output);
-                $this->fetchThemeDetails($output, $theme, $versions);
+                $this->fetchThemeDetails($input, $output, $theme, $versions);
                 $this->stats['rate_limited']++;
                 return;
             }

@@ -60,7 +60,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         }
 
         foreach ($pluginsToUpdate as $plugin => $versions) {
-            $this->fetchPluginDetails($output, $plugin, $versions);
+            $this->fetchPluginDetails($input, $output, $plugin, $versions);
         }
 
         $this->pluginListService->preserveRevision($this->getName());
@@ -87,8 +87,14 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
     /**
      * @param array<int, string> $versions
      */
-    private function fetchPluginDetails(OutputInterface $output, string $plugin, array $versions): void
+    private function fetchPluginDetails(InputInterface $input, OutputInterface $output, string $plugin, array $versions): void
     {
+        $filename = "/opt/aspiresync/data/plugin-raw-data/{$plugin}.json";
+        if (file_exists($filename) && !$input->getOption('update-all')) {
+            $this->info("Skipping Plugin $plugin (metadata file already exists)");
+            return;
+        }
+
         $this->stats['plugins']++;
         $data = $this->pluginListService->getItemMetadata($plugin);
 
@@ -105,7 +111,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
             if ('429' === (string) $data['error']) {
                 $this->stats['rate_limited']++;
                 $this->progressiveBackoff($output);
-                $this->fetchPluginDetails($output, $plugin, $versions);
+                $this->fetchPluginDetails($input, $output, $plugin, $versions);
                 return;
             }
             if ('Plugin not found.' === $data['error']) {
