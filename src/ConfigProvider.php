@@ -21,6 +21,7 @@ use AspirePress\AspireSync\Factories\ExtendedPdoFactory;
 use AspirePress\AspireSync\Factories\Flysystem\AwsS3V3AdapterFactory;
 use AspirePress\AspireSync\Factories\Flysystem\FilesystemFactory;
 use AspirePress\AspireSync\Factories\Flysystem\LocalFilesystemAdapterFactory;
+use AspirePress\AspireSync\Factories\GuzzleClientFactory;
 use AspirePress\AspireSync\Factories\Plugins\DownloadPluginsCommandFactory;
 use AspirePress\AspireSync\Factories\Plugins\DownloadPluginsPartialCommandFactory;
 use AspirePress\AspireSync\Factories\Plugins\InternalPluginDownloadCommandFactory;
@@ -41,6 +42,7 @@ use AspirePress\AspireSync\Factories\Themes\ThemeDownloadFromWpServiceFactory;
 use AspirePress\AspireSync\Factories\Themes\ThemeListServiceFactory;
 use AspirePress\AspireSync\Factories\Themes\ThemeMetadataServiceFactory;
 use AspirePress\AspireSync\Factories\UtilUploadCommandFactory;
+use AspirePress\AspireSync\Factories\WpEndpointClientFactory;
 use AspirePress\AspireSync\Services\Plugins\PluginDownloadFromWpService;
 use AspirePress\AspireSync\Services\Plugins\PluginListService;
 use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
@@ -52,6 +54,7 @@ use AspirePress\AspireSync\Services\Themes\ThemeListService;
 use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
 use AspirePress\AspireSync\Services\WPEndpointClient;
 use Aura\Sql\ExtendedPdoInterface;
+use GuzzleHttp\Client as GuzzleClient;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
@@ -93,6 +96,8 @@ class ConfigProvider
                 ThemeListService::class            => ThemeListServiceFactory::class,
                 PluginListService::class           => PluginListServiceFactory::class,
                 ThemeDownloadFromWpService::class  => ThemeDownloadFromWpServiceFactory::class,
+                GuzzleClient::class                => GuzzleClientFactory::class,
+                WPEndpointClient::class            => WpEndpointClientFactory::class,
 
                 // Commands
                 DownloadPluginsCommand::class        => DownloadPluginsCommandFactory::class,

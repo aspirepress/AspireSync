@@ -6,6 +6,7 @@ namespace AspirePress\AspireSync\Factories\Plugins;
 
 use AspirePress\AspireSync\Services\Plugins\PluginDownloadFromWpService;
 use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
+use GuzzleHttp\Client as GuzzleClient;
 use Laminas\ServiceManager\ServiceManager;
 
 class PluginDownloadFromWpServiceFactory
@@ -14,6 +15,7 @@ class PluginDownloadFromWpServiceFactory
     {
         $ua                = $serviceManager->get('config')['user-agents'];
         $pluginMetaService = $serviceManager->get(PluginMetadataService::class);
-        return new PluginDownloadFromWpService($ua, $pluginMetaService);
+        $guzzle            = $serviceManager->get(GuzzleClient::class);
+        return new PluginDownloadFromWpService($ua, $pluginMetaService, $guzzle);
     }
 }

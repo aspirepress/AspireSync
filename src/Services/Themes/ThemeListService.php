@@ -6,7 +6,7 @@ namespace AspirePress\AspireSync\Services\Themes;
 
 use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
-use GuzzleHttp\Client;
+use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
 use League\Flysystem\Filesystem;
 use RuntimeException;
@@ -20,6 +20,7 @@ class ThemeListService implements ListServiceInterface
         private ThemesMetadataService $themesMetadataService,
         private RevisionMetadataService $revisionService,
         private Filesystem $filesystem,
+        private GuzzleClient $guzzle,
     )
     {
     }
@@ -55,9 +56,8 @@ class ThemeListService implements ListServiceInterface
             'slug'     => $item,
             'fields[]' => 'versions',
         ];
-        $client      = new Client();
         try {
-            $response = $client->get($url, ['query' => $queryParams]);
+            $response = $this->guzzle->get($url, ['query' => $queryParams]);
             $data     = json_decode($response->getBody()->getContents(), true);
             $filename = "/opt/aspiresync/data/theme-raw-data/{$item}.json";
             $tmpname  = $filename . ".tmp";
@@ -151,8 +151,7 @@ class ThemeListService implements ListServiceInterface
             $contents = $themes;
         } else {
             try {
-                $client   = new Client();
-                $themes   = $client->get('https://themes.svn.wordpress.org/', ['headers' => ['User-Agent' => 'AspireSync']]);
+                $themes   = $this->guzzle->get('https://themes.svn.wordpress.org/', ['headers' => ['User-Agent' => 'AspireSync']]);
                 $contents = $themes->getBody()->getContents();
                 $tmpname  = $filename . ".tmp";
                 $fs->write($tmpname, $contents);

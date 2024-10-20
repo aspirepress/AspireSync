@@ -6,6 +6,7 @@ namespace AspirePress\AspireSync\Factories\Themes;
 
 use AspirePress\AspireSync\Services\Themes\ThemeDownloadFromWpService;
 use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
+use GuzzleHttp\Client as GuzzleClient;
 use Laminas\ServiceManager\ServiceManager;
 
 class ThemeDownloadFromWpServiceFactory
@@ -14,6 +15,8 @@ class ThemeDownloadFromWpServiceFactory
     {
         $ua            = $serviceManager->get('config')['user-agents'];
         $themeMetadata = $serviceManager->get(ThemesMetadataService::class);
-        return new ThemeDownloadFromWpService($ua, $themeMetadata);
+        $guzzle        = $serviceManager->get(GuzzleClient::class);
+
+        return new ThemeDownloadFromWpService($ua, $themeMetadata, $guzzle);
     }
 }
