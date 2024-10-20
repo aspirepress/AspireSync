@@ -13,10 +13,6 @@ else
     TAG_NAME=${TAGNAME}
 endif
 
-ifdef NETWORK
-	NETWORK_STR=--network=${NETWORK}
-endif
-
 DOCKER_RUN=docker compose run -it --rm aspiresync
 
 build-local: build-prod build-dev ## Builds all the local containers for prod and dev
