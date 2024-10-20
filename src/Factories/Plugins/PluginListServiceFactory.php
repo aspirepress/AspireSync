@@ -10,6 +10,7 @@ use AspirePress\AspireSync\Services\RevisionMetadataService;
 use AspirePress\AspireSync\Services\SvnService;
 use AspirePress\AspireSync\Services\WPEndpointClient;
 use Laminas\ServiceManager\ServiceManager;
+use League\Flysystem\Filesystem;
 
 class PluginListServiceFactory
 {
@@ -19,6 +20,7 @@ class PluginListServiceFactory
         $revisionService = $serviceManager->get(RevisionMetadataService::class);
         $svnService      = $serviceManager->get(SvnService::class);
         $wpClient        = $serviceManager->get(WPEndpointClient::class);
-        return new PluginListService($svnService, $pluginService, $revisionService, $wpClient);
+        $filesystem      = $serviceManager->get(Filesystem::class);
+        return new PluginListService($svnService, $pluginService, $revisionService, $wpClient, $filesystem);
     }
 }

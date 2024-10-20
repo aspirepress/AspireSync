@@ -8,6 +8,7 @@ use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use League\Flysystem\Filesystem;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
@@ -15,7 +16,11 @@ class ThemeListService implements ListServiceInterface
 {
     private int $prevRevision = 0;
 
-    public function __construct(private ThemesMetadataService $themesMetadataService, private RevisionMetadataService $revisionService)
+    public function __construct(
+        private ThemesMetadataService $themesMetadataService,
+        private RevisionMetadataService $revisionService,
+        private Filesystem $filesystem,
+    )
     {
     }
 
@@ -38,10 +43,6 @@ class ThemeListService implements ListServiceInterface
      */
     public function getItemMetadata(string $item): array
     {
-        if (! file_exists('/opt/aspiresync/data/theme-raw-data')) {
-            mkdir('/opt/aspiresync/data/theme-raw-data');
-        }
-
         if ($this->isNotFound($item)) {
             return [
                 'skipped' => $item . ' previously marked not found; skipping...',
@@ -58,10 +59,11 @@ class ThemeListService implements ListServiceInterface
         try {
             $response = $client->get($url, ['query' => $queryParams]);
             $data     = json_decode($response->getBody()->getContents(), true);
-            file_put_contents(
-                '/opt/aspiresync/data/theme-raw-data/' . $item . '.json',
-                json_encode($data, JSON_PRETTY_PRINT)
-            );
+            $filename = "/opt/aspiresync/data/theme-raw-data/{$item}.json";
+            $tmpname  = $filename . ".tmp";
+            $this->filesystem->write($tmpname, json_encode($data, JSON_PRETTY_PRINT));
+            $this->filesystem->move($tmpname, $filename);
+
             return $data;
         } catch (ClientException $e) {
             return ['error' => $e->getCode()];
@@ -142,15 +144,19 @@ class ThemeListService implements ListServiceInterface
      */
     private function pullWholeThemeList(string $action = 'default'): array
     {
-        if (file_exists('/opt/aspiresync/data/raw-svn-theme-list') && filemtime('/opt/aspiresync/data/raw-svn-theme-list') > time() - 43200) {
-            $themes   = file_get_contents('/opt/aspiresync/data/raw-svn-theme-list');
+        $filename = '/opt/aspiresync/data/raw-svn-theme-list';
+        $fs = $this->filesystem;
+        if ($fs->fileExists($filename) && $fs->lastModified($filename) > time() - 43200) {
+            $themes   = $fs->read($filename);
             $contents = $themes;
         } else {
             try {
                 $client   = new Client();
                 $themes   = $client->get('https://themes.svn.wordpress.org/', ['headers' => ['User-Agent' => 'AspireSync']]);
                 $contents = $themes->getBody()->getContents();
-                file_put_contents('/opt/aspiresync/data/raw-svn-theme-list', $contents);
+                $tmpname  = $filename . ".tmp";
+                $fs->write($tmpname, $contents);
+                $fs->move($tmpname, $filename);
                 $themes = $contents;
             } catch (ClientException $e) {
                 throw new RuntimeException('Unable to download theme list: ' . $e->getMessage());
@@ -167,7 +173,10 @@ class ThemeListService implements ListServiceInterface
         preg_match('/Revision ([0-9]+)\:/', $contents, $matches);
         $revision = (int) $matches[1];
 
-        file_put_contents('/opt/aspiresync/data/raw-theme-list', implode(PHP_EOL, $themes));
+        $filename = '/opt/aspiresync/data/raw-theme-list';
+        $tmpname  = $filename . ".tmp";
+        $fs->write($tmpname, implode(PHP_EOL, $themes));
+        $fs->move($tmpname, $filename);
         $this->revisionService->setCurrentRevision($action, $revision);
         return $themesToReturn;
     }

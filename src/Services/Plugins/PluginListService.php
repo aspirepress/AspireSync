@@ -8,6 +8,7 @@ use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
+use League\Flysystem\Filesystem;
 
 class PluginListService implements ListServiceInterface
 {
@@ -17,7 +18,8 @@ class PluginListService implements ListServiceInterface
         private SvnServiceInterface $svnService,
         private PluginMetadataService $pluginService,
         private RevisionMetadataService $revisionService,
-        private WpEndpointClientInterface $wpClient
+        private WpEndpointClientInterface $wpClient,
+        private Filesystem $filesystem,
     ) {
     }
 
@@ -41,10 +43,6 @@ class PluginListService implements ListServiceInterface
      */
     public function getItemMetadata(string $item): array
     {
-        if (! file_exists('/opt/aspiresync/data/plugin-raw-data')) {
-            mkdir('/opt/aspiresync/data/plugin-raw-data');
-        }
-
         if ($this->isNotFound($item)) {
             return [
                 'skipped' => $item . ' previously marked not found; skipping...',
@@ -53,7 +51,10 @@ class PluginListService implements ListServiceInterface
 
         $output = $this->wpClient->getPluginMetadata($item);
 
-        file_put_contents('/opt/aspiresync/data/plugin-raw-data/' . $item . '.json', $output);
+        $filename = "/opt/aspiresync/data/plugin-raw-data/{$item}.json";
+        $tmpname = $filename . ".tmp";
+        $this->filesystem->write($tmpname, $output);
+        $this->filesystem->move($tmpname, $filename);
 
         return json_decode($output, true);
     }
