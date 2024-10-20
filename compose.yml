@@ -14,7 +14,7 @@ services:
       - app-net
       - aspire-net
     volumes:
-      - ./code:/opt/aspiresync
+      - .:/opt/aspiresync
     # entrypoint: ['/opt/aspiresync/bin/aspiresync']  # good for prod, annoying in dev
     tty: true   # keeps the container running
 
