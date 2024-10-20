@@ -31,6 +31,7 @@ use AspirePress\AspireSync\Factories\Plugins\PluginListServiceFactory;
 use AspirePress\AspireSync\Factories\Plugins\PluginMetadataServiceFactory;
 use AspirePress\AspireSync\Factories\RevisionMetadataServiceFactory;
 use AspirePress\AspireSync\Factories\StatsMetadataServiceFactory;
+use AspirePress\AspireSync\Factories\SvnServiceFactory;
 use AspirePress\AspireSync\Factories\Themes\DownloadThemesCommandFactory;
 use AspirePress\AspireSync\Factories\Themes\DownloadThemesPartialCommandFactory;
 use AspirePress\AspireSync\Factories\Themes\InternalThemeDownloadCommandFactory;
@@ -85,6 +86,7 @@ class ConfigProvider
                 ThemesMetadataService::class   => ThemeMetadataServiceFactory::class,
                 PluginMetadataService::class   => PluginMetadataServiceFactory::class,
                 StatsMetadataService::class    => StatsMetadataServiceFactory::class,
+                SvnService::class              => SvnServiceFactory::class,
 
                 // Services
                 PluginDownloadFromWpService::class => PluginDownloadFromWpServiceFactory::class,

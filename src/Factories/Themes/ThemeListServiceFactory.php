@@ -8,6 +8,7 @@ use AspirePress\AspireSync\Services\RevisionMetadataService;
 use AspirePress\AspireSync\Services\Themes\ThemeListService;
 use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
 use Laminas\ServiceManager\ServiceManager;
+use League\Flysystem\Filesystem;
 
 class ThemeListServiceFactory
 {
@@ -15,6 +16,7 @@ class ThemeListServiceFactory
     {
         $themeMetadata    = $serviceManager->get(ThemesMetadataService::class);
         $revisionMetadata = $serviceManager->get(RevisionMetadataService::class);
-        return new ThemeListService($themeMetadata, $revisionMetadata);
+        $filesystem       = $serviceManager->get(Filesystem::class);
+        return new ThemeListService($themeMetadata, $revisionMetadata, $filesystem);
     }
 }
