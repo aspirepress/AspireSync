@@ -109,7 +109,7 @@ class SvnService implements SvnServiceInterface
         $tmpname = $filename . ".tmp";
         // $fs->write($tmpname, implode(PHP_EOL, $items));
         // $fs->move($tmpname, $filename);
-        file_put_contents($filename, implode(PHP_EOL, $items));
+        file_put_contents($tmpname, implode(PHP_EOL, $items));
         rename($tmpname, $filename);
 
         return ['items' => $itemsToReturn, 'revision' => $revision];
