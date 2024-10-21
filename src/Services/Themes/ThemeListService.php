@@ -9,10 +9,10 @@ use AspirePress\AspireSync\Services\RevisionMetadataService;
 use AspirePress\AspireSync\Utilities\FileUtil;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
-use League\Flysystem\Filesystem;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
+use function Safe\filemtime;
 use function Safe\json_decode;
 
 class ThemeListService implements ListServiceInterface
@@ -22,7 +22,6 @@ class ThemeListService implements ListServiceInterface
     public function __construct(
         private ThemesMetadataService $themesMetadataService,
         private RevisionMetadataService $revisionService,
-        private Filesystem $filesystem,
         private GuzzleClient $guzzle,
     ) {
     }
@@ -144,9 +143,8 @@ class ThemeListService implements ListServiceInterface
     private function pullWholeThemeList(string $action = 'default'): array
     {
         $filename = '/opt/aspiresync/data/raw-svn-theme-list';
-        $fs       = $this->filesystem;
-        if ($fs->fileExists($filename) && $fs->lastModified($filename) > time() - 43200) {
-            $themes   = $fs->read($filename);
+        if (file_exists($filename) && filemtime($filename) > time() - 43200) {
+            $themes   = FileUtil::read($filename);
             $contents = $themes;
         } else {
             try {

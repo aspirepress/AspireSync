@@ -8,16 +8,15 @@ use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
 use AspirePress\AspireSync\Utilities\FileUtil;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
-use League\Flysystem\Filesystem;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
+use function Safe\filemtime;
+
 class SvnService implements SvnServiceInterface
 {
-    public function __construct(
-        private readonly Filesystem $filesystem,
-        private readonly GuzzleClient $guzzle,
-    ) {
+    public function __construct(private readonly GuzzleClient $guzzle)
+    {
     }
 
     public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): array
@@ -76,10 +75,9 @@ class SvnService implements SvnServiceInterface
      */
     public function pullWholeItemsList(string $type): array
     {
-        $fs       = $this->filesystem;
         $filename = "/opt/aspiresync/data/raw-svn-$type-list";
         $tmpname  = $filename . ".tmp";
-        if ($fs->fileExists($filename) && $fs->lastModified($filename) > time() - 86400) {
+        if (file_exists($filename) && filemtime($filename) > time() - 86400) {
             $items    = $fs->read($filename);
             $contents = $items;
         } else {
