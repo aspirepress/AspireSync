@@ -7,6 +7,7 @@ namespace AspirePress\AspireSync\Commands\Plugins;
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
 use AspirePress\AspireSync\Services\StatsMetadataService;
+use AspirePress\AspireSync\Utilities\FileUtil;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -70,10 +71,10 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
 
             $this->stats['total']++;
 
-            $fileContents = file_get_contents('/opt/aspiresync/data/plugin-raw-data/' . $file);
-            $fileContents = json_decode($fileContents, true);
+            $path = "/opt/aspiresync/data/plugin-raw-data/$file";
+            $fileContents = FileUtil::readJson($path);
 
-            $pulledAt = date('c', filemtime('/opt/aspiresync/data/plugin-raw-data/' . $file));
+            $pulledAt = date('c', filemtime($path));
 
             // Check for existing
             $existing = $this->pluginMetadata->checkPluginInDatabase($fileContents['slug'] ?? '');

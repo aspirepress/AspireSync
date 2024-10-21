@@ -6,6 +6,7 @@ namespace AspirePress\AspireSync\Services\Themes;
 
 use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
+use AspirePress\AspireSync\Utilities\FileUtil;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
 use League\Flysystem\Filesystem;
@@ -60,12 +61,7 @@ class ThemeListService implements ListServiceInterface
             $response = $this->guzzle->get($url, ['query' => $queryParams]);
             $data     = json_decode($response->getBody()->getContents(), true);
             $filename = "/opt/aspiresync/data/theme-raw-data/{$item}.json";
-            $tmpname  = $filename . ".tmp";
-            // $this->filesystem->write($tmpname, json_encode($data, JSON_PRETTY_PRINT));
-            // $this->filesystem->move($tmpname, $filename);
-            file_put_contents($tmpname, json_encode($data, JSON_PRETTY_PRINT));
-            rename($tmpname, $filename);
-
+            FileUtil::writeJson($filename, $data);
             return $data;
         } catch (ClientException $e) {
             return ['error' => $e->getCode()];
@@ -155,11 +151,7 @@ class ThemeListService implements ListServiceInterface
             try {
                 $themes   = $this->guzzle->get('https://themes.svn.wordpress.org/', ['headers' => ['User-Agent' => 'AspireSync']]);
                 $contents = $themes->getBody()->getContents();
-                $tmpname  = $filename . ".tmp";
-                // $fs->write($tmpname, $contents);
-                // $fs->move($tmpname, $filename);
-                file_put_contents($tmpname, $contents);
-                rename($tmpname, $filename);
+                FileUtil::write($filename, $contents);
                 $themes = $contents;
             } catch (ClientException $e) {
                 throw new RuntimeException('Unable to download theme list: ' . $e->getMessage());
@@ -177,11 +169,7 @@ class ThemeListService implements ListServiceInterface
         $revision = (int) $matches[1];
 
         $filename = '/opt/aspiresync/data/raw-theme-list';
-        $tmpname  = $filename . ".tmp";
-        // $fs->write($tmpname, implode(PHP_EOL, $themes));
-        // $fs->move($tmpname, $filename);
-        file_put_contents($tmpname, implode(PHP_EOL, $themes));
-        rename($tmpname, $filename);
+        FileUtil::writeLines($filename, $themes);
         $this->revisionService->setCurrentRevision($action, $revision);
         return $themesToReturn;
     }
