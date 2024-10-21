@@ -6,6 +6,7 @@ namespace AspirePress\AspireSync\Services;
 
 use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
 use GuzzleHttp\Client;
+use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
 use League\Flysystem\Filesystem;
 use RuntimeException;
@@ -13,7 +14,10 @@ use Symfony\Component\Process\Process;
 
 class SvnService implements SvnServiceInterface
 {
-    public function __construct(private readonly Filesystem $filesystem) {}
+    public function __construct(
+        private readonly Filesystem $filesystem,
+        private readonly GuzzleClient $guzzle,
+    ) {}
 
     public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): array
     {
@@ -79,11 +83,12 @@ class SvnService implements SvnServiceInterface
             $contents = $items;
         } else {
             try {
-                $client   = new Client();
-                $items    = $client->get('https://' . $type . '.svn.wordpress.org/', ['headers' => ['AspireSync']]);
+                $items    = $this->guzzle->get('https://' . $type . '.svn.wordpress.org/', ['headers' => ['AspireSync']]);
                 $contents = $items->getBody()->getContents();
-                $fs->write($tmpname, $contents);
-                $fs->move($tmpname, $filename);
+                // $fs->write($tmpname, $contents);
+                // $fs->move($tmpname, $filename);
+                file_put_contents($filename, $contents);
+                rename($tmpname, $filename);
                 $items = $contents;
             } catch (ClientException $e) {
                 throw new RuntimeException("Unable to download $type list: " . $e->getMessage());
@@ -102,8 +107,10 @@ class SvnService implements SvnServiceInterface
 
         $filename = "/opt/aspiresync/data/raw-$type-list";
         $tmpname = $filename . ".tmp";
-        $fs->write($tmpname, implode(PHP_EOL, $items));
-        $fs->move($tmpname, $filename);
+        // $fs->write($tmpname, implode(PHP_EOL, $items));
+        // $fs->move($tmpname, $filename);
+        file_put_contents($filename, implode(PHP_EOL, $items));
+        rename($tmpname, $filename);
 
         return ['items' => $itemsToReturn, 'revision' => $revision];
     }

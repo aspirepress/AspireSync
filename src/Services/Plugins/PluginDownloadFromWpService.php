@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Services\Plugins;
 
 use AspirePress\AspireSync\Services\Interfaces\DownloadServiceInterface;
-use GuzzleHttp\Client;
+use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
 use Symfony\Component\Process\Process;
@@ -15,7 +15,11 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
     /**
      * @param array<int, string> $userAgents
      */
-    public function __construct(private array $userAgents, private PluginMetadataService $pluginMetadataService)
+    public function __construct(
+        private array $userAgents,
+        private PluginMetadataService $pluginMetadataService,
+        private GuzzleClient $guzzle,
+    )
     {
         shuffle($this->userAgents);
     }
@@ -25,7 +29,6 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
      */
     public function download(string $theme, array $versions, string $numToDownload = 'all', bool $force = false): array
     {
-        $client       = new Client();
         $downloadFile = '/opt/aspiresync/data/plugins/%s.%s.zip';
 
         if (! file_exists('/opt/aspiresync/data/plugins')) {
@@ -49,7 +52,7 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
                 continue;
             }
             try {
-                $response = $client->request('GET', $url, ['headers' => ['User-Agent' => $this->userAgents[0]], 'allow_redirects' => true, 'sink' => $filePath]);
+                $response = $this->guzzle->request('GET', $url, ['headers' => ['User-Agent' => $this->userAgents[0]], 'allow_redirects' => true, 'sink' => $filePath]);
                 $outcomes[$response->getStatusCode() . ' ' . $response->getReasonPhrase()][] = $version;
                 if (filesize($filePath) === 0) {
                     unlink($filePath);

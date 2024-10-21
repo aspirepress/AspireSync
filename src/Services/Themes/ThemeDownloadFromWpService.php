@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Services\Themes;
 
 use AspirePress\AspireSync\Services\Interfaces\DownloadServiceInterface;
-use GuzzleHttp\Client;
+use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
 use Symfony\Component\Process\Process;
@@ -15,7 +15,11 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
     /**
      * @param array<int, string> $userAgents
      */
-    public function __construct(private array $userAgents, private ThemesMetadataService $themeMetadataService)
+    public function __construct(
+        private array $userAgents,
+        private ThemesMetadataService $themeMetadataService,
+        private GuzzleClient $guzzle,
+    )
     {
         shuffle($this->userAgents);
     }
@@ -49,10 +53,7 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
      */
     private function runDownload(string $theme, string $version, string $url, bool $force): array
     {
-        $client       = new Client();
-        $downloadFile = '/opt/aspiresync/data/themes/%s.%s.zip';
-        $filePath     = sprintf($downloadFile, $theme, $version);
-        $outcomes     = [];
+        $filePath     = "/opt/aspiresync/data/themes/{$theme}.{$version}.zip";
 
         if (file_exists($filePath) && ! $force) {
             $hash = $this->calculateHash($filePath);
@@ -60,7 +61,7 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
             return ['status' => '304 Not Modified', 'version' => $version];
         }
         try {
-            $response = $client->request('GET', $url, ['headers' => ['User-Agent' => $this->userAgents[0]], 'allow_redirects' => true, 'sink' => $filePath]);
+            $response = $this->guzzle->request('GET', $url, ['headers' => ['User-Agent' => $this->userAgents[0]], 'allow_redirects' => true, 'sink' => $filePath]);
             if (filesize($filePath) === 0) {
                 unlink($filePath);
             }
