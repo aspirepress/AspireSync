@@ -11,17 +11,17 @@ use GuzzleHttp\Middleware;
 use Laminas\ServiceManager\ServiceManager;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-
+use RuntimeException;
 
 class GuzzleClientFactory
 {
     public function __invoke(ServiceManager $serviceManager): GuzzleClient
     {
         // https://codewithkyrian.com/p/how-to-implement-retries-in-guzzlehttp
-        $maxRetries = 5;
-        $handler = HandlerStack::create();
+        $maxRetries      = 5;
+        $handler         = HandlerStack::create();
         $retryMiddleware = Middleware::retry(
-            function (int $retries, RequestInterface $request, ?ResponseInterface $response, ?\RuntimeException $e)
+            function (int $retries, RequestInterface $request, ?ResponseInterface $response, ?RuntimeException $e)
             use ($maxRetries) {
                 // Limit the number of retries to maxRetries
                 if ($retries >= $maxRetries) {
@@ -50,4 +50,3 @@ class GuzzleClientFactory
         return new GuzzleClient(['handler' => $handler, 'timeout' => 5]);
     }
 }
-

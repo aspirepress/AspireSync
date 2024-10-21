@@ -71,7 +71,7 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
 
             $this->stats['total']++;
 
-            $path = "/opt/aspiresync/data/plugin-raw-data/$file";
+            $path         = "/opt/aspiresync/data/plugin-raw-data/$file";
             $fileContents = FileUtil::readJson($path);
 
             $pulledAt = date('c', filemtime($path));

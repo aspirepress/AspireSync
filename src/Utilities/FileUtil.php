@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AspirePress\AspireSync\Utilities;
+
+use RuntimeException;
 
 use function Safe\json_decode;
 use function Safe\json_encode;
@@ -11,7 +15,7 @@ abstract class FileUtil
     {
         $contents = file_get_contents($path);
         if ($contents === false) {
-            throw new \RuntimeException("Unable to read file {$path}");
+            throw new RuntimeException("Unable to read file {$path}");
         }
         return $contents;
     }
@@ -24,8 +28,8 @@ abstract class FileUtil
     public static function readJson(string $path): array
     {
         $content = json_decode(static::read($path), true, 512, JSON_THROW_ON_ERROR);
-        if (!is_array($content)) {
-            throw new \RuntimeException("Cannot decode json file {$path} -- content is not an object or array");
+        if (! is_array($content)) {
+            throw new RuntimeException("Cannot decode json file {$path} -- content is not an object or array");
         }
         return $content;
     }
@@ -33,14 +37,14 @@ abstract class FileUtil
     public static function write(string $path, string $content): void
     {
         $tmpname = tempnam(dirname($path), "tmp_XXXXXXXX");
-        $result = file_put_contents($tmpname, $content);
+        $result  = file_put_contents($tmpname, $content);
         if ($result === false) {
-            throw new \RuntimeException("Unable to write to tempfile {$tmpname}");
+            throw new RuntimeException("Unable to write to tempfile {$tmpname}");
         }
 
         $result = rename($tmpname, $path);
         if ($result === false) {
-            throw new \RuntimeException("Unable to rename {$tmpname} to $path");
+            throw new RuntimeException("Unable to rename {$tmpname} to $path");
         }
     }
 
@@ -61,7 +65,7 @@ abstract class FileUtil
     {
         $result = file_put_contents($path, $content);
         if ($result === false) {
-            throw new \RuntimeException("Unable to write file {$path}");
+            throw new RuntimeException("Unable to write file {$path}");
         }
     }
 }

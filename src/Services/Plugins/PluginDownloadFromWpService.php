@@ -19,8 +19,7 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
         private array $userAgents,
         private PluginMetadataService $pluginMetadataService,
         private GuzzleClient $guzzle,
-    )
-    {
+    ) {
         shuffle($this->userAgents);
     }
 

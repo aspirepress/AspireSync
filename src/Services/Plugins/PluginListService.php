@@ -10,6 +10,7 @@ use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
 use AspirePress\AspireSync\Utilities\FileUtil;
 use League\Flysystem\Filesystem;
+
 use function Safe\json_decode;
 
 class PluginListService implements ListServiceInterface
@@ -52,7 +53,7 @@ class PluginListService implements ListServiceInterface
         }
 
         $filename = "/opt/aspiresync/data/plugin-raw-data/{$item}.json";
-        $output = $this->wpClient->getPluginMetadata($item);
+        $output   = $this->wpClient->getPluginMetadata($item);
         FileUtil::write($filename, $output);
 
         return json_decode($output, true);

@@ -27,11 +27,11 @@ class RevisionMetadataService
 
     public function preserveRevision(string $action): void
     {
-        if (!isset($this->currentRevision[$action])) {
+        if (! isset($this->currentRevision[$action])) {
             throw new RuntimeException('You did not specify a revision for action ' . $action);
         }
         $revision = $this->currentRevision[$action]['revision'];
-        $sql = 'INSERT INTO revisions (action, revision, added_at) VALUES (:action, :revision, NOW())';
+        $sql      = 'INSERT INTO revisions (action, revision, added_at) VALUES (:action, :revision, NOW())';
         $this->pdo->perform($sql, compact('action', 'revision'));
     }
 
@@ -63,7 +63,7 @@ class RevisionMetadataService
         foreach ($this->pdo->fetchAll($sql) as $revision) {
             $this->revisionData[$revision['action']] = [
                 'revision' => $revision['revision'],
-                'added' => $revision['added_at'],
+                'added'    => $revision['added_at'],
             ];
         }
     }

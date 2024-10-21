@@ -19,8 +19,7 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
         private array $userAgents,
         private ThemesMetadataService $themeMetadataService,
         private GuzzleClient $guzzle,
-    )
-    {
+    ) {
         shuffle($this->userAgents);
     }
 
@@ -53,7 +52,7 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
      */
     private function runDownload(string $theme, string $version, string $url, bool $force): array
     {
-        $filePath     = "/opt/aspiresync/data/themes/{$theme}.{$version}.zip";
+        $filePath = "/opt/aspiresync/data/themes/{$theme}.{$version}.zip";
 
         if (file_exists($filePath) && ! $force) {
             $hash = $this->calculateHash($filePath);
