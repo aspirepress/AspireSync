@@ -20,12 +20,13 @@ abstract class FileUtil
         return $contents;
     }
 
+    /** @return string[] */
     public static function readLines(string $path): array
     {
         return explode(PHP_EOL, static::read($path));
     }
 
-    public static function readJson(string $path): array
+    public static function readJson(string $path): array  // @phpstan-ignore missingType.iterableValue
     {
         $content = json_decode(static::read($path), true, 512, JSON_THROW_ON_ERROR);
         if (! is_array($content)) {
@@ -48,11 +49,16 @@ abstract class FileUtil
         }
     }
 
+    /**
+     * @param string $path
+     * @param string[] $lines
+     */
     public static function writeLines(string $path, array $lines): void
     {
         static::write($path, implode(PHP_EOL, $lines));
     }
 
+    // @phpstan-ignore missingType.iterableValue
     public static function writeJson(
         string $path,
         array $data,
