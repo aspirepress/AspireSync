@@ -50,7 +50,6 @@ abstract class FileUtil
     }
 
     /**
-     * @param string $path
      * @param string[] $lines
      */
     public static function writeLines(string $path, array $lines): void
