@@ -7,6 +7,8 @@ namespace AspirePress\AspireSync\Services;
 use Aura\Sql\ExtendedPdoInterface;
 use Ramsey\Uuid\Uuid;
 
+use function Safe\json_encode;
+
 class StatsMetadataService
 {
     public function __construct(private ExtendedPdoInterface $pdo)

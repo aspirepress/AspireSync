@@ -6,11 +6,14 @@ namespace AspirePress\AspireSync\Services\Themes;
 
 use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
+use AspirePress\AspireSync\Utilities\FileUtil;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
-use League\Flysystem\Filesystem;
 use RuntimeException;
 use Symfony\Component\Process\Process;
+
+use function Safe\filemtime;
+use function Safe\json_decode;
 
 class ThemeListService implements ListServiceInterface
 {
@@ -19,10 +22,8 @@ class ThemeListService implements ListServiceInterface
     public function __construct(
         private ThemesMetadataService $themesMetadataService,
         private RevisionMetadataService $revisionService,
-        private Filesystem $filesystem,
         private GuzzleClient $guzzle,
-    )
-    {
+    ) {
     }
 
     /**
@@ -60,12 +61,7 @@ class ThemeListService implements ListServiceInterface
             $response = $this->guzzle->get($url, ['query' => $queryParams]);
             $data     = json_decode($response->getBody()->getContents(), true);
             $filename = "/opt/aspiresync/data/theme-raw-data/{$item}.json";
-            $tmpname  = $filename . ".tmp";
-            // $this->filesystem->write($tmpname, json_encode($data, JSON_PRETTY_PRINT));
-            // $this->filesystem->move($tmpname, $filename);
-            file_put_contents($tmpname, json_encode($data, JSON_PRETTY_PRINT));
-            rename($tmpname, $filename);
-
+            FileUtil::writeJson($filename, $data);
             return $data;
         } catch (ClientException $e) {
             return ['error' => $e->getCode()];
@@ -147,19 +143,14 @@ class ThemeListService implements ListServiceInterface
     private function pullWholeThemeList(string $action = 'default'): array
     {
         $filename = '/opt/aspiresync/data/raw-svn-theme-list';
-        $fs = $this->filesystem;
-        if ($fs->fileExists($filename) && $fs->lastModified($filename) > time() - 43200) {
-            $themes   = $fs->read($filename);
+        if (file_exists($filename) && filemtime($filename) > time() - 43200) {
+            $themes   = FileUtil::read($filename);
             $contents = $themes;
         } else {
             try {
                 $themes   = $this->guzzle->get('https://themes.svn.wordpress.org/', ['headers' => ['User-Agent' => 'AspireSync']]);
                 $contents = $themes->getBody()->getContents();
-                $tmpname  = $filename . ".tmp";
-                // $fs->write($tmpname, $contents);
-                // $fs->move($tmpname, $filename);
-                file_put_contents($tmpname, $contents);
-                rename($tmpname, $filename);
+                FileUtil::write($filename, $contents);
                 $themes = $contents;
             } catch (ClientException $e) {
                 throw new RuntimeException('Unable to download theme list: ' . $e->getMessage());
@@ -177,11 +168,7 @@ class ThemeListService implements ListServiceInterface
         $revision = (int) $matches[1];
 
         $filename = '/opt/aspiresync/data/raw-theme-list';
-        $tmpname  = $filename . ".tmp";
-        // $fs->write($tmpname, implode(PHP_EOL, $themes));
-        // $fs->move($tmpname, $filename);
-        file_put_contents($tmpname, implode(PHP_EOL, $themes));
-        rename($tmpname, $filename);
+        FileUtil::writeLines($filename, $themes);
         $this->revisionService->setCurrentRevision($action, $revision);
         return $themesToReturn;
     }

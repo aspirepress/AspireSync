@@ -13,7 +13,8 @@
         "aura/sql": "^5.0",
         "ramsey/uuid": "^4.7",
         "league/flysystem": "^3.29",
-        "league/flysystem-aws-s3-v3": "^3.0"
+        "league/flysystem-aws-s3-v3": "^3.0",
+        "thecodingmachine/safe": "^2.5"
     },
     "autoload": {
         "psr-4": {
@@ -29,7 +30,8 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^11.3",
-        "phpstan/phpstan": "^1.12"
+        "phpstan/phpstan": "^1.12",
+        "thecodingmachine/phpstan-safe-rule": "^1.2"
     },
     "config": {
         "allow-plugins": {

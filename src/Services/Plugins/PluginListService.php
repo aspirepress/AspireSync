@@ -8,7 +8,9 @@ use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
-use League\Flysystem\Filesystem;
+use AspirePress\AspireSync\Utilities\FileUtil;
+
+use function Safe\json_decode;
 
 class PluginListService implements ListServiceInterface
 {
@@ -19,7 +21,6 @@ class PluginListService implements ListServiceInterface
         private PluginMetadataService $pluginService,
         private RevisionMetadataService $revisionService,
         private WpEndpointClientInterface $wpClient,
-        private Filesystem $filesystem,
     ) {
     }
 
@@ -49,14 +50,9 @@ class PluginListService implements ListServiceInterface
             ];
         }
 
-        $output = $this->wpClient->getPluginMetadata($item);
-
         $filename = "/opt/aspiresync/data/plugin-raw-data/{$item}.json";
-        $tmpname = $filename . ".tmp";
-        // $this->filesystem->write($tmpname, $output);
-        // $this->filesystem->move($tmpname, $filename);
-        file_put_contents($tmpname, $output);
-        rename($tmpname, $filename);
+        $output   = $this->wpClient->getPluginMetadata($item);
+        FileUtil::write($filename, $output);
 
         return json_decode($output, true);
     }
