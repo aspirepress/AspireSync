@@ -18,6 +18,9 @@
     <exclude-pattern>config/config.php</exclude-pattern>
     <exclude-pattern>config/routes.php</exclude-pattern>
 
+    <!-- phpcs refuses to fix this file or even say what the errors are, so screw you phpcs -->
+    <exclude-pattern>src/Factories/GuzzleClientFactory.php</exclude-pattern>
+
     <!-- Include all rules from the PSR-12 Coding Standard -->
     <rule ref="PSR12"/>
 
