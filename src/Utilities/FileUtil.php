@@ -2,6 +2,9 @@
 
 namespace AspirePress\AspireSync\Utilities;
 
+use function Safe\json_decode;
+use function Safe\json_encode;
+
 abstract class FileUtil
 {
     public static function read(string $path): string

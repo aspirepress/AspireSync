@@ -7,6 +7,7 @@ namespace AspirePress\AspireSync\Tests\Functional\Services;
 use AspirePress\AspireSync\Services\StatsMetadataService;
 use AspirePress\AspireSync\Tests\Functional\AbstractFunctionalTestBase;
 use AspirePress\AspireSync\Tests\Helpers\FunctionalTestHelper;
+use function Safe\json_decode;
 
 class StatsMetadataServiceTest extends AbstractFunctionalTestBase
 {

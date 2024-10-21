@@ -10,6 +10,7 @@ use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
 use AspirePress\AspireSync\Utilities\FileUtil;
 use League\Flysystem\Filesystem;
+use function Safe\json_decode;
 
 class PluginListService implements ListServiceInterface
 {

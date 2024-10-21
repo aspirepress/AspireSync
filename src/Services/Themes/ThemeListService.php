@@ -12,6 +12,7 @@ use GuzzleHttp\Exception\ClientException;
 use League\Flysystem\Filesystem;
 use RuntimeException;
 use Symfony\Component\Process\Process;
+use function Safe\json_decode;
 
 class ThemeListService implements ListServiceInterface
 {
