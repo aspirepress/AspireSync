@@ -78,7 +78,7 @@ class SvnService implements SvnServiceInterface
         $filename = "/opt/aspiresync/data/raw-svn-$type-list";
         $tmpname  = $filename . ".tmp";
         if (file_exists($filename) && filemtime($filename) > time() - 86400) {
-            $items    = $fs->read($filename);
+            $items    = FileUtil::read($filename);
             $contents = $items;
         } else {
             try {

@@ -30,7 +30,7 @@ class PluginMetadataService implements MetadataInterface
      */
     public function saveClosedPluginFromWP(array $pluginMetadata, string $pulledAt): array
     {
-        $sql = "INSERT INTO plugins (id, name, slug, status, updated, pulled_at, metadata) VALUES (:id, :name, :slug, :status, :closed_date, :pulled_at, :metadata)";
+        $sql = "INSERT INTO sync_plugins (id, name, slug, status, updated, pulled_at, metadata) VALUES (:id, :name, :slug, :status, :closed_date, :pulled_at, :metadata)";
 
         if (! empty($pluginMetadata['closed_date'])) {
             $closedDate = date('c', strtotime($pluginMetadata['closed_date']));
@@ -90,7 +90,7 @@ class PluginMetadataService implements MetadataInterface
                 'finalized' => null,
             ];
 
-            $sql = 'INSERT INTO plugins (id, name, slug, current_version, status, updated, pulled_at, metadata) VALUES (:id, :name, :slug, :current_version, :status, :updated_at, :pulled_at, :metadata)';
+            $sql = 'INSERT INTO sync_plugins (id, name, slug, current_version, status, updated, pulled_at, metadata) VALUES (:id, :name, :slug, :current_version, :status, :updated_at, :pulled_at, :metadata)';
             $this->pdo->perform($sql, [
                 'id'              => $id->toString(),
                 'name'            => $name,
@@ -127,7 +127,7 @@ class PluginMetadataService implements MetadataInterface
      */
     public function writeVersionsForPlugin(UuidInterface $pluginId, array $versions, string $cdn): array
     {
-        $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version, created) VALUES (:id, :plugin_id, :file_url, :type, :version, NOW())';
+        $sql = 'INSERT INTO sync_plugin_files (id, plugin_id, file_url, type, version, created) VALUES (:id, :plugin_id, :file_url, :type, :version, NOW())';
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;
@@ -164,7 +164,7 @@ class PluginMetadataService implements MetadataInterface
      */
     public function writeVersionProcessed(UuidInterface $pluginId, array $versions, string $hash, string $cdn): array
     {
-        $sql = 'INSERT INTO plugin_files (id, plugin_id, file_url, type, version, created, processed, hash) VALUES (:id, :plugin_id, :file_url, :type, :version, NOW(), NOW(), :hash)';
+        $sql = 'INSERT INTO sync_plugin_files (id, plugin_id, file_url, type, version, created, processed, hash) VALUES (:id, :plugin_id, :file_url, :type, :version, NOW(), NOW(), :hash)';
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;
@@ -235,7 +235,7 @@ class PluginMetadataService implements MetadataInterface
         try {
             $this->pdo->beginTransaction();
 
-            $mdSql      = 'SELECT metadata FROM plugins WHERE slug = :slug';
+            $mdSql      = 'SELECT metadata FROM sync_plugins WHERE slug = :slug';
             $result     = $this->pdo->fetchOne($mdSql, ['slug' => $fileContents['slug']]);
             $metadata   = json_decode($result['metadata'], true);
             $apMetadata = $metadata['aspirepress_meta'];
@@ -249,7 +249,7 @@ class PluginMetadataService implements MetadataInterface
                 'finalized' => null,
             ];
 
-            $sql = 'UPDATE plugins SET status = :status, pulled_at = :pulled_at, updated = :updated, metadata = :metadata WHERE slug = :slug';
+            $sql = 'UPDATE sync_plugins SET status = :status, pulled_at = :pulled_at, updated = :updated, metadata = :metadata WHERE slug = :slug';
             $this->pdo->perform(
                 $sql,
                 [
@@ -277,7 +277,7 @@ class PluginMetadataService implements MetadataInterface
         $this->pdo->beginTransaction();
 
         try {
-            $mdSql      = 'SELECT id, metadata FROM plugins WHERE slug = :slug';
+            $mdSql      = 'SELECT id, metadata FROM sync_plugins WHERE slug = :slug';
             $result     = $this->pdo->fetchOne($mdSql, ['slug' => $fileContents['slug']]);
             $metadata   = json_decode($result['metadata'], true);
             $id         = Uuid::fromString($result['id']);
@@ -298,7 +298,7 @@ class PluginMetadataService implements MetadataInterface
             $versions       = $fileContents['versions'];
             $updatedAt      = date('c', strtotime($fileContents['last_updated']));
 
-            $sql = 'UPDATE plugins SET metadata = :metadata, name = :name, current_version = :current_version, status = :status, updated = :updated, pulled_at = :pulled_at WHERE slug = :slug';
+            $sql = 'UPDATE sync_plugins SET metadata = :metadata, name = :name, current_version = :current_version, status = :status, updated = :updated, pulled_at = :pulled_at WHERE slug = :slug';
             $this->pdo->perform($sql, [
                 'name'            => $name,
                 'slug'            => $slug,
@@ -337,7 +337,7 @@ class PluginMetadataService implements MetadataInterface
      */
     private function getNewlyDiscoveredVersionsList(string $id, array $versions): array
     {
-        $existingVersions = "SELECT version FROM plugin_files WHERE type = 'wp_cdn' AND plugin_id = :id";
+        $existingVersions = "SELECT version FROM sync_plugin_files WHERE type = 'wp_cdn' AND plugin_id = :id";
         $existingVersions = $this->pdo->fetchCol($existingVersions, ['id' => $id]);
 
         $newVersions = [];
@@ -355,7 +355,7 @@ class PluginMetadataService implements MetadataInterface
      */
     private function loadExistingPlugins(): array
     {
-        $sql    = 'SELECT slug, status, pulled_at FROM plugins';
+        $sql    = 'SELECT slug, status, pulled_at FROM sync_plugins';
         $result = [];
         foreach ($this->pdo->fetchAll($sql) as $row) {
             $result[$row['slug']] = ['status' => $row['status'], 'pulled_at' => $row['pulled_at']];
@@ -371,7 +371,7 @@ class PluginMetadataService implements MetadataInterface
     {
         try {
             $notFound = $this->getNotFoundPlugins();
-            $sql      = "SELECT plugins.id, slug, version, plugin_files.metadata as version_meta FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugin_files.type = :type AND plugins.status = 'open'";
+            $sql      = "SELECT sync_plugins.id, slug, version, sync_plugin_files.metadata as version_meta FROM sync_plugin_files LEFT JOIN sync_plugins ON sync_plugins.id = sync_plugin_files.plugin_id WHERE sync_plugin_files.type = :type AND sync_plugins.status = 'open'";
             $args     = ['type' => $type];
             if (! empty($revDate)) {
                 $sql            .= ' AND plugins.pulled_at >= :revDate';
@@ -400,7 +400,7 @@ class PluginMetadataService implements MetadataInterface
     public function getDownloadUrlsForVersions(string $plugin, array $versions, string $type = 'wp_cdn'): array
     {
         try {
-            $sql = 'SELECT version, file_url FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE plugins.slug = :plugin AND plugin_files.type = :type';
+            $sql = 'SELECT version, file_url FROM sync_plugin_files LEFT JOIN sync_plugins ON sync_plugins.id = sync_plugin_files.plugin_id WHERE sync_plugins.slug = :plugin AND sync_plugin_files.type = :type';
 
             $results = $this->pdo->fetchAll($sql, ['plugin' => $plugin, 'type' => $type]);
             $return  = [];
@@ -417,7 +417,7 @@ class PluginMetadataService implements MetadataInterface
 
     public function setVersionToDownloaded(string $plugin, string $version, ?string $hash = null, string $type = 'wp_cdn'): void
     {
-        $sql = 'UPDATE plugin_files SET processed = NOW(), hash = :hash WHERE version = :version AND type = :type AND plugin_id = (SELECT id FROM plugins WHERE slug = :plugin)';
+        $sql = 'UPDATE sync_plugin_files SET processed = NOW(), hash = :hash WHERE version = :version AND type = :type AND plugin_id = (SELECT id FROM sync_plugins WHERE slug = :plugin)';
         $this->pdo->perform($sql, ['plugin' => $plugin, 'type' => $type, 'hash' => $hash, 'version' => $version]);
     }
 
@@ -427,7 +427,7 @@ class PluginMetadataService implements MetadataInterface
      */
     public function getUnprocessedVersions(string $plugin, array $versions, string $type = 'wp_cdn'): array
     {
-        $sql     = 'SELECT version FROM plugin_files LEFT JOIN plugins ON plugins.id = plugin_files.plugin_id WHERE type = :type AND plugins.slug = :plugin AND processed IS NULL AND plugin_files.version IN (:versions)';
+        $sql     = 'SELECT version FROM sync_plugin_files LEFT JOIN sync_plugins ON sync_plugins.id = sync_plugin_files.plugin_id WHERE type = :type AND sync_plugins.slug = :plugin AND processed IS NULL AND sync_plugin_files.version IN (:versions)';
         $results = $this->pdo->fetchAll($sql, ['plugin' => $plugin, 'type' => $type, 'versions' => $versions]);
         $return  = [];
         foreach ($results as $result) {
@@ -443,10 +443,10 @@ class PluginMetadataService implements MetadataInterface
     public function getData(array $filterBy = []): array
     {
         if (! empty($filterBy)) {
-            $sql     = "SELECT id, slug FROM plugins WHERE status = 'open' AND slug IN (:plugins)";
+            $sql     = "SELECT id, slug FROM sync_plugins WHERE status = 'open' AND slug IN (:plugins)";
             $plugins = $this->pdo->fetchAll($sql, ['plugins' => $filterBy]);
         } else {
-            $sql     = "SELECT id, slug FROM plugins WHERE status = 'open'";
+            $sql     = "SELECT id, slug FROM sync_plugins WHERE status = 'open'";
             $plugins = $this->pdo->fetchAll($sql);
         }
         $result = [];
@@ -462,7 +462,7 @@ class PluginMetadataService implements MetadataInterface
      */
     public function getVersionData(string $pluginId, ?string $version = null, string $type = 'wp_cdn'): array|bool
     {
-        $sql  = 'SELECT * FROM plugin_files WHERE plugin_id = :plugin_id AND type = :type';
+        $sql  = 'SELECT * FROM sync_plugin_files WHERE plugin_id = :plugin_id AND type = :type';
         $args = [
             'plugin_id' => $pluginId,
             'type'      => $type,
@@ -519,7 +519,7 @@ class PluginMetadataService implements MetadataInterface
 
     public function getHashForId(string $pluginId, string $version): string
     {
-        $sql       = "SELECT hash FROM plugin_files WHERE plugin_id = :item_id AND version = :version AND type = 'wp_cdn'";
+        $sql       = "SELECT hash FROM sync_plugin_files WHERE plugin_id = :item_id AND version = :version AND type = 'wp_cdn'";
         $hashArray = $this->pdo->fetchOne($sql, ['item_id' => $pluginId, 'version' => $version]);
         return $hashArray['hash'] ?? '';
     }

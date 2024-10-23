@@ -21,7 +21,7 @@ class StatsMetadataServiceTest extends AbstractFunctionalTestBase
         $sut->logStats($command, $stats);
 
         $db      = FunctionalTestHelper::getDb();
-        $statsDb = $db->fetchAll('SELECT * FROM stats');
+        $statsDb = $db->fetchAll('SELECT * FROM sync_stats');
         $this->assertCount(1, $statsDb);
         $statsCheck   = json_decode($statsDb[0]['stats'], true);
         $commandCheck = $statsDb[0]['command'];
