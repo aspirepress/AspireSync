@@ -12,6 +12,9 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 
+use function Safe\json_decode;
+use function Safe\json_encode;
+
 class PluginMetadataService implements MetadataInterface
 {
     /** @var string[][]  */

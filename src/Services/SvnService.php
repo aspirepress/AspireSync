@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Services;
 
 use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
-use GuzzleHttp\Client;
+use AspirePress\AspireSync\Utilities\FileUtil;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
-use League\Flysystem\Filesystem;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
+use function Safe\filemtime;
+
 class SvnService implements SvnServiceInterface
 {
-    public function __construct(
-        private readonly Filesystem $filesystem,
-        private readonly GuzzleClient $guzzle,
-    ) {}
+    public function __construct(private readonly GuzzleClient $guzzle)
+    {
+    }
 
     public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): array
     {
@@ -75,20 +75,16 @@ class SvnService implements SvnServiceInterface
      */
     public function pullWholeItemsList(string $type): array
     {
-        $fs = $this->filesystem;
         $filename = "/opt/aspiresync/data/raw-svn-$type-list";
-        $tmpname = $filename . ".tmp";
-        if ($fs->fileExists($filename) && $fs->lastModified($filename) > time() - 86400) {
+        $tmpname  = $filename . ".tmp";
+        if (file_exists($filename) && filemtime($filename) > time() - 86400) {
             $items    = $fs->read($filename);
             $contents = $items;
         } else {
             try {
                 $items    = $this->guzzle->get('https://' . $type . '.svn.wordpress.org/', ['headers' => ['AspireSync']]);
                 $contents = $items->getBody()->getContents();
-                // $fs->write($tmpname, $contents);
-                // $fs->move($tmpname, $filename);
-                file_put_contents($filename, $contents);
-                rename($tmpname, $filename);
+                FileUtil::write($filename, $contents);
                 $items = $contents;
             } catch (ClientException $e) {
                 throw new RuntimeException("Unable to download $type list: " . $e->getMessage());
@@ -106,11 +102,7 @@ class SvnService implements SvnServiceInterface
         $revision = (int) $matches[1];
 
         $filename = "/opt/aspiresync/data/raw-$type-list";
-        $tmpname = $filename . ".tmp";
-        // $fs->write($tmpname, implode(PHP_EOL, $items));
-        // $fs->move($tmpname, $filename);
-        file_put_contents($filename, implode(PHP_EOL, $items));
-        rename($tmpname, $filename);
+        FileUtil::writeLines($filename, $items);
 
         return ['items' => $itemsToReturn, 'revision' => $revision];
     }

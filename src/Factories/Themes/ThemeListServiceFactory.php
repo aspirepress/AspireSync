@@ -9,7 +9,6 @@ use AspirePress\AspireSync\Services\Themes\ThemeListService;
 use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
 use GuzzleHttp\Client as GuzzleClient;
 use Laminas\ServiceManager\ServiceManager;
-use League\Flysystem\Filesystem;
 
 class ThemeListServiceFactory
 {
@@ -17,9 +16,8 @@ class ThemeListServiceFactory
     {
         $themeMetadata    = $serviceManager->get(ThemesMetadataService::class);
         $revisionMetadata = $serviceManager->get(RevisionMetadataService::class);
-        $filesystem       = $serviceManager->get(Filesystem::class);
         $guzzle           = $serviceManager->get(GuzzleClient::class);
 
-        return new ThemeListService($themeMetadata, $revisionMetadata, $filesystem, $guzzle);
+        return new ThemeListService($themeMetadata, $revisionMetadata, $guzzle);
     }
 }

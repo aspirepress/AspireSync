@@ -10,11 +10,13 @@ use GuzzleHttp\Exception\ClientException;
 
 class WPEndpointClient implements WpEndpointClientInterface
 {
-    public function __construct(private readonly GuzzleClient $guzzle) {}
+    public function __construct(private readonly GuzzleClient $guzzle)
+    {
+    }
 
     public function getPluginMetadata(string $plugin): string
     {
-        $url    = 'https://api.wordpress.org/plugins/info/1.0/' . $plugin . '.json';
+        $url = 'https://api.wordpress.org/plugins/info/1.0/' . $plugin . '.json';
         try {
             $response = $this->guzzle->get($url);
             return $response->getBody()->getContents();
