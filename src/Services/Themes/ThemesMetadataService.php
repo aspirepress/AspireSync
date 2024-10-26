@@ -41,7 +41,7 @@ class ThemesMetadataService
      */
     private function loadExistingThemes(): array
     {
-        $sql    = 'SELECT slug, pulled_at FROM themes';
+        $sql    = 'SELECT slug, pulled_at FROM sync_themes';
         $result = [];
         foreach ($this->pdo->fetchAll($sql) as $row) {
             $result[$row['slug']] = ['pulled_at' => $row['pulled_at']];
@@ -83,7 +83,7 @@ class ThemesMetadataService
                 'finalized' => null,
             ];
 
-            $sql = 'INSERT INTO themes (id, name, slug, current_version, updated, pulled_at, metadata) VALUES (:id, :name, :slug, :current_version, :updated_at, :pulled_at, :metadata)';
+            $sql = 'INSERT INTO sync_themes (id, name, slug, current_version, updated, pulled_at, metadata) VALUES (:id, :name, :slug, :current_version, :updated_at, :pulled_at, :metadata)';
             $this->pdo->perform($sql, [
                 'id'              => $id->toString(),
                 'name'            => $name,
@@ -122,7 +122,7 @@ class ThemesMetadataService
         $this->pdo->beginTransaction();
 
         try {
-            $mdSql      = 'SELECT id, metadata FROM themes WHERE slug = :slug';
+            $mdSql      = 'SELECT id, metadata FROM sync_themes WHERE slug = :slug';
             $result     = $this->pdo->fetchOne($mdSql, ['slug' => $fileContents['slug']]);
             $metadata   = json_decode($result['metadata'], true);
             $id         = Uuid::fromString($result['id']);
@@ -143,7 +143,7 @@ class ThemesMetadataService
             $versions       = $fileContents['versions'];
             $updatedAt      = date('c', strtotime($fileContents['last_updated']));
 
-            $sql = 'UPDATE themes SET metadata = :metadata, name = :name, current_version = :current_version, updated = :updated, pulled_at = :pulled_at WHERE slug = :slug';
+            $sql = 'UPDATE sync_themes SET metadata = :metadata, name = :name, current_version = :current_version, updated = :updated, pulled_at = :pulled_at WHERE slug = :slug';
             $this->pdo->perform($sql, [
                 'name'            => $name,
                 'slug'            => $slug,
@@ -181,7 +181,7 @@ class ThemesMetadataService
      */
     public function writeVersionProcessed(UuidInterface $themeId, array $versions, string $hash, string $cdn = 'wp_cdn'): array
     {
-        $sql = 'INSERT INTO theme_files (id, theme_id, file_url, type, version, created, processed, hash) VALUES (:id, :theme_id, :file_url, :type, :version, NOW(), NOW(), :hash)';
+        $sql = 'INSERT INTO sync_theme_files (id, theme_id, file_url, type, version, created, processed, hash) VALUES (:id, :theme_id, :file_url, :type, :version, NOW(), NOW(), :hash)';
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;
@@ -219,7 +219,7 @@ class ThemesMetadataService
      */
     public function writeVersionsForTheme(UuidInterface $themeId, array $versions, string $cdn = 'wp_cdn'): array
     {
-        $sql = 'INSERT INTO theme_files (id, theme_id, file_url, type, version, created) VALUES (:id, :theme_id, :file_url, :type, :version, NOW())';
+        $sql = 'INSERT INTO sync_theme_files (id, theme_id, file_url, type, version, created) VALUES (:id, :theme_id, :file_url, :type, :version, NOW())';
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;
@@ -256,7 +256,7 @@ class ThemesMetadataService
      */
     private function getNewlyDiscoveredVersionsList(UuidInterface $id, array $versions): array
     {
-        $existingVersions = "SELECT version FROM theme_files WHERE type = 'wp_cdn' AND theme_id = :id";
+        $existingVersions = "SELECT version FROM sync_theme_files WHERE type = 'wp_cdn' AND theme_id = :id";
         $existingVersions = $this->pdo->fetchCol($existingVersions, ['id' => $id->toString()]);
 
         $newVersions = [];
@@ -275,7 +275,7 @@ class ThemesMetadataService
      */
     public function getUnprocessedVersions(string $theme, array $versions, string $type = 'wp_cdn'): array
     {
-        $sql     = 'SELECT version FROM theme_files LEFT JOIN themes ON themes.id = theme_files.theme_id WHERE type = :type AND themes.slug = :theme AND processed IS NULL AND theme_files.version IN (:versions)';
+        $sql     = 'SELECT version FROM sync_theme_files LEFT JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id WHERE type = :type AND sync_themes.slug = :theme AND processed IS NULL AND sync_theme_files.version IN (:versions)';
         $results = $this->pdo->fetchAll($sql, ['theme' => $theme, 'type' => $type, 'versions' => $versions]);
         $return  = [];
         foreach ($results as $result) {
@@ -291,7 +291,7 @@ class ThemesMetadataService
     public function getDownloadUrlsForVersions(string $theme, array $versions, string $type = 'wp_cdn'): array
     {
         try {
-            $sql = 'SELECT version, file_url FROM theme_files LEFT JOIN themes ON themes.id = theme_files.theme_id WHERE themes.slug = :theme AND theme_files.type = :type AND version IN (:versions)';
+            $sql = 'SELECT version, file_url FROM sync_theme_files LEFT JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id WHERE sync_themes.slug = :theme AND sync_theme_files.type = :type AND version IN (:versions)';
 
             $results = $this->pdo->fetchAll($sql, ['theme' => $theme, 'type' => $type, 'versions' => $versions]);
             $return  = [];
@@ -312,7 +312,7 @@ class ThemesMetadataService
         $notFound = $this->getNotFoundThemes();
 
         try {
-            $sql  = "SELECT themes.id, slug, version FROM theme_files LEFT JOIN themes ON themes.id = theme_files.theme_id WHERE theme_files.type = :type";
+            $sql  = "SELECT sync_themes.id, slug, version FROM sync_theme_files LEFT JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id WHERE sync_theme_files.type = :type";
             $args = ['type' => $type];
             if ($revDate) {
                 $sql            .= ' AND themes.pulled_at >= :revDate';
@@ -335,7 +335,7 @@ class ThemesMetadataService
 
     public function setVersionToDownloaded(string $theme, string $version, ?string $hash = null, string $type = 'wp_cdn'): void
     {
-        $sql = 'UPDATE theme_files SET processed = NOW(), hash = :hash WHERE version = :version AND type = :type AND theme_id = (SELECT id FROM themes WHERE slug = :theme)';
+        $sql = 'UPDATE sync_theme_files SET processed = NOW(), hash = :hash WHERE version = :version AND type = :type AND theme_id = (SELECT id FROM sync_themes WHERE slug = :theme)';
         $this->pdo->perform($sql, ['theme' => $theme, 'type' => $type, 'hash' => $hash, 'version' => $version]);
     }
 
@@ -344,7 +344,7 @@ class ThemesMetadataService
      */
     public function getVersionData(string $themeId, ?string $version, string $type = 'wp_cdn'): array|bool
     {
-        $sql  = 'SELECT * FROM theme_files WHERE theme_id = :theme_id AND type = :type';
+        $sql  = 'SELECT * FROM sync_theme_files WHERE theme_id = :theme_id AND type = :type';
         $args = [
             'theme_id' => $themeId,
             'type'     => $type,
@@ -364,10 +364,10 @@ class ThemesMetadataService
     public function getData(array $filterBy = []): array
     {
         if (! empty($filterBy)) {
-            $sql    = "SELECT id, slug FROM themes WHERE slug IN (:themes)";
+            $sql    = "SELECT id, slug FROM sync_themes WHERE slug IN (:themes)";
             $themes = $this->pdo->fetchAll($sql, ['themes' => $filterBy]);
         } else {
-            $sql    = "SELECT id, slug FROM themes";
+            $sql    = "SELECT id, slug FROM sync_themes";
             $themes = $this->pdo->fetchAll($sql);
         }
         $result = [];
@@ -383,13 +383,13 @@ class ThemesMetadataService
      */
     public function getNotFoundThemes(): array
     {
-        $sql = "SELECT item_slug FROM not_found_items WHERE item_type = 'theme'";
+        $sql = "SELECT item_slug FROM sync_not_found_items WHERE item_type = 'theme'";
         return $this->pdo->fetchAll($sql);
     }
 
     public function isNotFound(string $item, bool $noLimit = false): bool
     {
-        $sql = "SELECT COUNT(*) FROM not_found_items WHERE item_slug = :item AND item_type = 'theme'";
+        $sql = "SELECT COUNT(*) FROM sync_not_found_items WHERE item_slug = :item AND item_type = 'theme'";
 
         if (! $noLimit) {
             $sql .= " AND created_at > NOW() - INTERVAL '1 WEEK'";
@@ -402,10 +402,10 @@ class ThemesMetadataService
     public function markItemNotFound(string $item): void
     {
         if ($this->isNotFound($item, true)) {
-            $sql = "UPDATE not_found_items SET updated_at = NOW() WHERE item_slug = :item AND item_type = 'theme'";
+            $sql = "UPDATE sync_not_found_items SET updated_at = NOW() WHERE item_slug = :item AND item_type = 'theme'";
             $this->pdo->perform($sql, ['item' => $item]);
         } else {
-            $sql = "INSERT INTO not_found_items (id, item_type, item_slug) VALUES (:id, 'theme', :item)";
+            $sql = "INSERT INTO sync_not_found_items (id, item_type, item_slug) VALUES (:id, 'theme', :item)";
             $this->pdo->perform($sql, ['id' => Uuid::uuid7()->toString(), 'item' => $item]);
         }
     }
@@ -422,7 +422,7 @@ class ThemesMetadataService
 
     public function getHashForId(string $themeId, string $version): string
     {
-        $sql       = "SELECT hash FROM theme_files WHERE theme_id = :item_id AND version = :version AND type = 'wp_cdn'";
+        $sql       = "SELECT hash FROM sync_theme_files WHERE theme_id = :item_id AND version = :version AND type = 'wp_cdn'";
         $hashArray = $this->pdo->fetchOne($sql, ['item_id' => $themeId, 'version' => $version]);
         return $hashArray['hash'] ?? '';
     }

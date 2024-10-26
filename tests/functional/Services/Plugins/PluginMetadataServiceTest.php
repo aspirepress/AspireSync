@@ -85,11 +85,11 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
         $this->assertEmpty($data);
 
         $db     = FunctionalTestHelper::getDb();
-        $result = $db->fetchAll('SELECT * FROM plugins');
+        $result = $db->fetchAll('SELECT * FROM sync_plugins');
         $this->assertCount(1, $result);
         $this->assertEquals('closed', $result[0]['status']);
 
-        $result = $db->fetchOne('SELECT COUNT(*) as count FROM plugin_files');
+        $result = $db->fetchOne('SELECT COUNT(*) as count FROM sync_plugin_files');
         $this->assertEquals(0, $result['count']);
     }
 
