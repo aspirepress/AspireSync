@@ -480,13 +480,13 @@ class PluginMetadataService implements MetadataInterface
      */
     public function getNotFoundPlugins(): array
     {
-        $sql = "SELECT item_slug FROM not_found_items WHERE item_type = 'plugin'";
+        $sql = "SELECT item_slug FROM sync_not_found_items WHERE item_type = 'plugin'";
         return $this->pdo->fetchCol($sql);
     }
 
     public function isNotFound(string $item, bool $noLimit = false): bool
     {
-        $sql = "SELECT COUNT(*) FROM not_found_items WHERE item_slug = :item AND item_type = 'plugin'";
+        $sql = "SELECT COUNT(*) FROM sync_not_found_items WHERE item_slug = :item AND item_type = 'plugin'";
 
         if (! $noLimit) {
             $sql .= " AND created_at > NOW() - INTERVAL '1 WEEK'";
@@ -499,10 +499,10 @@ class PluginMetadataService implements MetadataInterface
     public function markItemNotFound(string $item): void
     {
         if ($this->isNotFound($item, true)) {
-            $sql = "UPDATE not_found_items SET updated_at = NOW() WHERE item_slug = :item AND item_type = 'plugin'";
+            $sql = "UPDATE sync_not_found_items SET updated_at = NOW() WHERE item_slug = :item AND item_type = 'plugin'";
             $this->pdo->perform($sql, ['item' => $item]);
         } else {
-            $sql = "INSERT INTO not_found_items (id, item_type, item_slug) VALUES (:id, 'plugin', :item)";
+            $sql = "INSERT INTO sync_not_found_items (id, item_type, item_slug) VALUES (:id, 'plugin', :item)";
             $this->pdo->perform($sql, ['id' => Uuid::uuid7()->toString(), 'item' => $item]);
         }
     }

@@ -383,13 +383,13 @@ class ThemesMetadataService
      */
     public function getNotFoundThemes(): array
     {
-        $sql = "SELECT item_slug FROM not_found_items WHERE item_type = 'theme'";
+        $sql = "SELECT item_slug FROM sync_not_found_items WHERE item_type = 'theme'";
         return $this->pdo->fetchAll($sql);
     }
 
     public function isNotFound(string $item, bool $noLimit = false): bool
     {
-        $sql = "SELECT COUNT(*) FROM not_found_items WHERE item_slug = :item AND item_type = 'theme'";
+        $sql = "SELECT COUNT(*) FROM sync_not_found_items WHERE item_slug = :item AND item_type = 'theme'";
 
         if (! $noLimit) {
             $sql .= " AND created_at > NOW() - INTERVAL '1 WEEK'";
@@ -402,10 +402,10 @@ class ThemesMetadataService
     public function markItemNotFound(string $item): void
     {
         if ($this->isNotFound($item, true)) {
-            $sql = "UPDATE not_found_items SET updated_at = NOW() WHERE item_slug = :item AND item_type = 'theme'";
+            $sql = "UPDATE sync_not_found_items SET updated_at = NOW() WHERE item_slug = :item AND item_type = 'theme'";
             $this->pdo->perform($sql, ['item' => $item]);
         } else {
-            $sql = "INSERT INTO not_found_items (id, item_type, item_slug) VALUES (:id, 'theme', :item)";
+            $sql = "INSERT INTO sync_not_found_items (id, item_type, item_slug) VALUES (:id, 'theme', :item)";
             $this->pdo->perform($sql, ['id' => Uuid::uuid7()->toString(), 'item' => $item]);
         }
     }

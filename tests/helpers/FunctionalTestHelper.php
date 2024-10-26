@@ -33,10 +33,10 @@ abstract class FunctionalTestHelper
     public static function resetDatabase(): void
     {
         $pdo = self::getDb();
-        $pdo->perform('TRUNCATE plugins CASCADE');
-        $pdo->perform('TRUNCATE themes CASCADE');
-        $pdo->perform('TRUNCATE revisions CASCADE');
-        $pdo->perform('TRUNCATE stats CASCADE');
-        $pdo->perform('TRUNCATE not_found_items CASCADE');
+        $pdo->perform('TRUNCATE sync_plugins CASCADE');
+        $pdo->perform('TRUNCATE sync_themes CASCADE');
+        $pdo->perform('TRUNCATE sync_revisions CASCADE');
+        $pdo->perform('TRUNCATE sync_stats CASCADE');
+        $pdo->perform('TRUNCATE sync_not_found_items CASCADE');
     }
 }
