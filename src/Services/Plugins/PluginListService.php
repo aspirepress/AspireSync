@@ -30,13 +30,11 @@ class PluginListService implements ListServiceInterface
      */
     public function getItemsForAction(array $filter, string $action): array
     {
-        $lastRevision = 0;
-        if ($this->revisionService->getRevisionForAction($action)) {
-            $lastRevision = $this->revisionService->getRevisionForAction($action);
-            return $this->filter($this->getPluginsToUpdate($filter, $lastRevision, $action), $filter);
-        }
-
-        return $this->filter($this->pullWholePluginList($action), $filter);
+        $lastRevision = $this->revisionService->getRevisionForAction($action);
+        $updates      = $lastRevision
+            ? $this->getPluginsToUpdate($filter, $lastRevision, $action)
+            : $this->pullWholePluginList($action);
+        return $this->filter($updates, $filter);
     }
 
     /**

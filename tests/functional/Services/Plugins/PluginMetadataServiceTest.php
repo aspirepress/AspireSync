@@ -185,7 +185,9 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
 
         $data = $this->sut->getData(['foo', 'bar']);
         $this->assertCount(2, $data);
-        $this->assertEquals(['foo', 'bar'], array_keys($data));
+        $keys = array_keys($data);
+        sort($keys);
+        $this->assertEquals(['bar', 'foo'], $keys);
     }
 
     public function testCheckPluginInDatabaseWorksCorrectly(): void

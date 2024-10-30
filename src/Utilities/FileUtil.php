@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Utilities;
 
 use RuntimeException;
+use Safe\Exceptions\JsonException;
 
 use function Safe\json_decode;
 use function Safe\json_encode;
@@ -57,7 +58,10 @@ abstract class FileUtil
         static::write($path, implode(PHP_EOL, $lines));
     }
 
-    // @phpstan-ignore missingType.iterableValue
+    /**
+     * @param array<string|int,mixed> $data
+     * @throws JsonException
+     */
     public static function writeJson(
         string $path,
         array $data,
