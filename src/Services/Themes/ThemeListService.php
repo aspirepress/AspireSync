@@ -53,9 +53,24 @@ class ThemeListService implements ListServiceInterface
 
         $url         = 'https://api.wordpress.org/themes/info/1.2/';
         $queryParams = [
-            'action'   => 'theme_information',
-            'slug'     => $item,
-            'fields[]' => 'versions',
+            'action' => 'theme_information',
+            'slug'   => $item,
+            'fields' => [
+                'description',
+                'sections',
+                'rating',
+                'ratings',
+                'downloaded',
+                'download_link',
+                'last_updated',
+                'homepage',
+                'tags',
+                'template',
+                'parent',
+                'versions',
+                'screenshot_url',
+                'active_installs',
+            ],
         ];
         try {
             $response = $this->guzzle->get($url, ['query' => $queryParams]);
