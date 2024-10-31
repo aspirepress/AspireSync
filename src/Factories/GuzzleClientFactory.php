@@ -31,7 +31,7 @@ class GuzzleClientFactory
                 // Retry connection exceptions
                 if ($e instanceof ConnectException) {
                     // echo "Error connecting to " . $request->getUri() . ". Retrying (" . ($retries + 1) . "/" . $maxRetries . ")...\n";
-                    echo "ERROR [retrying]: {$request->getUri()}: {$e->getMessage()}\n";
+                    echo "ERROR [retrying]: {$e->getMessage()}\n";
                     return true;
                 }
 
