@@ -42,7 +42,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         $this->always("Running command {$this->getName()}");
         $this->startTimer();
 
-        if (!is_dir('/opt/aspiresync/data/plugin-raw-data')) {
+        if (! is_dir('/opt/aspiresync/data/plugin-raw-data')) {
             mkdir('/opt/aspiresync/data/plugin-raw-data');
         }
 

@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Services;
 
 use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
-use AspirePress\AspireSync\Utilities\FileUtil;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
-use function Safe\json_decode;
 
 class WPEndpointClient implements WpEndpointClientInterface
 {
-    public function __construct(private readonly GuzzleClient $guzzle) {}
+    public function __construct(private readonly GuzzleClient $guzzle)
+    {
+    }
 
     public function getPluginMetadata(string $plugin): string
     {
-        $url = 'https://api.wordpress.org/plugins/info/1.2/';
+        $url         = 'https://api.wordpress.org/plugins/info/1.2/';
         $queryParams = [
             'action' => 'plugin_information',
-            'slug' => $plugin,
+            'slug'   => $plugin,
             'fields' => [
                 'active_installs',
                 'added',
