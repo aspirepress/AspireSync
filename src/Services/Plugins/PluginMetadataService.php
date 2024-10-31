@@ -374,7 +374,7 @@ class PluginMetadataService implements MetadataInterface
             $sql      = "SELECT sync_plugins.id, slug, version, sync_plugin_files.metadata as version_meta FROM sync_plugin_files LEFT JOIN sync_plugins ON sync_plugins.id = sync_plugin_files.plugin_id WHERE sync_plugin_files.type = :type AND sync_plugins.status = 'open'";
             $args     = ['type' => $type];
             if (! empty($revDate)) {
-                $sql            .= ' AND plugins.pulled_at >= :revDate';
+                $sql            .= ' AND sync_plugins.pulled_at >= :revDate';
                 $args['revDate'] = $revDate;
             }
 
