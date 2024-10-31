@@ -41,6 +41,11 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
     {
         $this->writeMessage("Running command " . $this->getName());
         $this->startTimer();
+
+        if (!is_dir('/opt/aspiresync/data/theme-raw-data')) {
+            mkdir('/opt/aspiresync/data/theme-raw-data');
+        }
+
         $themes         = [];
         $themesToUpdate = $input->getOption('themes');
         if ($themesToUpdate) {

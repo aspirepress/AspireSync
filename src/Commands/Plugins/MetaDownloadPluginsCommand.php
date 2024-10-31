@@ -40,8 +40,12 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->always("Running command {$this->getName()}");
-
         $this->startTimer();
+
+        if (!is_dir('/opt/aspiresync/data/plugin-raw-data')) {
+            mkdir('/opt/aspiresync/data/plugin-raw-data');
+        }
+
         $plugins         = [];
         $pluginsToUpdate = $input->getOption('plugins');
         if ($pluginsToUpdate) {
