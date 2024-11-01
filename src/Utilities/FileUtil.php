@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Utilities;
 
+use Closure;
 use RuntimeException;
 use Safe\Exceptions\JsonException;
-
+use function Safe\filemtime;
 use function Safe\json_decode;
 use function Safe\json_encode;
 
@@ -76,5 +77,15 @@ abstract class FileUtil
         if ($result === false) {
             throw new RuntimeException("Unable to write file {$path}");
         }
+    }
+
+    public static function cacheFile(string $path, int $maxAgeSecs, Closure $callback): string
+    {
+        if (file_exists($path) && filemtime($path) > time() - $maxAgeSecs) {
+            return static::read($path);
+        }
+        $content = $callback($path);
+        static::write($path, $content);
+        return $content;
     }
 }
