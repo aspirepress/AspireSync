@@ -57,7 +57,7 @@ down:
 up:
 	docker compose up -d
 
-check: csfix cs quality test
+check: cs quality test
 
 quality:
 	${DOCKER_RUN} ./vendor/bin/phpstan --memory-limit=2G
@@ -72,10 +72,10 @@ functional:
 	${DOCKER_RUN} ./vendor/bin/phpunit --testsuite=functional
 
 cs:
-	${DOCKER_RUN} ./vendor/bin/phpcs
+	${DOCKER_RUN} ./vendor/bin/phpcs --parallel=4
 
-csfix:
-	${DOCKER_RUN} ./vendor/bin/phpcbf
+fix:
+	${DOCKER_RUN} ./vendor/bin/phpcbf --parallel=4
 
 authenticate: authenticate-aws docker-login-aws
 
