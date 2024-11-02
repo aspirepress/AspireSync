@@ -7,6 +7,7 @@ namespace AspirePress\AspireSync\Utilities;
 use Closure;
 use RuntimeException;
 use Safe\Exceptions\JsonException;
+
 use function Safe\filemtime;
 use function Safe\json_decode;
 use function Safe\json_encode;

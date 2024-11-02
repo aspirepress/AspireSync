@@ -11,21 +11,21 @@ use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
-use function Safe\filemtime;
-
 class SvnService implements SvnServiceInterface
 {
-    public function __construct(private readonly GuzzleClient $guzzle) {}
+    public function __construct(private readonly GuzzleClient $guzzle)
+    {
+    }
 
     public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): array
     {
-        $targetRev = (int)$lastRevision;
+        $targetRev  = (int) $lastRevision;
         $currentRev = 'HEAD';
 
         if ($targetRev === $prevRevision) {
             return [
                 'revision' => $targetRev,
-                'items' => [],
+                'items'    => [],
             ];
         }
 
@@ -44,28 +44,28 @@ class SvnService implements SvnServiceInterface
         $process = new Process($command);
         $process->run();
 
-        if (!$process->isSuccessful()) {
+        if (! $process->isSuccessful()) {
             throw new RuntimeException('Unable to get list of ' . $type . ' to update' . $process->getErrorOutput());
         }
 
         $output = simplexml_load_string($process->getOutput());
 
         $itemsToUpdate = [];
-        $entries = $output->logentry;
+        $entries       = $output->logentry;
 
         $revision = $lastRevision;
         foreach ($entries as $entry) {
-            $revision = (int)$entry->attributes()['revision'];
-            $path = (string)$entry->paths->path[0];
+            $revision = (int) $entry->attributes()['revision'];
+            $path     = (string) $entry->paths->path[0];
             preg_match('#/([A-z\-_]+)/#', $path, $matches);
             if ($matches) {
-                $item = trim($matches[1]);
+                $item                 = trim($matches[1]);
                 $itemsToUpdate[$item] = [];
             }
         }
         return [
             'revision' => $revision,
-            'items' => $itemsToUpdate,
+            'items'    => $itemsToUpdate,
         ];
     }
 
@@ -87,7 +87,7 @@ class SvnService implements SvnServiceInterface
         }
 
         preg_match('/Revision (\d+):/', $html, $matches);
-        $revision = (int)$matches[1];
+        $revision = (int) $matches[1];
 
         FileUtil::writeLines("/opt/aspiresync/data/raw-$type-list", $items);
 
