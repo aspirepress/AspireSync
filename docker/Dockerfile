@@ -6,6 +6,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/download/2.5.2/install-php-extensions /usr/local/bin/
 
+COPY --from=juicedata/mount:ce-v1.2.1 /usr/local/bin/juicefs /usr/local/bin/juicefs
+
 RUN apt update && apt install -y bash git subversion postgresql-client
 
 RUN install-php-extensions pdo pdo_pgsql
