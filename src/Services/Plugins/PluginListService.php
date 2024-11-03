@@ -30,28 +30,26 @@ class PluginListService implements ListServiceInterface
      */
     public function getItemsForAction(array $filter, string $action): array
     {
-        $lastRevision = 0;
-        if ($this->revisionService->getRevisionForAction($action)) {
-            $lastRevision = $this->revisionService->getRevisionForAction($action);
-            return $this->filter($this->getPluginsToUpdate($filter, $lastRevision, $action), $filter);
-        }
-
-        return $this->filter($this->pullWholePluginList($action), $filter);
+        $lastRevision = $this->revisionService->getRevisionForAction($action);
+        $updates      = $lastRevision
+            ? $this->getPluginsToUpdate($filter, $lastRevision, $action)
+            : $this->pullWholePluginList($action);
+        return $this->filter($updates, $filter);
     }
 
     /**
      * @return array<string, string|array<string, string>>
      */
-    public function getItemMetadata(string $item): array
+    public function getItemMetadata(string $slug): array
     {
-        if ($this->isNotFound($item)) {
+        if ($this->isNotFound($slug)) {
             return [
-                'skipped' => $item . ' previously marked not found; skipping...',
+                'skipped' => $slug . ' previously marked not found; skipping...',
             ];
         }
 
-        $filename = "/opt/aspiresync/data/plugin-raw-data/{$item}.json";
-        $output   = $this->wpClient->getPluginMetadata($item);
+        $filename = "/opt/aspiresync/data/plugin-raw-data/{$slug}.json";
+        $output   = $this->wpClient->getPluginMetadata($slug);
         FileUtil::write($filename, $output);
 
         return json_decode($output, true);

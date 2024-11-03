@@ -27,7 +27,9 @@ abstract class FunctionalTestHelper
 
     public static function getDb(): ExtendedPdoInterface
     {
-        return self::$container->get(ExtendedPdoInterface::class);
+        $pdo = self::$container->get(ExtendedPdoInterface::class);
+        $pdo->exec('SET search_path TO public');  // WTF: this is done in the factory, but doesn't take in tests
+        return $pdo;
     }
 
     public static function resetDatabase(): void

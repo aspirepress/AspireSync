@@ -11,8 +11,6 @@ use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
-use function Safe\filemtime;
-
 class SvnService implements SvnServiceInterface
 {
     public function __construct(private readonly GuzzleClient $guzzle)
@@ -41,6 +39,7 @@ class SvnService implements SvnServiceInterface
             "-r",
             "$targetRev:$currentRev",
         ];
+        // svn log -v -q --xml https://plugins.svn.wordpress.org -r 3179185:HEAD
 
         $process = new Process($command);
         $process->run();
@@ -52,9 +51,9 @@ class SvnService implements SvnServiceInterface
         $output = simplexml_load_string($process->getOutput());
 
         $itemsToUpdate = [];
-            $entries   = $output->logentry;
+        $entries       = $output->logentry;
 
-            $revision = $lastRevision;
+        $revision = $lastRevision;
         foreach ($entries as $entry) {
             $revision = (int) $entry->attributes()['revision'];
             $path     = (string) $entry->paths->path[0];
@@ -70,27 +69,16 @@ class SvnService implements SvnServiceInterface
         ];
     }
 
-    /**
-     * @inheritDoc
-     */
     public function pullWholeItemsList(string $type): array
     {
-        $filename = "/opt/aspiresync/data/raw-svn-$type-list";
-        $tmpname  = $filename . ".tmp";
-        if (file_exists($filename) && filemtime($filename) > time() - 86400) {
-            $items    = FileUtil::read($filename);
-            $contents = $items;
-        } else {
-            try {
-                $items    = $this->guzzle->get('https://' . $type . '.svn.wordpress.org/', ['headers' => ['AspireSync']]);
-                $contents = $items->getBody()->getContents();
-                FileUtil::write($filename, $contents);
-                $items = $contents;
-            } catch (ClientException $e) {
-                throw new RuntimeException("Unable to download $type list: " . $e->getMessage());
-            }
-        }
-        preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $items, $matches);
+        $html = FileUtil::cacheFile(
+            "/opt/aspiresync/data/raw-svn-$type-list",
+            86400,
+            fn() => $this->fetchRawSvnHtml($type)
+        );
+
+        $matches = [];
+        preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $html, $matches);
         $items = $matches[1];
 
         $itemsToReturn = [];
@@ -98,12 +86,23 @@ class SvnService implements SvnServiceInterface
             $itemsToReturn[$item] = [];
         }
 
-        preg_match('/Revision ([0-9]+)\:/', $contents, $matches);
+        preg_match('/Revision (\d+):/', $html, $matches);
         $revision = (int) $matches[1];
 
-        $filename = "/opt/aspiresync/data/raw-$type-list";
-        FileUtil::writeLines($filename, $items);
+        FileUtil::writeLines("/opt/aspiresync/data/raw-$type-list", $items);
 
         return ['items' => $itemsToReturn, 'revision' => $revision];
+    }
+
+    private function fetchRawSvnHtml(string $type): string
+    {
+        try {
+            return $this->guzzle
+                ->get("https://$type.svn.wordpress.org/")
+                ->getBody()
+                ->getContents();
+        } catch (ClientException $e) {
+            throw new RuntimeException("Unable to download $type list: " . $e->getMessage());
+        }
     }
 }

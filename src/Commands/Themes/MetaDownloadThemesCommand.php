@@ -14,6 +14,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class MetaDownloadThemesCommand extends AbstractBaseCommand
 {
+    public const string THEME_METADATA_DIR = '/opt/aspiresync/data/theme-raw-data';
+
     /** @var array<string, int> */
     private array $stats = [
         'themes'       => 0,
@@ -22,8 +24,10 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
         'rate_limited' => 0,
     ];
 
-    public function __construct(private ThemeListService $themeListService, private StatsMetadataService $statsMetadataService)
-    {
+    public function __construct(
+        private readonly ThemeListService $themeListService,
+        private readonly StatsMetadataService $statsMetadataService
+    ) {
         parent::__construct();
     }
 
@@ -41,6 +45,9 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
     {
         $this->writeMessage("Running command " . $this->getName());
         $this->startTimer();
+
+        @mkdir(self::THEME_METADATA_DIR);
+
         $themes         = [];
         $themesToUpdate = $input->getOption('themes');
         if ($themesToUpdate) {
@@ -59,7 +66,6 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
             return Command::SUCCESS;
         }
 
-        $previous = null;
         foreach ($themesToUpdate as $theme => $versions) {
             $this->fetchThemeDetails($input, $output, (string) $theme, $versions);
         }
@@ -89,39 +95,39 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
     /**
      * @param array<int, string> $versions
      */
-    private function fetchThemeDetails(InputInterface $input, OutputInterface $output, string $theme, array $versions): void
+    private function fetchThemeDetails(InputInterface $input, OutputInterface $output, string $slug, array $versions): void
     {
-        $filename = "/opt/aspiresync/data/theme-raw-data/{$theme}.json";
+        $filename = "/opt/aspiresync/data/theme-raw-data/{$slug}.json";
         if (file_exists($filename) && $input->getOption('skip-existing')) {
-            $this->info("Skipping Theme $theme (metadata file already exists)");
+            $this->info("Skipping Theme $slug (metadata file already exists)");
             return;
         }
 
         $this->stats['themes']++;
-        $data = $this->themeListService->getItemMetadata((string) $theme);
+        $data = $this->themeListService->getItemMetadata($slug);
 
-        if (isset($data['versions']) && ! empty($data['versions'])) {
-            $this->info("Theme $theme has " . count($data['versions']) . ' versions');
+        if (! empty($data['versions'])) {
+            $this->info("Theme $slug has " . count($data['versions']) . ' versions');
             $this->stats['versions'] += count($data['versions']);
         } elseif (isset($data['version'])) {
-            $this->info("Theme $theme has 1 version");
+            $this->info("Theme $slug has 1 version");
             $this->stats['versions'] += 1;
         } elseif (isset($data['skipped'])) {
             $this->notice($data['skipped']);
         } elseif (isset($data['error'])) {
-            $this->error("Error fetching metadata for theme $theme: " . $data['error']);
+            $this->error("Error fetching metadata for theme $slug: " . $data['error']);
             if ('429' === (string) $data['error']) {
                 $this->progressiveBackoff($output);
-                $this->fetchThemeDetails($input, $output, $theme, $versions);
+                $this->fetchThemeDetails($input, $output, $slug, $versions);
                 $this->stats['rate_limited']++;
                 return;
             }
             if ('404' === (string) $data['error']) {
-                $this->themeListService->markItemNotFound($theme);
+                $this->themeListService->markItemNotFound($slug);
             }
             $this->stats['errors']++;
         } else {
-            $this->notice("No versions found for theme $theme");
+            $this->notice("No versions found for theme $slug");
         }
 
         $this->iterateProgressiveBackoffLevel(self::ITERATE_DOWN);

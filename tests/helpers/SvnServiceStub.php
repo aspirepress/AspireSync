@@ -8,9 +8,6 @@ use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
 
 class SvnServiceStub implements SvnServiceInterface
 {
-    /**
-     * @inheritDoc
-     */
     public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): array
     {
         return [
@@ -23,9 +20,6 @@ class SvnServiceStub implements SvnServiceInterface
         ];
     }
 
-    /**
-     * @inheritDoc
-     */
     public function pullWholeItemsList(string $type): array
     {
         return [

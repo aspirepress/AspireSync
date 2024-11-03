@@ -18,7 +18,7 @@ class GuzzleClientFactory
     public function __invoke(ServiceManager $serviceManager): GuzzleClient
     {
         // https://codewithkyrian.com/p/how-to-implement-retries-in-guzzlehttp
-        $maxRetries = 5;
+        $maxRetries = 10;
         $handler = HandlerStack::create();
         $retryMiddleware = Middleware::retry(
             function (int $retries, RequestInterface $request, ?ResponseInterface $response, ?\RuntimeException $e)
@@ -31,7 +31,7 @@ class GuzzleClientFactory
                 // Retry connection exceptions
                 if ($e instanceof ConnectException) {
                     // echo "Error connecting to " . $request->getUri() . ". Retrying (" . ($retries + 1) . "/" . $maxRetries . ")...\n";
-                    echo "ERROR [retrying]: {$request->getUri()}: {$e->getMessage()}\n";
+                    echo "ERROR [retrying]: {$e->getMessage()}\n";
                     return true;
                 }
 
@@ -43,11 +43,11 @@ class GuzzleClientFactory
 
                 return false;
             },
-            fn(int $retries) => 1000 * $retries,
+            fn(int $retries) => 500 * $retries,
         );
         $handler->push($retryMiddleware);
 
-        return new GuzzleClient(['handler' => $handler, 'timeout' => 5]);
+        return new GuzzleClient(['handler' => $handler, 'timeout' => 5, 'connect_timeout' => 2]);
     }
 }
 

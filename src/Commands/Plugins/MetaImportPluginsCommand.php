@@ -130,10 +130,10 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
     {
         if (! empty($result['error'])) {
             $this->error($result['error']);
-            $this->error('Unable to ' . $action . ' ' . $pluginState . ' plugin ' . $slug);
+            $this->error("Unable to {$action} plugin {$slug} [state={$pluginState}]");
             $this->stats['error']++;
         } else {
-            $this->success('Completed ' . $action . ' for ' . $pluginState . ' plugin ' . $slug);
+            $this->success("Completed {$action} for plugin {$slug} [state={$pluginState}]");
             $this->stats[$action]++;
             $this->stats['success']++;
         }

@@ -23,9 +23,6 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
         shuffle($this->userAgents);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function download(string $theme, array $versions, string $numToDownload = 'all', bool $force = false): array
     {
         $downloadFile = '/opt/aspiresync/data/plugins/%s.%s.zip';

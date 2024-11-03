@@ -9,7 +9,7 @@ use RuntimeException;
 
 class RevisionMetadataService
 {
-    /** @var array<string, string[]> */
+    /** @var array<string, array{revision:string, added:string}> */
     private array $revisionData = [];
 
     /** @var array<string, string[]> */
@@ -46,7 +46,7 @@ class RevisionMetadataService
     }
 
     /**
-     * @return array<string, array<string, string>>
+     * @return array<string, array{revision:string, added:string}>
      */
     public function getRevisionData(): array
     {

@@ -16,16 +16,54 @@ class WPEndpointClient implements WpEndpointClientInterface
 
     public function getPluginMetadata(string $plugin): string
     {
-        $url = 'https://api.wordpress.org/plugins/info/1.0/' . $plugin . '.json';
+        $url         = 'https://api.wordpress.org/plugins/info/1.2/';
+        $queryParams = [
+            'action' => 'plugin_information',
+            'slug'   => $plugin,
+            'fields' => [
+                'active_installs',
+                'added',
+                'author',
+                'author_block_count',
+                'author_block_rating',
+                'author_profile',
+                'banners',
+                'compatibility',
+                'contributors',
+                'description',
+                'donate_link',
+                'download_link',
+                'downloaded',
+                'homepage',
+                'icons',
+                'last_updated',
+                'name',
+                'num_ratings',
+                'rating',
+                'ratings',
+                'requires',
+                'requires_php',
+                'screenshots',
+                'sections',
+                'short_description',
+                'slug',
+                'support_threads',
+                'support_threads_resolved',
+                'tags',
+                'tested',
+                'version',
+                'versions',
+            ],
+        ];
+
         try {
-            $response = $this->guzzle->get($url);
+            $response = $this->guzzle->get($url, ['query' => $queryParams]);
             return $response->getBody()->getContents();
         } catch (ClientException $e) {
             if ($e->getCode() === 404) {
                 return $e->getResponse()->getBody()->getContents();
             }
         }
-
         return '';
     }
 
