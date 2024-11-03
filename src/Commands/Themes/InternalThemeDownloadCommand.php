@@ -24,7 +24,7 @@ class InternalThemeDownloadCommand extends AbstractBaseCommand
     {
         $this->setName('internal:theme-download')
             ->setDescription('Download all versions of a given theme')
-            ->setHidden(true)
+            ->setHidden()
             ->addArgument('theme', InputArgument::REQUIRED, 'Theme name')
             ->addArgument('version-list', InputArgument::REQUIRED, 'List of versions to download')
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to download', 'all')
@@ -54,13 +54,10 @@ class InternalThemeDownloadCommand extends AbstractBaseCommand
      */
     private function versionCountBasedOnRequestedNumber(array $versions, string|int $numToDownload): int
     {
-        switch ($numToDownload) {
-            case 'all':
-                return count($versions);
-            case 'latest':
-                return 1;
-            default:
-                return count($versions) > $numToDownload ? (int) $numToDownload : count($versions);
-        }
+        return match ($numToDownload) {
+            'all' => count($versions),
+            'latest' => 1,
+            default => count($versions) > $numToDownload ? (int) $numToDownload : count($versions),
+        };
     }
 }

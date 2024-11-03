@@ -117,7 +117,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
         } elseif (isset($data['error'])) {
             $this->error("Error fetching metadata for theme $slug: " . $data['error']);
             if ('429' === (string) $data['error']) {
-                $this->progressiveBackoff($output);
+                $this->progressiveBackoff();
                 $this->fetchThemeDetails($input, $output, $slug, $versions);
                 $this->stats['rate_limited']++;
                 return;

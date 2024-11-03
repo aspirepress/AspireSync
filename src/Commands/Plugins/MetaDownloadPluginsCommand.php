@@ -103,19 +103,19 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         $this->stats['plugins']++;
         $data = $this->pluginListService->getItemMetadata($plugin);
 
-        if (isset($data['versions']) && ! empty($data['versions'])) {
+        if (! empty($data['versions'])) {
             $this->info("Plugin $plugin has " . count($data['versions']) . ' versions');
             $this->stats['versions'] += count($data['versions']);
         } elseif (isset($data['version'])) {
             $this->info("Plugin $plugin has 1 version");
             $this->stats['versions'] += 1;
         } elseif (isset($data['skipped'])) {
-            $this->info("{$data['skipped']}");
+            $this->info((string) $data['skipped']);
         } elseif (isset($data['error'])) {
             $this->error("Not able to fetch metadata for plugin $plugin: " . $data['error']);
             if ('429' === (string) $data['error']) {
                 $this->stats['rate_limited']++;
-                $this->progressiveBackoff($output);
+                $this->progressiveBackoff();
                 $this->fetchPluginDetails($input, $output, $plugin, $versions);
                 return;
             }

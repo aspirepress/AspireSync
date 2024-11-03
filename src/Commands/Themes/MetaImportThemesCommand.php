@@ -64,7 +64,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
         $this->debug('Importing ' . $count . ' files...');
 
         foreach ($files as $file) {
-            if (strpos($file, '.json') === false) {
+            if (! str_contains($file, '.json')) {
                 continue;
             }
 
@@ -87,7 +87,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
                 if (strtotime($existing['pulled_at']) < strtotime($pulledAt)) {
                     $this->notice('Updating theme ' . $fileContents['slug'] . ' as newer metadata exists...');
                     $result = $this->themeMetadata->updateThemeFromWP($fileContents, $pulledAt);
-                    $this->handleResponse($result, $fileContents['slug'], 'open', 'update', $output);
+                    $this->handleResponse($result, $fileContents['slug'], 'update');
                 } else {
                     $this->stats['skips']++;
                     $this->notice('Skipping theme ' . $fileContents['slug'] . ' as it exists in DB already...');
@@ -95,7 +95,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
             } else {
                 $this->notice('Writing theme ' . $fileContents['slug']);
                 $result = $this->themeMetadata->saveThemeFromWP($fileContents, $pulledAt);
-                $this->handleResponse($result, $fileContents['slug'], 'open', 'write', $output);
+                $this->handleResponse($result, $fileContents['slug'], 'write');
             }
         }
 
@@ -119,7 +119,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
     /**
      * @param string[]|array $result
      */
-    private function handleResponse(array $result, string $slug, string $themeState, string $action, OutputInterface $output): void
+    private function handleResponse(array $result, string $slug, string $action): void
     {
         if (! empty($result['error'])) {
             $this->error($result['error']);
@@ -141,7 +141,7 @@ class MetaImportThemesCommand extends AbstractBaseCommand
     {
         $filtered = [];
         foreach ($updateList as $file) {
-            if (in_array($file . '.json', $files)) {
+            if (in_array($file . '.json', $files, true)) {
                 $filtered[] = $file . '.json';
             }
         }

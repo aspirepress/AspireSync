@@ -123,19 +123,11 @@ class DownloadThemesCommand extends AbstractBaseCommand
      */
     private function determineVersionsToDownload(string $theme, array $versions, string $numToDownload): array
     {
-        switch ($numToDownload) {
-            case 'all':
-                $download = $versions;
-                break;
-
-            case 'latest':
-                $download = [VersionUtil::getLatestVersion($versions)];
-                break;
-
-            default:
-                $download = VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload);
-        }
-
+        $download = match ($numToDownload) {
+            'all' => $versions,
+            'latest' => [VersionUtil::getLatestVersion($versions)],
+            default => VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload),
+        };
         return $this->themeMetadataService->getUnprocessedVersions($theme, $download);
     }
 }

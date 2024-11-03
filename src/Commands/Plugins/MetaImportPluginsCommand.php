@@ -65,7 +65,7 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
         $this->debug('Importing ' . $count . ' files...');
 
         foreach ($files as $file) {
-            if (strpos($file, '.json') === false) {
+            if (! str_contains($file, '.json')) {
                 continue;
             }
 
@@ -82,13 +82,12 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
                 if (strtotime($existing['pulled_at']) < strtotime($pulledAt)) {
                     $this->notice('Updating plugin ' . $fileContents['slug'] . ' as newer metadata exists...');
                     $result = $this->pluginMetadata->updatePluginFromWP($fileContents, $pulledAt);
-                    $this->handleResponse($result, $fileContents['slug'], 'open', 'update', $output);
-                    continue;
+                    $this->handleResponse($result, $fileContents['slug'], 'open', 'update');
                 } else {
                     $this->stats['skips']++;
                     $this->notice('Skipping plugin ' . $fileContents['slug'] . ' as it exists in DB already...');
-                    continue;
                 }
+                continue;
             }
             if (isset($fileContents['error'])) {
                 if ($fileContents['error'] !== 'closed') {
@@ -99,11 +98,11 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
 
                 $this->notice('Writing CLOSED plugin ' . $fileContents['slug']);
                 $result = $this->pluginMetadata->saveClosedPluginFromWP($fileContents, $pulledAt);
-                $this->handleResponse($result, $fileContents['slug'], 'closed', 'write', $output);
+                $this->handleResponse($result, $fileContents['slug'], 'closed', 'write');
             } else {
                 $this->notice('Writing OPEN plugin ' . $fileContents['slug']);
                 $result = $this->pluginMetadata->saveOpenPluginFromWP($fileContents, $pulledAt);
-                $this->handleResponse($result, $fileContents['slug'], 'open', 'write', $output);
+                $this->handleResponse($result, $fileContents['slug'], 'open', 'write');
             }
         }
 
@@ -126,7 +125,7 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
     /**
      * @param  string[]|array  $result
      */
-    private function handleResponse(array $result, string $slug, string $pluginState, string $action, OutputInterface $output): void
+    private function handleResponse(array $result, string $slug, string $pluginState, string $action): void
     {
         if (! empty($result['error'])) {
             $this->error($result['error']);
@@ -148,11 +147,10 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
     {
         $filtered = [];
         foreach ($updateList as $file) {
-            if (in_array($file . '.json', $files)) {
+            if (in_array($file . '.json', $files, true)) {
                 $filtered[] = $file . '.json';
             }
         }
-
         return $filtered;
     }
 }

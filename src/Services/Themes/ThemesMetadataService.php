@@ -17,7 +17,7 @@ use function Safe\json_encode;
 class ThemesMetadataService
 {
     /** @var array<string, string[]> */
-    private array $existing = [];
+    private array $existing;
 
     public function __construct(private ExtendedPdoInterface $pdo)
     {
@@ -29,11 +29,7 @@ class ThemesMetadataService
      */
     public function checkThemeInDatabase(string $slug): array
     {
-        if (isset($this->existing[$slug])) {
-            return $this->existing[$slug];
-        }
-
-        return [];
+        return $this->existing[$slug] ?? [];
     }
 
     /**
@@ -96,8 +92,6 @@ class ThemesMetadataService
 
             if (empty($themeMetadata['versions'])) {
                 $versions[$themeMetadata['version']] = $themeMetadata['download_link'];
-            } else {
-                $versions = $themeMetadata['versions'];
             }
 
             $versionResult = $this->writeVersionsForTheme($id, $versions, 'wp_cdn');
@@ -153,10 +147,8 @@ class ThemesMetadataService
                 'metadata'        => json_encode($newMetadata),
             ]);
 
-            if (! isset($fileContents['versions']) || empty($fileContents['versions'])) {
+            if (empty($fileContents['versions'])) {
                 $versions = [$fileContents['version'] => $fileContents['download_link']];
-            } else {
-                $versions = $fileContents['versions'];
             }
 
             $newVersions = $this->getNewlyDiscoveredVersionsList($id, $versions);
@@ -261,7 +253,7 @@ class ThemesMetadataService
 
         $newVersions = [];
         foreach ($versions as $version => $url) {
-            if (! in_array($version, $existingVersions)) {
+            if (! in_array($version, $existingVersions, true)) {
                 $newVersions[$version] = $url;
             }
         }
@@ -323,7 +315,7 @@ class ThemesMetadataService
             foreach ($result as $row) {
                 $theme   = $row['slug'];
                 $version = $row['version'];
-                if (! in_array($version, $notFound)) {
+                if (! in_array($version, $notFound, true)) {
                     $finalResult[$theme][] = $version;
                 }
             }

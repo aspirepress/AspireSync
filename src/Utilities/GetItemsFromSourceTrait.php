@@ -17,28 +17,23 @@ trait GetItemsFromSourceTrait
 
     private function processStats(string $stats): void
     {
-        preg_match_all('/[A-z\-_]+ ([0-9){3} [A-z ]+)\: ([0-9]+)/', $stats, $matches);
+        preg_match_all('/[A-z\-_]+ ([0-9){3} [A-z ]+): ([0-9]+)/', $stats, $matches);
+
         foreach ($matches[1] as $k => $v) {
             switch ($v) {
                 case '304 Not Modified':
                     $this->stats['not_modified'] += (int) $matches[2][$k];
-                    $this->stats['total']        += (int) $matches[2][$k];
                     break;
-
                 case '200 OK':
                     $this->stats['success'] += (int) $matches[2][$k];
-                    $this->stats['total']   += (int) $matches[2][$k];
                     break;
-
                 case '404 Not Found':
                     $this->stats['not_found'] += (int) $matches[2][$k];
-                    $this->stats['total']     += (int) $matches[2][$k];
                     break;
-
                 default:
                     $this->stats['failed'] += (int) $matches[2][$k];
-                    $this->stats['total']  += (int) $matches[2][$k];
             }
+            $this->stats['total'] += (int) $matches[2][$k];
         }
     }
 

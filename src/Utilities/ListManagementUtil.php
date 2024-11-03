@@ -6,16 +6,13 @@ namespace AspirePress\AspireSync\Utilities;
 
 abstract class ListManagementUtil
 {
-    /**
-     * @return array<int, string>
-     */
-    public static function explodeCommaSeparatedList(?string $list): array
+    /** @return string[] */
+    public static function explodeCommaSeparatedList(?string $str): array
     {
-        if (empty($list)) {
+        if (! $str) {
             return [];
         }
-
-        $list = explode(',', $list);
+        $list = explode(',', $str);
         array_walk($list, function (&$value) {
             $value = trim($value, ',');
         });

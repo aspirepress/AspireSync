@@ -19,7 +19,7 @@ class SvnService implements SvnServiceInterface
 
     public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): array
     {
-        $targetRev  = (int) $lastRevision;
+        $targetRev  = $lastRevision;
         $currentRev = 'HEAD';
 
         if ($targetRev === $prevRevision) {

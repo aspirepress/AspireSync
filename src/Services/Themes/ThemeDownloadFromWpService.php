@@ -53,7 +53,7 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
 
         if (file_exists($filePath) && ! $force) {
             $hash = $this->calculateHash($filePath);
-            $this->themeMetadataService->setVersionToDownloaded($theme, (string) $version, $hash);
+            $this->themeMetadataService->setVersionToDownloaded($theme, $version, $hash);
             return ['status' => '304 Not Modified', 'version' => $version];
         }
         try {
@@ -62,12 +62,12 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
                 unlink($filePath);
             }
             $hash = $this->calculateHash($filePath);
-            $this->themeMetadataService->setVersionToDownloaded($theme, (string) $version, $hash);
+            $this->themeMetadataService->setVersionToDownloaded($theme, $version, $hash);
         } catch (ClientException $e) {
             if (method_exists($e, 'getResponse')) {
                 $response = $e->getResponse();
                 if ($response->getStatusCode() === 404) {
-                    $this->themeMetadataService->setVersionToDownloaded($theme, (string) $version);
+                    $this->themeMetadataService->setVersionToDownloaded($theme, $version);
                 }
                 if ($response->getStatusCode() === 429) {
                     sleep(2);

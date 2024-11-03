@@ -86,15 +86,13 @@ class PluginListService implements ListServiceInterface
      */
     private function getPluginsToUpdate(?array $explicitlyRequested, string $lastRevision, string $action = 'default'): array
     {
-        $output = $this->svnService->getRevisionForType('plugins', (int) $this->prevRevision, (int) $lastRevision);
+        $output = $this->svnService->getRevisionForType('plugins', $this->prevRevision, (int) $lastRevision);
 
         $revision        = $output['revision'];
         $pluginsToUpdate = $output['items'];
         $this->revisionService->setCurrentRevision($action, $revision);
 
-        $pluginsToUpdate = $this->addNewAndRequestedPlugins($action, $pluginsToUpdate, $explicitlyRequested);
-
-        return $pluginsToUpdate;
+        return $this->addNewAndRequestedPlugins($action, $pluginsToUpdate, $explicitlyRequested);
     }
 
     /**
@@ -115,7 +113,7 @@ class PluginListService implements ListServiceInterface
                 $pluginsToUpdate[$pluginName] = [];
             }
 
-            if (in_array($pluginName, $explicitlyRequested)) {
+            if (in_array($pluginName, $explicitlyRequested, true)) {
                 $pluginsToUpdate[$pluginName] = [];
             }
         }

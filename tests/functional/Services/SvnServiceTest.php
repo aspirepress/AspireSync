@@ -34,8 +34,8 @@ class SvnServiceTest extends AbstractFunctionalTestBase
     {
         $sut    = new SvnService(new GuzzleClient());
         $result = $sut->getRevisionForType('plugins', 3164522, 3164522);
-        $this->assertTrue($result['revision'] === 3164522);
-        $this->assertTrue(count($result['items']) === 0);
+        $this->assertSame($result['revision'], 3164522);
+        $this->assertSame(count($result['items']), 0);
     }
 
     public function testPullWholeListResultsInListOfPlugins(): void

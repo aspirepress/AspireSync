@@ -110,14 +110,12 @@ class PluginMetadataService implements MetadataInterface
 
             if (empty($pluginMetadata['versions'])) {
                 $versions[$pluginMetadata['version']] = $pluginMetadata['download_link'];
-            } else {
-                $versions = $pluginMetadata['versions'];
             }
 
             $versionResult = $this->writeVersionsForPlugin($id, $versions, 'wp_cdn');
 
             if (! empty($versionResult['error'])) {
-                throw new Exception('Unable to write versions for plugin ' . $slug);
+                throw new RuntimeException('Unable to write versions for plugin ' . $slug);
             }
             $this->pdo->commit();
             return ['error' => ''];
@@ -213,11 +211,7 @@ class PluginMetadataService implements MetadataInterface
      */
     public function checkPluginInDatabase(string $slug): array
     {
-        if (isset($this->existing[$slug])) {
-            return $this->existing[$slug];
-        }
-
-        return [];
+        return $this->existing[$slug] ?? [];
     }
 
     /**
@@ -337,10 +331,8 @@ class PluginMetadataService implements MetadataInterface
                 'metadata'        => json_encode($newMetadata),
             ]);
 
-            if (! isset($fileContents['versions']) || empty($fileContents['versions'])) {
+            if (empty($fileContents['versions'])) {
                 $versions = [$fileContents['version'] => $fileContents['download_link']];
-            } else {
-                $versions = $fileContents['versions'];
             }
 
             $newVersions = $this->getNewlyDiscoveredVersionsList($id->toString(), $versions);
@@ -348,7 +340,7 @@ class PluginMetadataService implements MetadataInterface
             $versionResult = $this->writeVersionsForPlugin($id, $newVersions, 'wp_cdn');
 
             if (! empty($versionResult['error'])) {
-                throw new Exception('Unable to write versions for plugin ' . $slug);
+                throw new RuntimeException('Unable to write versions for plugin ' . $slug);
             }
 
             $this->pdo->commit();
@@ -370,7 +362,7 @@ class PluginMetadataService implements MetadataInterface
 
         $newVersions = [];
         foreach ($versions as $version => $url) {
-            if (! in_array($version, $existingVersions)) {
+            if (! in_array($version, $existingVersions, true)) {
                 $newVersions[$version] = $url;
             }
         }
@@ -416,7 +408,7 @@ class PluginMetadataService implements MetadataInterface
             foreach ($result as $row) {
                 $plugin  = $row['slug'];
                 $version = $row['version'];
-                if (! in_array($plugin, $notFound)) {
+                if (! in_array($plugin, $notFound, true)) {
                     $finalResult[$plugin][] = $version;
                 }
             }
@@ -444,7 +436,7 @@ class PluginMetadataService implements MetadataInterface
             $results = $this->pdo->fetchAll($sql, ['plugin' => $plugin, 'type' => $type]);
             $return  = [];
             foreach ($results as $result) {
-                if (in_array($result['version'], $versions)) {
+                if (in_array($result['version'], $versions, true)) {
                     $return[$result['version']] = $result['file_url'];
                 }
             }

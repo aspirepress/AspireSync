@@ -23,15 +23,11 @@ class UtilUploadCommandFactory
 
             public function __invoke(string $action): object
             {
-                switch ($action) {
-                    case 'plugins':
-                        return $this->serviceManager->get(PluginMetadataService::class);
-                    case 'themes':
-                        return $this->serviceManager->get(ThemesMetadataService::class);
-
-                    default:
-                        throw new RuntimeException('Unknown action: ' . $action);
-                }
+                return match ($action) {
+                    'plugins' => $this->serviceManager->get(PluginMetadataService::class),
+                    'themes' => $this->serviceManager->get(ThemesMetadataService::class),
+                    default => throw new RuntimeException('Unknown action: ' . $action),
+                };
             }
         };
 

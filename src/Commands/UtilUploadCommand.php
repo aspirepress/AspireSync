@@ -10,7 +10,6 @@ use AspirePress\AspireSync\Services\StatsMetadataService;
 use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
 use AspirePress\AspireSync\Utilities\ListManagementUtil;
 use Exception;
-use InvalidArgumentException;
 use League\Flysystem\Filesystem;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Input\InputArgument;
@@ -20,8 +19,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UtilUploadCommand extends AbstractBaseCommand
 {
-    private CallbackInterface $callback;
-
     /** @var array<string, int> */
     private array $stats = [
         'uploaded' => 0,
@@ -30,12 +27,12 @@ class UtilUploadCommand extends AbstractBaseCommand
         'total'    => 0,
     ];
 
-    public function __construct(private string $uploadType, CallbackInterface $callback, private Filesystem $flysystem, private StatsMetadataService $statsMetadata)
-    {
-        if (! is_callable($callback)) {
-            throw new InvalidArgumentException('Callable object required for constructor!');
-        }
-        $this->callback = $callback;
+    public function __construct(
+        private string $uploadType,
+        private CallbackInterface $callback,
+        private Filesystem $flysystem,
+        private StatsMetadataService $statsMetadata
+    ) {
         parent::__construct();
     }
 
@@ -95,7 +92,7 @@ class UtilUploadCommand extends AbstractBaseCommand
                 continue;
             }
 
-            preg_match('/([0-9A-z\-_]+)\.([A-z0-9\-_ \.]+).zip/', $file, $matches);
+            preg_match('/([0-9A-z\-_]+)\.([A-z0-9\-_ .]+).zip/', $file, $matches);
             if (! empty($matches[1]) && ! empty($matches[2])) {
                 $itemSlug = $matches[1];
                 $version  = $matches[2];
@@ -127,7 +124,7 @@ class UtilUploadCommand extends AbstractBaseCommand
                         'ChecksumAlgorithm' => 'SHA256',
                         'ChecksumSHA256'    => $hash,
                     ];
-                    $this->flysystem->writeStream($metadata->getS3Path() . $file, fopen($dir . '/' . $file, 'r'), $args);
+                    $this->flysystem->writeStream($metadata->getS3Path() . $file, fopen($dir . '/' . $file, 'rb'), $args);
 
                     $versionInfo = [$version => $metadata->getS3Path() . $file];
                     $metadata->writeVersionProcessed(Uuid::fromString($itemId), $versionInfo, $hash, $this->uploadType);

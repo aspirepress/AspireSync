@@ -53,7 +53,6 @@ class RunAllCommand extends AbstractBaseCommand
 
     private function runPlugins(): int
     {
-        $result   = self::SUCCESS;
         $commands = [
             'meta:download:plugins',
             'meta:import:plugins',
@@ -68,45 +67,42 @@ class RunAllCommand extends AbstractBaseCommand
             }
         }
 
-        return $result;
+        return self::SUCCESS;
     }
 
     private function runThemes(): int
     {
-        {
-            $result   = self::SUCCESS;
-            $commands = [
-                'meta:download:themes',
-                'meta:import:themes',
-                'download:themes',
-                'util:upload',
-            ];
+        $commands = [
+            'meta:download:themes',
+            'meta:import:themes',
+            'download:themes',
+            'util:upload',
+        ];
 
-            foreach ($commands as $command) {
-                $result = $this->runCommand($command, 'themes');
-                if ($result) {
-                    return $result;
-                }
+        foreach ($commands as $command) {
+            $result = $this->runCommand($command, 'themes');
+            if ($result) {
+                return $result;
             }
+        }
 
-            return $result;
-            }
+        return self::SUCCESS;
     }
 
     private function runCommand(string $command, string $type): int
     {
-        $commandArgs = [
-            'command' => $command,
-        ];
+        $commandArgs = ['command' => $command];
 
         if ($command === 'util:upload') {
             $commandArgs['action'] = $type;
         }
 
-        $command = new ArrayInput($commandArgs);
+        $input = new ArrayInput($commandArgs);
+        $app   = $this->getApplication();
+        assert($app !== null);
 
         try {
-            return $this->getApplication()->doRun($command, $this->io);
+            return $app->doRun($input, $this->io);
         } catch (Exception $e) {
             $this->error($e->getMessage());
             return self::FAILURE;

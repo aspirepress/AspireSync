@@ -139,9 +139,7 @@ class ThemeListService implements ListServiceInterface
         }
 
         $this->revisionService->setCurrentRevision($action, $revision);
-        $themesToUpdate = $this->addNewAndRequestedThemes($action, $themesToUpdate, $explicitlyRequested);
-
-        return $themesToUpdate;
+        return $this->addNewAndRequestedThemes($action, $themesToUpdate, $explicitlyRequested);
     }
 
     /**
@@ -174,7 +172,7 @@ class ThemeListService implements ListServiceInterface
             $themesToReturn[(string) $theme] = [];
         }
 
-        preg_match('/Revision ([0-9]+)\:/', $contents, $matches);
+        preg_match('/Revision ([0-9]+):/', $contents, $matches);
         $revision = (int) $matches[1];
 
         $filename = '/opt/aspiresync/data/raw-theme-list';
@@ -205,7 +203,7 @@ class ThemeListService implements ListServiceInterface
                 $themesToUpdate[$themeName] = [];
             }
 
-            if (in_array($themeName, $explicitlyRequested)) {
+            if (in_array($themeName, $explicitlyRequested, true)) {
                 $themesToUpdate[$themeName] = [];
             }
         }

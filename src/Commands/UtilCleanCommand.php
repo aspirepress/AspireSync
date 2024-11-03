@@ -92,23 +92,11 @@ class UtilCleanCommand extends AbstractBaseCommand
 
     private function convertBytesToUnit(int $bytes): string
     {
-        switch (true) {
-            case $bytes > 1073741824:
-                $size = number_format($bytes / 1073741824, 2) . ' GB';
-                break;
-
-            case $bytes > 1048576:
-                $size = number_format($bytes / 1048576, 2) . ' MB';
-                break;
-
-            case $bytes > 1024:
-                $size = number_format($bytes / 1024, 2) . ' KB';
-                break;
-
-            default:
-                $size = $bytes . ' bytes';
-        }
-
-        return $size;
+        return match (true) {
+            $bytes > 1073741824 => number_format($bytes / 1073741824, 2) . ' GB',
+            $bytes > 1048576 => number_format($bytes / 1048576, 2) . ' MB',
+            $bytes > 1024 => number_format($bytes / 1024, 2) . ' KB',
+            default => $bytes . ' bytes',
+        };
     }
 }
