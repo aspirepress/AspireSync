@@ -7,6 +7,7 @@ namespace AspirePress\AspireSync\Commands\Themes;
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\StatsMetadataService;
 use AspirePress\AspireSync\Services\Themes\ThemeListService;
+use AspirePress\AspireSync\Utilities\StringUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -48,14 +49,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
 
         @mkdir(self::THEME_METADATA_DIR);
 
-        $themes         = [];
-        $themesToUpdate = $input->getOption('themes');
-        if ($themesToUpdate) {
-            $themes = explode(',', $themesToUpdate);
-            array_walk($themes, function (&$value) {
-                $value = trim($value);
-            });
-        }
+        $themes = StringUtil::explodeAndTrim($input->getOption('themes') ?? '');
 
         $this->info('Getting list of themes...');
         $themesToUpdate = $this->themeListService->getItemsForAction($themes, $this->getName());
@@ -70,7 +64,12 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
             $this->fetchThemeDetails($input, $output, (string) $theme, $versions);
         }
 
-        $this->themeListService->preserveRevision($this->getName());
+        if ($input->getOption('themes')) {
+            $this->debug("Not saving revision when --themes was specified");
+        } else {
+            $revision = $this->themeListService->preserveRevision($this->getName());
+            $this->debug("Updated current revision to $revision");
+        }
         $this->endTimer();
 
         $this->always($this->getRunInfo($this->calculateStats()));
@@ -92,14 +91,12 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
         ];
     }
 
-    /**
-     * @param array<int, string> $versions
-     */
+    /** @param string[] $versions */
     private function fetchThemeDetails(InputInterface $input, OutputInterface $output, string $slug, array $versions): void
     {
         $filename = "/opt/aspiresync/data/theme-raw-data/{$slug}.json";
         if (file_exists($filename) && $input->getOption('skip-existing')) {
-            $this->info("Skipping Theme $slug (metadata file already exists)");
+            $this->info("$slug ... skipped (metadata file already exists)");
             return;
         }
 
@@ -107,15 +104,15 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
         $data = $this->themeListService->getItemMetadata($slug);
 
         if (! empty($data['versions'])) {
-            $this->info("Theme $slug has " . count($data['versions']) . ' versions');
+            $this->info("$slug ... [" . count($data['versions']) . ' versions]');
             $this->stats['versions'] += count($data['versions']);
         } elseif (isset($data['version'])) {
-            $this->info("Theme $slug has 1 version");
+            $this->info("$slug ... [1 version]");
             $this->stats['versions'] += 1;
         } elseif (isset($data['skipped'])) {
-            $this->notice($data['skipped']);
+            $this->notice((string) $data['skipped']);
         } elseif (isset($data['error'])) {
-            $this->error("Error fetching metadata for theme $slug: " . $data['error']);
+            $this->error("$slug ... ERROR: " . $data['error']);
             if ('429' === (string) $data['error']) {
                 $this->progressiveBackoff();
                 $this->fetchThemeDetails($input, $output, $slug, $versions);
@@ -127,7 +124,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
             }
             $this->stats['errors']++;
         } else {
-            $this->notice("No versions found for theme $slug");
+            $this->info("$slug ... No versions found");
         }
 
         $this->iterateProgressiveBackoffLevel(self::ITERATE_DOWN);

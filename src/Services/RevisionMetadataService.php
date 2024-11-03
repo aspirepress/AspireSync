@@ -25,7 +25,7 @@ class RevisionMetadataService
         $this->currentRevision[$action] = ['revision' => $revision];
     }
 
-    public function preserveRevision(string $action): void
+    public function preserveRevision(string $action): string
     {
         if (! isset($this->currentRevision[$action])) {
             throw new RuntimeException('You did not specify a revision for action ' . $action);
@@ -33,6 +33,7 @@ class RevisionMetadataService
         $revision = $this->currentRevision[$action]['revision'];
         $sql      = 'INSERT INTO sync_revisions (action, revision, added_at) VALUES (:action, :revision, NOW())';
         $this->pdo->perform($sql, ['action' => $action, 'revision' => $revision]);
+        return (string)$revision;
     }
 
     public function getRevisionForAction(string $action): ?string

@@ -44,7 +44,7 @@ class PluginListService implements ListServiceInterface
     {
         if ($this->isNotFound($slug)) {
             return [
-                'skipped' => $slug . ' previously marked not found; skipping...',
+                'skipped' => "$slug ... skipped (previously marked not found)",
             ];
         }
 
@@ -144,9 +144,9 @@ class PluginListService implements ListServiceInterface
         return $filtered;
     }
 
-    public function preserveRevision(string $action): void
+    public function preserveRevision(string $action): string
     {
-        $this->revisionService->preserveRevision($action);
+        return $this->revisionService->preserveRevision($action);
     }
 
     public function isNotFound(string $item): bool

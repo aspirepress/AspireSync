@@ -42,13 +42,13 @@ abstract class AbstractBaseCommand extends Command
 
     /**
      * @param string[] $info
-     * @return string[];
+     * @return string[]
      */
     protected function getRunInfo(array $info = []): array
     {
         $output   = [];
         $time     = round($this->getElapsedTime(), 4);
-        $output[] = "Took $time seconds...";
+        $output[] = "Time elapsed: $time seconds";
 
         return array_merge($output, $info);
     }

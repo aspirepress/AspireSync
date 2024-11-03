@@ -37,7 +37,7 @@ class ThemeListService implements ListServiceInterface
     public function getItemMetadata(string $slug): array
     {
         if ($this->isNotFound($slug)) {
-            return ['skipped' => "$slug previously marked not found; skipping..."];
+            return ['skipped' => "$slug ... skipped (previously marked not found)"];
         }
 
         $url         = 'https://api.wordpress.org/themes/info/1.2/';
@@ -84,9 +84,9 @@ class ThemeListService implements ListServiceInterface
         );
     }
 
-    public function preserveRevision(string $action): void
+    public function preserveRevision(string $action): string
     {
-        $this->revisionService->preserveRevision($action);
+        return $this->revisionService->preserveRevision($action);
     }
 
     /**
@@ -105,17 +105,8 @@ class ThemeListService implements ListServiceInterface
             return $this->addNewAndRequestedThemes($action, $explicitlyRequested, $explicitlyRequested);
         }
 
-        $command = [
-            'svn',
-            'log',
-            '-v',
-            '-q',
-            '--xml',
-            'https://themes.svn.wordpress.org',
-            "-r",
-            "$targetRev:$currentRev",
-        ];
-
+        // TODO: move this to SvnService
+        $command = explode(' ', "svn log -v -q --xml https://themes.svn.wordpress.org -r $targetRev:$currentRev");
         $process = new Process($command);
         $process->run();
 

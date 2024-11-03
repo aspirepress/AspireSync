@@ -7,6 +7,7 @@ namespace AspirePress\AspireSync\Commands\Plugins;
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\Plugins\PluginListService;
 use AspirePress\AspireSync\Services\StatsMetadataService;
+use AspirePress\AspireSync\Utilities\StringUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -42,18 +43,9 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         $this->always("Running command {$this->getName()}");
         $this->startTimer();
 
-        if (! is_dir('/opt/aspiresync/data/plugin-raw-data')) {
-            mkdir('/opt/aspiresync/data/plugin-raw-data');
-        }
+        @mkdir('/opt/aspiresync/data/plugin-raw-data');
 
-        $plugins         = [];
-        $pluginsToUpdate = $input->getOption('plugins');
-        if ($pluginsToUpdate) {
-            $plugins = explode(',', $pluginsToUpdate);
-            array_walk($plugins, function (&$value) {
-                $value = trim($value);
-            });
-        }
+        $plugins = StringUtil::explodeAndTrim($input->getOption('plugins') ?? '');
 
         $this->debug('Getting list of plugins...');
         $pluginsToUpdate = $this->pluginListService->getItemsForAction($plugins, $this->getName());
@@ -68,7 +60,12 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
             $this->fetchPluginDetails($input, $output, $plugin, $versions);
         }
 
-        $this->pluginListService->preserveRevision($this->getName());
+        if ($input->getOption('plugins')) {
+            $this->debug("Not saving revision when --plugins was specified");
+        } else {
+            $revision = $this->pluginListService->preserveRevision($this->getName());
+            $this->debug("Updated current revision to $revision");
+        }
         $this->endTimer();
 
         $this->always($this->getRunInfo($this->calculateStats()));
@@ -76,9 +73,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         return Command::SUCCESS;
     }
 
-    /**
-     * @return string[]
-     */
+    /** @return string[] */
     private function calculateStats(): array
     {
         return [
@@ -89,45 +84,43 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         ];
     }
 
-    /**
-     * @param array<int, string> $versions
-     */
-    private function fetchPluginDetails(InputInterface $input, OutputInterface $output, string $plugin, array $versions): void
+    /** @param string[] $versions */
+    private function fetchPluginDetails(InputInterface $input, OutputInterface $output, string $slug, array $versions): void
     {
-        $filename = "/opt/aspiresync/data/plugin-raw-data/{$plugin}.json";
+        $filename = "/opt/aspiresync/data/plugin-raw-data/$slug.json";
         if (file_exists($filename) && $input->getOption('skip-existing')) {
-            $this->info("Skipping Plugin $plugin (metadata file already exists)");
+            $this->info("$slug ... skipped (metadata file already exists)");
             return;
         }
 
         $this->stats['plugins']++;
-        $data = $this->pluginListService->getItemMetadata($plugin);
+        $data = $this->pluginListService->getItemMetadata($slug);
 
         if (! empty($data['versions'])) {
-            $this->info("Plugin $plugin has " . count($data['versions']) . ' versions');
+            $this->info("$slug ... [" . count($data['versions']) . ' versions]');
             $this->stats['versions'] += count($data['versions']);
         } elseif (isset($data['version'])) {
-            $this->info("Plugin $plugin has 1 version");
+            $this->info("$slug ... [1 version]");
             $this->stats['versions'] += 1;
         } elseif (isset($data['skipped'])) {
             $this->info((string) $data['skipped']);
         } elseif (isset($data['error'])) {
-            $this->error("Not able to fetch metadata for plugin $plugin: " . $data['error']);
+            $this->error("$slug ... ERROR: " . $data['error']);
             if ('429' === (string) $data['error']) {
                 $this->stats['rate_limited']++;
                 $this->progressiveBackoff();
-                $this->fetchPluginDetails($input, $output, $plugin, $versions);
+                $this->fetchPluginDetails($input, $output, $slug, $versions);
                 return;
             }
             if ('Plugin not found.' === $data['error']) {
-                $this->pluginListService->markItemNotFound($plugin);
+                $this->pluginListService->markItemNotFound($slug);
             }
             if ('Invalid plugin slug.' === $data['error']) {
-                $this->pluginListService->markItemNotFound($plugin);
+                $this->pluginListService->markItemNotFound($slug);
             }
             $this->stats['errors']++;
         } else {
-            $this->info("No versions found for plugin $plugin");
+            $this->info("$slug ... No versions found");
         }
 
         $this->iterateProgressiveBackoffLevel(self::ITERATE_DOWN);

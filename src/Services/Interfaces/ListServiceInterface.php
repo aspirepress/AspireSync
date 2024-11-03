@@ -23,5 +23,5 @@ interface ListServiceInterface
      */
     public function getUpdatedListOfItems(?array $explicitlyRequested): array;
 
-    public function preserveRevision(string $action): void;
+    public function preserveRevision(string $action): string;
 }
