@@ -23,9 +23,6 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
         shuffle($this->userAgents);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function download(string $theme, array $versions, string $numToDownload = 'all', bool $force = false): array
     {
         if (! file_exists('/opt/aspiresync/data/themes')) {

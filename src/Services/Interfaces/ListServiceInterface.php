@@ -15,7 +15,7 @@ interface ListServiceInterface
     /**
      * @return array<string, string|int|array<string, string>>
      */
-    public function getItemMetadata(string $item): array;
+    public function getItemMetadata(string $slug): array;
 
     /**
      * @param  array<int, string>  $explicitlyRequested

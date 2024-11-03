@@ -40,16 +40,16 @@ class PluginListService implements ListServiceInterface
     /**
      * @return array<string, string|array<string, string>>
      */
-    public function getItemMetadata(string $item): array
+    public function getItemMetadata(string $slug): array
     {
-        if ($this->isNotFound($item)) {
+        if ($this->isNotFound($slug)) {
             return [
-                'skipped' => $item . ' previously marked not found; skipping...',
+                'skipped' => $slug . ' previously marked not found; skipping...',
             ];
         }
 
-        $filename = "/opt/aspiresync/data/plugin-raw-data/{$item}.json";
-        $output   = $this->wpClient->getPluginMetadata($item);
+        $filename = "/opt/aspiresync/data/plugin-raw-data/{$slug}.json";
+        $output   = $this->wpClient->getPluginMetadata($slug);
         FileUtil::write($filename, $output);
 
         return json_decode($output, true);
