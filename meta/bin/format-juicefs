@@ -1,0 +1,22 @@
+#!/bin/bash
+
+. $(dirname $0)/prelude.bash
+
+bucket=${JUICEFS_BUCKET}
+key=${JUICEFS_ACCESS_KEY}
+secret=${JUICEFS_SECRET_KEY}
+volume=${1:-aspiresync}
+
+[[ -n $bucket ]] || die "JUICEFS_BUCKET not set -- aborting"
+[[ -n $key ]] || die "JUICEFS_ACCESS_KEY not set -- aborting"
+[[ -n $secret ]] || die "JUICEFS_SECRET_KEY not set -- aborting"
+
+exec sudo juicefs format \
+  --storage=s3 \
+  --bucket=$bucket \
+  --access-key=$key \
+  --secret-key=$secret \
+  --compress=zstd \
+  sqlite3:///jfsmeta.db \
+  $volume
+
