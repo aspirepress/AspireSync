@@ -6,9 +6,17 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/download/2.5.2/install-php-extensions /usr/local/bin/
 
-COPY --from=juicedata/mount:ce-v1.2.1 /usr/local/bin/juicefs /usr/local/bin/juicefs
+RUN apt update && apt install -y bash fuse git locales postgresql-client subversion
 
-RUN apt update && apt install -y bash git subversion postgresql-client
+# whine: why can't i just install a locale as a package?
+RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    echo 'LANG="en_US.UTF-8"'>/etc/default/locale && \
+    dpkg-reconfigure --frontend=noninteractive locales && \
+    update-locale LANG=en_US.UTF-8
+
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 RUN install-php-extensions pdo pdo_pgsql
 
@@ -19,11 +27,14 @@ RUN mkdir -p /opt/aspiresync/data \
 
 WORKDIR /opt/aspiresync
 
+COPY --from=juicedata/mount:ce-v1.2.1 /usr/local/bin/juicefs /usr/local/bin/juicefs
+RUN mkdir /juicefs
+
 ################
 FROM basebuild AS devbuild
 
 RUN apt update \
-    && apt install -y sudo \
+    && apt install -y procps sudo \
     && usermod -a -G sudo aspiresync \
     && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
