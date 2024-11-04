@@ -11,13 +11,20 @@ class ExtendedPdoFactory
 {
     public function __invoke(ServiceManager $serviceManager): ExtendedPdo
     {
-        $config   = $serviceManager->get('config');
-        $dbConfig = $config['database'];
+        $config = $serviceManager->get('config');
+        $pdo = new ExtendedPdo($config['database']['dsn']);
 
-        $dsn = 'pgsql:host=' . $dbConfig['host'] . ';dbname=' . $dbConfig['name'];
+        return $this->initialize($pdo, $serviceManager);
+    }
 
-        $pdo = new ExtendedPdo($dsn, $dbConfig['user'], $dbConfig['pass']);
-        $pdo->exec('SET search_path TO ' . $dbConfig['schema']);
+    private function initialize(ExtendedPdo $pdo, ServiceManager $serviceManager): ExtendedPdo {
+        $pdo->connect();
+        try {
+            $pdo->query("select 1 from sync_plugins limit 1");
+        } catch (\PDOException $e) {
+            $init_script = $serviceManager->get('config')['database']['init_script'];
+            $pdo->exec(file_get_contents($init_script));
+        }
         return $pdo;
     }
 }
