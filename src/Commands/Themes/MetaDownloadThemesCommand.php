@@ -100,6 +100,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
             return;
         }
 
+
         $this->stats['themes']++;
         $data = $this->themeListService->getItemMetadata($slug);
 

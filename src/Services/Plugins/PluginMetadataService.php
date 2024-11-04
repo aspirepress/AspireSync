@@ -133,7 +133,7 @@ class PluginMetadataService implements MetadataInterface
     {
         $sql = <<<'SQL'
             INSERT INTO sync_plugin_files (id, plugin_id, file_url, type, version, created) 
-            VALUES (:id, :plugin_id, :file_url, :type, :version, NOW())
+            VALUES (:id, :plugin_id, :file_url, :type, :version, current_timestamp)
         SQL;
 
         if (! $this->pdo->inTransaction()) {
@@ -173,7 +173,7 @@ class PluginMetadataService implements MetadataInterface
     {
         $sql = <<<'SQL'
             INSERT INTO sync_plugin_files (id, plugin_id, file_url, type, version, created, processed, hash) 
-            VALUES (:id, :plugin_id, :file_url, :type, :version, NOW(), NOW(), :hash)
+            VALUES (:id, :plugin_id, :file_url, :type, :version, current_timestamp, current_timestamp, :hash)
         SQL;
 
         if (! $this->pdo->inTransaction()) {
@@ -450,7 +450,7 @@ class PluginMetadataService implements MetadataInterface
     {
         $sql = <<<'SQL'
             UPDATE sync_plugin_files 
-            SET processed = NOW(), 
+            SET processed = current_timestamp, 
                 hash = :hash 
             WHERE version = :version 
               AND type = :type 
@@ -532,10 +532,10 @@ class PluginMetadataService implements MetadataInterface
 
     public function isNotFound(string $item, bool $noLimit = false): bool
     {
-        $sql = "SELECT COUNT(*) FROM sync_not_found_items WHERE item_slug = :item AND item_type = 'plugin'";
+        $sql = "SELECT COUNT(*) count FROM sync_not_found_items WHERE item_slug = :item AND item_type = 'plugin'";
 
         if (! $noLimit) {
-            $sql .= " AND created_at > NOW() - INTERVAL '1 WEEK'";
+            $sql .= " AND created_at > datetime(current_date, '-7 day')";
         }
 
         $result = $this->pdo->fetchOne($sql, ['item' => $item]);
@@ -545,7 +545,7 @@ class PluginMetadataService implements MetadataInterface
     public function markItemNotFound(string $item): void
     {
         if ($this->isNotFound($item, true)) {
-            $sql = "UPDATE sync_not_found_items SET updated_at = NOW() WHERE item_slug = :item AND item_type = 'plugin'";
+            $sql = "UPDATE sync_not_found_items SET updated_at = current_timestamp WHERE item_slug = :item AND item_type = 'plugin'";
             $this->pdo->perform($sql, ['item' => $item]);
         } else {
             $sql = "INSERT INTO sync_not_found_items (id, item_type, item_slug) VALUES (:id, 'plugin', :item)";

@@ -173,7 +173,7 @@ class ThemesMetadataService
      */
     public function writeVersionProcessed(UuidInterface $themeId, array $versions, string $hash, string $cdn = 'wp_cdn'): array
     {
-        $sql = 'INSERT INTO sync_theme_files (id, theme_id, file_url, type, version, created, processed, hash) VALUES (:id, :theme_id, :file_url, :type, :version, NOW(), NOW(), :hash)';
+        $sql = 'INSERT INTO sync_theme_files (id, theme_id, file_url, type, version, created, processed, hash) VALUES (:id, :theme_id, :file_url, :type, :version, current_timestamp, current_timestamp, :hash)';
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;
@@ -211,7 +211,7 @@ class ThemesMetadataService
      */
     public function writeVersionsForTheme(UuidInterface $themeId, array $versions, string $cdn = 'wp_cdn'): array
     {
-        $sql = 'INSERT INTO sync_theme_files (id, theme_id, file_url, type, version, created) VALUES (:id, :theme_id, :file_url, :type, :version, NOW())';
+        $sql = 'INSERT INTO sync_theme_files (id, theme_id, file_url, type, version, created) VALUES (:id, :theme_id, :file_url, :type, :version, current_timestamp)';
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;
@@ -327,7 +327,7 @@ class ThemesMetadataService
 
     public function setVersionToDownloaded(string $theme, string $version, ?string $hash = null, string $type = 'wp_cdn'): void
     {
-        $sql = 'UPDATE sync_theme_files SET processed = NOW(), hash = :hash WHERE version = :version AND type = :type AND theme_id = (SELECT id FROM sync_themes WHERE slug = :theme)';
+        $sql = 'UPDATE sync_theme_files SET processed = current_timestamp, hash = :hash WHERE version = :version AND type = :type AND theme_id = (SELECT id FROM sync_themes WHERE slug = :theme)';
         $this->pdo->perform($sql, ['theme' => $theme, 'type' => $type, 'hash' => $hash, 'version' => $version]);
     }
 
@@ -381,25 +381,28 @@ class ThemesMetadataService
 
     public function isNotFound(string $item, bool $noLimit = false): bool
     {
-        $sql = "SELECT COUNT(*) FROM sync_not_found_items WHERE item_slug = :item AND item_type = 'theme'";
+        $sql = "SELECT 1 FROM sync_not_found_items WHERE item_slug = :item AND item_type = 'theme'";
+
 
         if (! $noLimit) {
-            $sql .= " AND created_at > NOW() - INTERVAL '1 WEEK'";
+            $sql .= " AND created_at > datetime(current_date, '-7 day')";
         }
 
+        // dd($sql);
         $result = $this->pdo->fetchOne($sql, ['item' => $item]);
-        return $result['count'] > 0;
+        return (bool)$result;
     }
 
     public function markItemNotFound(string $item): void
     {
         if ($this->isNotFound($item, true)) {
-            $sql = "UPDATE sync_not_found_items SET updated_at = NOW() WHERE item_slug = :item AND item_type = 'theme'";
+            $sql = "UPDATE sync_not_found_items SET updated_at = current_timestamp WHERE item_slug = :item AND item_type = 'theme'";
             $this->pdo->perform($sql, ['item' => $item]);
         } else {
             $sql = "INSERT INTO sync_not_found_items (id, item_type, item_slug) VALUES (:id, 'theme', :item)";
             $this->pdo->perform($sql, ['id' => Uuid::uuid7()->toString(), 'item' => $item]);
         }
+        assert($this->isNotFound($item));
     }
 
     public function getStorageDir(): string
