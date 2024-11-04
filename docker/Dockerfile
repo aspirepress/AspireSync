@@ -27,7 +27,9 @@ RUN mkdir -p /opt/aspiresync/data \
 
 WORKDIR /opt/aspiresync
 
-COPY --from=juicedata/mount:ce-v1.2.1 /usr/local/bin/juicefs /usr/local/bin/juicefs
+# COPY --from=juicedata/mount:ce-v1.2.1 /usr/local/bin/juicefs /usr/local/bin/juicefs
+RUN curl -sSL https://d.juicefs.com/install | sh -
+
 RUN mkdir /juicefs
 
 ################
