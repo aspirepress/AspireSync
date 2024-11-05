@@ -50,7 +50,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         $this->startTimer();
 
         $plugins = StringUtil::explodeAndTrim($input->getOption('plugins') ?? '');
-        $min_age = (int)$input->getOption('skip-newer-than-secs') ?: null;
+        $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
 
         $this->debug('Getting list of plugins...');
         $pluginsToUpdate = $this->pluginListService->getItemsForAction($plugins, $this->getName(), $min_age);
@@ -96,11 +96,8 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
             $this->info("$slug ... skipped (previously marked as not found)");
         }
 
-
-
-
         $this->stats['plugins']++;
-        $data = $this->wpClient->getPluginMetadata($slug);
+        $data  = $this->wpClient->getPluginMetadata($slug);
         $error = $data['error'] ?? null;
 
         $this->pluginMetadataService->saveMetadata($data);
@@ -114,7 +111,11 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         } elseif (isset($data['skipped'])) {
             $this->info((string) $data['skipped']);
         } elseif ($error) {
-            $this->error(message: "$slug ... ERROR: " . $error);
+            if ($error === 'closed') {
+                $this->info("$slug ... [closed]");
+            } else {
+                $this->error(message: "$slug ... ERROR: " . $error);
+            }
             if ('429' === (string) $error) {
                 $this->stats['rate_limited']++;
                 $this->progressiveBackoff();
