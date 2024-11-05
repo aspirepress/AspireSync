@@ -15,10 +15,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class MetaDownloadThemesCommand extends AbstractBaseCommand
+class ThemesMetaCommand extends AbstractBaseCommand
 {
-    public const string THEME_METADATA_DIR = '/opt/aspiresync/data/theme-raw-data';
-
     /** @var array<string, int> */
     private array $stats = [
         'themes'       => 0,
@@ -38,8 +36,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('meta:download:themes')
-            ->setAliases(['themes:meta'])
+        $this->setName('themes:meta')
             ->setDescription('Fetches the meta data of the themes')
             ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all theme meta-data; otherwise, we only update what has changed')
             ->addOption('skip-newer-than-secs', null, InputOption::VALUE_REQUIRED, 'Skip downloading metadata pulled more recently than N seconds')

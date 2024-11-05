@@ -7,12 +7,12 @@ namespace AspirePress\AspireSync;
 use AspirePress\AspireSync\Commands\Plugins\DownloadPluginsCommand;
 use AspirePress\AspireSync\Commands\Plugins\DownloadPluginsPartialCommand;
 use AspirePress\AspireSync\Commands\Plugins\InternalPluginDownloadCommand;
-use AspirePress\AspireSync\Commands\Plugins\MetaDownloadPluginsCommand;
+use AspirePress\AspireSync\Commands\Plugins\PluginsMetaCommand;
 use AspirePress\AspireSync\Commands\RunAllCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesPartialCommand;
 use AspirePress\AspireSync\Commands\Themes\InternalThemeDownloadCommand;
-use AspirePress\AspireSync\Commands\Themes\MetaDownloadThemesCommand;
+use AspirePress\AspireSync\Commands\Themes\ThemesMetaCommand;
 use AspirePress\AspireSync\Commands\UtilCleanCommand;
 use AspirePress\AspireSync\Commands\UtilUploadCommand;
 use AspirePress\AspireSync\Factories\ExtendedPdoFactory;
@@ -23,20 +23,20 @@ use AspirePress\AspireSync\Factories\GuzzleClientFactory;
 use AspirePress\AspireSync\Factories\Plugins\DownloadPluginsCommandFactory;
 use AspirePress\AspireSync\Factories\Plugins\DownloadPluginsPartialCommandFactory;
 use AspirePress\AspireSync\Factories\Plugins\InternalPluginDownloadCommandFactory;
-use AspirePress\AspireSync\Factories\Plugins\MetaDownloadPluginsCommandFactory;
 use AspirePress\AspireSync\Factories\Plugins\PluginDownloadFromWpServiceFactory;
 use AspirePress\AspireSync\Factories\Plugins\PluginListServiceFactory;
 use AspirePress\AspireSync\Factories\Plugins\PluginMetadataServiceFactory;
+use AspirePress\AspireSync\Factories\Plugins\PluginsMetaCommandFactory;
 use AspirePress\AspireSync\Factories\RevisionMetadataServiceFactory;
 use AspirePress\AspireSync\Factories\StatsMetadataServiceFactory;
 use AspirePress\AspireSync\Factories\SvnServiceFactory;
 use AspirePress\AspireSync\Factories\Themes\DownloadThemesCommandFactory;
 use AspirePress\AspireSync\Factories\Themes\DownloadThemesPartialCommandFactory;
 use AspirePress\AspireSync\Factories\Themes\InternalThemeDownloadCommandFactory;
-use AspirePress\AspireSync\Factories\Themes\MetaDownloadThemesCommandFactory;
 use AspirePress\AspireSync\Factories\Themes\ThemeDownloadFromWpServiceFactory;
 use AspirePress\AspireSync\Factories\Themes\ThemeListServiceFactory;
 use AspirePress\AspireSync\Factories\Themes\ThemeMetadataServiceFactory;
+use AspirePress\AspireSync\Factories\Themes\ThemesMetaCommandFactory;
 use AspirePress\AspireSync\Factories\UtilUploadCommandFactory;
 use AspirePress\AspireSync\Factories\WpEndpointClientFactory;
 use AspirePress\AspireSync\Services\Plugins\PluginDownloadFromWpService;
@@ -99,9 +99,9 @@ class ConfigProvider
                 DownloadPluginsCommand::class        => DownloadPluginsCommandFactory::class,
                 InternalPluginDownloadCommand::class => InternalPluginDownloadCommandFactory::class,
                 DownloadPluginsPartialCommand::class => DownloadPluginsPartialCommandFactory::class,
-                MetaDownloadPluginsCommand::class    => MetaDownloadPluginsCommandFactory::class,
+                PluginsMetaCommand::class            => PluginsMetaCommandFactory::class,
                 UtilUploadCommand::class             => UtilUploadCommandFactory::class,
-                MetaDownloadThemesCommand::class     => MetaDownloadThemesCommandFactory::class,
+                ThemesMetaCommand::class             => ThemesMetaCommandFactory::class,
                 DownloadThemesCommand::class         => DownloadThemesCommandFactory::class,
                 InternalThemeDownloadCommand::class  => InternalThemeDownloadCommandFactory::class,
                 DownloadThemesPartialCommand::class  => DownloadThemesPartialCommandFactory::class,

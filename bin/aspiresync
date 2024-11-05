@@ -3,13 +3,13 @@
 
 use AspirePress\AspireSync\Commands\Plugins\InternalPluginDownloadCommand;
 use AspirePress\AspireSync\Commands\Plugins\DownloadPluginsCommand;
-use AspirePress\AspireSync\Commands\Plugins\MetaDownloadPluginsCommand;
+use AspirePress\AspireSync\Commands\Plugins\PluginsMetaCommand;
 use AspirePress\AspireSync\Commands\Plugins\DownloadPluginsPartialCommand;
 use AspirePress\AspireSync\Commands\RunAllCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesPartialCommand;
 use AspirePress\AspireSync\Commands\Themes\InternalThemeDownloadCommand;
-use AspirePress\AspireSync\Commands\Themes\MetaDownloadThemesCommand;
+use AspirePress\AspireSync\Commands\Themes\ThemesMetaCommand;
 use AspirePress\AspireSync\Commands\UtilCleanCommand;
 use AspirePress\AspireSync\Commands\UtilUploadCommand;
 use Symfony\Component\Console\Application;
@@ -31,10 +31,10 @@ $application->add($container->get(RunAllCommand::class));
 
 $application->add($container->get(InternalPluginDownloadCommand::class));
 $application->add($container->get(DownloadPluginsCommand::class));
-$application->add($container->get(MetaDownloadPluginsCommand::class));
+$application->add($container->get(PluginsMetaCommand::class));
 $application->add($container->get(DownloadPluginsPartialCommand::class));
 
-$application->add($container->get(MetaDownloadThemesCommand::class));
+$application->add($container->get(ThemesMetaCommand::class));
 $application->add($container->get(DownloadThemesCommand::class));
 $application->add($container->get(DownloadThemesPartialCommand::class));
 $application->add($container->get(InternalThemeDownloadCommand::class));
