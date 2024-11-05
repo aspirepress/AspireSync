@@ -10,7 +10,6 @@ use AspirePress\AspireSync\Commands\Themes\DownloadThemesCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesPartialCommand;
 use AspirePress\AspireSync\Commands\Themes\InternalThemeDownloadCommand;
 use AspirePress\AspireSync\Commands\Themes\ThemesMetaCommand;
-use AspirePress\AspireSync\Commands\UtilCleanCommand;
 use AspirePress\AspireSync\Commands\UtilUploadCommand;
 use Symfony\Component\Console\Application;
 
@@ -39,6 +38,5 @@ $application->add($container->get(DownloadThemesCommand::class));
 $application->add($container->get(DownloadThemesPartialCommand::class));
 $application->add($container->get(InternalThemeDownloadCommand::class));
 
-$application->add($container->get(UtilCleanCommand::class));
 $application->add($container->get(UtilUploadCommand::class));
 $application->run();

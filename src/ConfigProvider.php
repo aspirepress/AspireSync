@@ -13,7 +13,6 @@ use AspirePress\AspireSync\Commands\Themes\DownloadThemesCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesPartialCommand;
 use AspirePress\AspireSync\Commands\Themes\InternalThemeDownloadCommand;
 use AspirePress\AspireSync\Commands\Themes\ThemesMetaCommand;
-use AspirePress\AspireSync\Commands\UtilCleanCommand;
 use AspirePress\AspireSync\Commands\UtilUploadCommand;
 use AspirePress\AspireSync\Factories\ExtendedPdoFactory;
 use AspirePress\AspireSync\Factories\Flysystem\AwsS3V3AdapterFactory;
@@ -74,7 +73,6 @@ class ConfigProvider
     {
         return [
             'invokables' => [
-                UtilCleanCommand::class => UtilCleanCommand::class,
                 SvnService::class       => SvnService::class,
                 WPEndpointClient::class => WPEndpointClient::class,
                 RunAllCommand::class    => RunAllCommand::class,
