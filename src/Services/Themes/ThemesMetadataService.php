@@ -24,6 +24,12 @@ class ThemesMetadataService
         $this->existing = $this->loadExistingThemes();
     }
 
+    /** @param array<string, mixed> $meta */
+    public function saveMetadata(array $meta): void
+    {
+        isset($meta['error']) ? $this->saveErrorTheme($meta) : $this->saveOpenTheme($meta);
+    }
+
     /**
      * @return array|string[]
      */
@@ -47,65 +53,56 @@ class ThemesMetadataService
     }
 
     /**
-     * @param  array<string, string|array<string, string>>  $fileContents
+     * @param  array<string, string|array<string, string>>  $meta
      * @return array|string[]
      */
-    public function updateThemeFromWP(array $fileContents, string $pulledAt): array
-    {
-        return $this->updateTheme($fileContents, $pulledAt);
-    }
-
-    /**
-     * @param  array<string, string|array<string, string>>  $themeMetadata
-     * @return array|string[]
-     */
-    public function saveThemeFromWP(array $themeMetadata, string $pulledAt): array
+    public function saveOpenTheme(array $meta): void
     {
         $this->pdo->beginTransaction();
 
-        try {
-            $name           = substr($themeMetadata['name'], 0, 255);
-            $slug           = $themeMetadata['slug'];
-            $currentVersion = $themeMetadata['version'];
-            $versions       = $themeMetadata['versions'];
-            $updatedAt      = date('c', strtotime($themeMetadata['last_updated']));
-            $id             = Uuid::uuid7();
+        $slug           = $meta['slug'];
+        $currentVersion = $meta['version'];
+        $versions       = $meta['versions'] ?: [$currentVersion => $meta['download_link']];
+        $id             = Uuid::uuid7();
 
-            $themeMetadata['aspirepress_meta'] = [
-                'seen'      => date('c'),
-                'added'     => date('c'),
-                'updated'   => date('c'),
-                'processed' => null,
-                'finalized' => null,
-            ];
+        $this->insertTheme([
+            'id'              => $id->toString(),
+            'slug'            => $slug,
+            'name'            => mb_substr($meta['name'], 0, 255),
+            'current_version' => $currentVersion,
+            'status'          => 'open',
+            'updated'         => date('c', strtotime($meta['last_updated'])),
+            'pulled_at'       => date('c'),
+            'metadata'        => $meta,
+        ]);
 
-            $sql = 'INSERT INTO sync_themes (id, name, slug, current_version, updated, pulled_at, metadata) VALUES (:id, :name, :slug, :current_version, :updated_at, :pulled_at, :metadata)';
-            $this->pdo->perform($sql, [
-                'id'              => $id->toString(),
-                'name'            => $name,
-                'slug'            => $slug,
-                'current_version' => $currentVersion,
-                'updated_at'      => $updatedAt,
-                'pulled_at'       => $pulledAt,
-                'metadata'        => json_encode($themeMetadata),
-            ]);
+        $versionResult = $this->writeVersionsForTheme($id, $versions, 'wp_cdn');
 
-            if (empty($themeMetadata['versions'])) {
-                $versions[$themeMetadata['version']] = $themeMetadata['download_link'];
-            }
-
-            $versionResult = $this->writeVersionsForTheme($id, $versions, 'wp_cdn');
-
-            if (! empty($versionResult['error'])) {
-                throw new Exception('Unable to write versions for theme ' . $slug);
-            }
-            $this->pdo->commit();
-            return ['error' => ''];
-        } catch (Exception $e) {
-            $this->pdo->rollBack();
-            return ['error' => $e->getMessage()];
+        if (! empty($versionResult['error'])) {
+            throw new RuntimeException('Unable to write versions for theme ' . $slug);
         }
+        $this->pdo->commit();
     }
+
+    /** @param array<string, mixed> $meta */
+    public function saveErrorTheme(array $meta): void
+    {
+        if (! empty($meta['closed_date'])) {
+            $updated = date('c', strtotime($meta['closed_date']));
+        } else {
+            $updated = date('c');
+        }
+        $this->insertTheme([
+            'id'        => Uuid::uuid7()->toString(),
+            'name'      => substr($meta['name'], 0, 255),
+            'slug'      => $meta['slug'],
+            'updated'   => $updated,
+            'pulled_at' => date('c'),
+            'status'    => $meta['status'] ?? 'error',
+            'metadata'  => $meta,
+        ]);
+    }
+
 
     /**
      * @param  array<string, string|array<string, string>>  $fileContents
@@ -379,31 +376,6 @@ class ThemesMetadataService
         return $this->pdo->fetchAll($sql);
     }
 
-    public function isNotFound(string $item, bool $noLimit = false): bool
-    {
-        $sql = "SELECT 1 FROM sync_not_found_items WHERE item_slug = :item AND item_type = 'theme'";
-
-        if (! $noLimit) {
-            $sql .= " AND created_at > datetime(current_date, '-7 day')";
-        }
-
-        // dd($sql);
-        $result = $this->pdo->fetchOne($sql, ['item' => $item]);
-        return (bool) $result;
-    }
-
-    public function markItemNotFound(string $item): void
-    {
-        if ($this->isNotFound($item, true)) {
-            $sql = "UPDATE sync_not_found_items SET updated_at = current_timestamp WHERE item_slug = :item AND item_type = 'theme'";
-            $this->pdo->perform($sql, ['item' => $item]);
-        } else {
-            $sql = "INSERT INTO sync_not_found_items (id, item_type, item_slug) VALUES (:id, 'theme', :item)";
-            $this->pdo->perform($sql, ['id' => Uuid::uuid7()->toString(), 'item' => $item]);
-        }
-        assert($this->isNotFound($item));
-    }
-
     public function getStorageDir(): string
     {
         return '/opt/aspiresync/data/themes';
@@ -420,4 +392,39 @@ class ThemesMetadataService
         $hashArray = $this->pdo->fetchOne($sql, ['item_id' => $themeId, 'version' => $version]);
         return $hashArray['hash'] ?? '';
     }
+
+    public function getPulledDateTimestamp(string $slug): ?int
+    {
+        $sql    = "select unixepoch(pulled_at) timestamp from sync_themes where slug = :slug";
+        $result = $this->pdo->fetchOne($sql, ['slug' => $slug]);
+        if (! $result) {
+            return null;
+        }
+        return (int) $result['timestamp'];
+    }
+
+    //region Private API
+
+    private function insertTheme(array $data): void
+    {
+        $now              = date('c');
+        $data['metadata'] = json_encode([
+            ...$data['metadata'],
+            'aspirepress_meta' => [
+                'seen'      => $now,
+                'added'     => $now,
+                'updated'   => $now,
+                'processed' => null,
+                'finalized' => null,
+            ],
+        ]);
+
+        $sql = <<<SQL
+            INSERT OR REPLACE INTO sync_themes (id, name, slug, status, updated, pulled_at, metadata) 
+            VALUES (:id, :name, :slug, :status, :updated, :pulled_at, :metadata)
+        SQL;
+        $this->pdo->perform($sql, $data);
+    }
+
+    //endregion
 }

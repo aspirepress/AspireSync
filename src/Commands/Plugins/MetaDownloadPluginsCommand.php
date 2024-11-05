@@ -110,7 +110,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
             if ($error === 'closed') {
                 $this->info("$slug ... [closed]");
             } else {
-                $this->error(message: "$slug ... ERROR: " . $error);
+                $this->error(message: "$slug ... ERROR: $error");
             }
             if ('429' === (string) $error) {
                 $this->stats['rate_limited']++;

@@ -13,7 +13,6 @@ use RuntimeException;
 use Symfony\Component\Process\Process;
 
 use function Safe\filemtime;
-use function Safe\json_decode;
 
 class ThemeListService implements ListServiceInterface
 {
@@ -28,48 +27,11 @@ class ThemeListService implements ListServiceInterface
 
     public function getItemsForAction(array $filter, string $action, ?int $min_age = null): array
     {
-        if ($lastRevision = $this->revisionService->getRevisionForAction($action)) {
-            return $this->filter($this->getThemesToUpdate($filter, $lastRevision, $action), $filter);
-        }
-        return $this->filter($this->pullWholeThemeList($action), $filter);
-    }
-
-    public function getItemMetadata(string $slug): array
-    {
-        if ($this->isNotFound($slug)) {
-            return ['skipped' => "$slug ... skipped (previously marked not found)"];
-        }
-
-        $url         = 'https://api.wordpress.org/themes/info/1.2/';
-        $queryParams = [
-            'action' => 'theme_information',
-            'slug'   => $slug,
-            'fields' => [
-                'description',
-                'sections',
-                'rating',
-                'ratings',
-                'downloaded',
-                'download_link',
-                'last_updated',
-                'homepage',
-                'tags',
-                'template',
-                'parent',
-                'versions',
-                'screenshot_url',
-                'active_installs',
-            ],
-        ];
-        try {
-            $response = $this->guzzle->get($url, ['query' => $queryParams]);
-            $data     = json_decode($response->getBody()->getContents(), true);
-            $filename = "/opt/aspiresync/data/theme-raw-data/{$slug}.json";
-            FileUtil::writeJson($filename, $data);
-            return $data;
-        } catch (ClientException $e) {
-            return ['error' => $e->getCode()];
-        }
+        $lastRevision = $this->revisionService->getRevisionForAction($action);
+        $updates      = $lastRevision
+            ? $this->getThemesToUpdate($filter, $lastRevision, $action)
+            : $this->pullWholeThemeList($action);
+        return $this->filter($updates, $filter, $min_age);
     }
 
     public function getUpdatedListOfItems(?array $explicitlyRequested, string $action = 'meta:download:themes'): array
@@ -80,7 +42,8 @@ class ThemeListService implements ListServiceInterface
         }
         return $this->filter(
             $this->themesMetadataService->getVersionsForUnfinalizedThemes($revision),
-            $explicitlyRequested
+            $explicitlyRequested,
+            null
         );
     }
 
@@ -173,7 +136,7 @@ class ThemeListService implements ListServiceInterface
     }
 
     /**
-     * Takes the entire list of themes, and adds any we have not seen before, plus merges plugins that we have explicitly
+     * Takes the entire list of themes, and adds any we have not seen before, plus merges themes that we have explicitly
      * queued for update.
      *
      * @param array<int|string, string|string[]> $themesToUpdate
@@ -190,7 +153,7 @@ class ThemeListService implements ListServiceInterface
         foreach ($allThemes as $themeName => $themeVersion) {
             // Is this the first time we've seen the theme?
             $themeName = (string) $themeName;
-            if (! $this->themesMetadataService->checkThemeInDatabase($themeName) && ! $this->isNotFound($themeName)) {
+            if (! $this->themesMetadataService->checkThemeInDatabase($themeName)) {
                 $themesToUpdate[$themeName] = [];
             }
 
@@ -209,29 +172,31 @@ class ThemeListService implements ListServiceInterface
      * @param array<int, string>|null $filter
      * @return array<string, string[]>
      */
-    private function filter(array $themes, ?array $filter): array
+    private function filter(array $themes, ?array $filter, ?int $min_age): array
     {
-        if (! $filter) {
+        if (! $filter && ! $min_age) {
             return $themes;
         }
 
-        $filtered = [];
-        foreach ($filter as $theme) {
-            if (array_key_exists($theme, $themes)) {
-                $filtered[$theme] = $themes[$theme];
+        $filtered = $filter ? [] : $themes;
+
+        foreach ($filter as $slug) {
+            if (array_key_exists($slug, $themes)) {
+                $filtered[$slug] = $themes[$slug];
             }
         }
 
-        return $filtered;
-    }
-
-    public function isNotFound(string $item): bool
-    {
-        return $this->themesMetadataService->isNotFound($item);
-    }
-
-    public function markItemNotFound(string $item): void
-    {
-        $this->themesMetadataService->markItemNotFound($item);
+        $out = $min_age ? [] : $filtered;
+        if ($min_age) {
+            $cutoff = time() - $min_age;
+            foreach ($filtered as $slug => $value) {
+                $slug = (string) $slug; // purely numeric names get turned into int
+                $timestamp = $this->themesMetadataService->getPulledDateTimestamp($slug);
+                if ($timestamp === null || $timestamp <= $cutoff) {
+                    $out[$slug] = $value;
+                }
+            }
+        }
+        return $out;
     }
 }

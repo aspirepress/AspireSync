@@ -72,9 +72,5 @@ interface MetadataInterface
      */
     public function getNotFoundPlugins(): array;
 
-    public function isNotFound(string $item, bool $noLimit = false): bool;
-
-    public function markItemNotFound(string $item): void;
-
     public function getStorageDir(): string;
 }

@@ -13,7 +13,6 @@ use AspirePress\AspireSync\Commands\Themes\DownloadThemesCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesPartialCommand;
 use AspirePress\AspireSync\Commands\Themes\InternalThemeDownloadCommand;
 use AspirePress\AspireSync\Commands\Themes\MetaDownloadThemesCommand;
-use AspirePress\AspireSync\Commands\Themes\MetaImportThemesCommand;
 use AspirePress\AspireSync\Commands\UtilCleanCommand;
 use AspirePress\AspireSync\Commands\UtilUploadCommand;
 use AspirePress\AspireSync\Factories\ExtendedPdoFactory;
@@ -35,7 +34,6 @@ use AspirePress\AspireSync\Factories\Themes\DownloadThemesCommandFactory;
 use AspirePress\AspireSync\Factories\Themes\DownloadThemesPartialCommandFactory;
 use AspirePress\AspireSync\Factories\Themes\InternalThemeDownloadCommandFactory;
 use AspirePress\AspireSync\Factories\Themes\MetaDownloadThemesCommandFactory;
-use AspirePress\AspireSync\Factories\Themes\MetaImportThemesCommandFactory;
 use AspirePress\AspireSync\Factories\Themes\ThemeDownloadFromWpServiceFactory;
 use AspirePress\AspireSync\Factories\Themes\ThemeListServiceFactory;
 use AspirePress\AspireSync\Factories\Themes\ThemeMetadataServiceFactory;
@@ -104,7 +102,6 @@ class ConfigProvider
                 MetaDownloadPluginsCommand::class    => MetaDownloadPluginsCommandFactory::class,
                 UtilUploadCommand::class             => UtilUploadCommandFactory::class,
                 MetaDownloadThemesCommand::class     => MetaDownloadThemesCommandFactory::class,
-                MetaImportThemesCommand::class       => MetaImportThemesCommandFactory::class,
                 DownloadThemesCommand::class         => DownloadThemesCommandFactory::class,
                 InternalThemeDownloadCommand::class  => InternalThemeDownloadCommandFactory::class,
                 DownloadThemesPartialCommand::class  => DownloadThemesPartialCommandFactory::class,

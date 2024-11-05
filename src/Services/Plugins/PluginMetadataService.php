@@ -504,17 +504,6 @@ class PluginMetadataService implements MetadataInterface
         return $result['count'] > 0;
     }
 
-    public function markItemNotFound(string $item): void
-    {
-        if ($this->isNotFound($item, true)) {
-            $sql = "UPDATE sync_not_found_items SET updated_at = current_timestamp WHERE item_slug = :item AND item_type = 'plugin'";
-            $this->pdo->perform($sql, ['item' => $item]);
-        } else {
-            $sql = "INSERT INTO sync_not_found_items (id, item_type, item_slug) VALUES (:id, 'plugin', :item)";
-            $this->pdo->perform($sql, ['id' => Uuid::uuid7()->toString(), 'item' => $item]);
-        }
-    }
-
     public function getStorageDir(): string
     {
         return '/opt/aspiresync/data/plugins';

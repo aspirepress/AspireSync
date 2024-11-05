@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Commands\Themes;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
+use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 use AspirePress\AspireSync\Services\StatsMetadataService;
 use AspirePress\AspireSync\Services\Themes\ThemeListService;
+use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
 use AspirePress\AspireSync\Utilities\StringUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,7 +29,9 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
 
     public function __construct(
         private readonly ThemeListService $themeListService,
-        private readonly StatsMetadataService $statsMetadataService
+        private readonly ThemesMetadataService $themesMetadataService,
+        private readonly StatsMetadataService $statsMetadataService,
+        private readonly WpEndpointClientInterface $wpClient,
     ) {
         parent::__construct();
     }
@@ -38,21 +42,20 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
             ->setAliases(['themes:meta'])
             ->setDescription('Fetches the meta data of the themes')
             ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all theme meta-data; otherwise, we only update what has changed')
-            ->addOption('skip-existing', null, InputOption::VALUE_NONE, 'Skip downloading metadata files that already exist')
+            ->addOption('skip-newer-than-secs', null, InputOption::VALUE_REQUIRED, 'Skip downloading metadata pulled more recently than N seconds')
             ->addOption('themes', null, InputOption::VALUE_OPTIONAL, 'List of themes (separated by commas) to explicitly update');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->writeMessage("Running command " . $this->getName());
+        $this->writeMessage("Running command {$this->getName()}");
         $this->startTimer();
 
-        @mkdir(self::THEME_METADATA_DIR);
-
         $themes = StringUtil::explodeAndTrim($input->getOption('themes') ?? '');
+        $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
 
-        $this->info('Getting list of themes...');
-        $themesToUpdate = $this->themeListService->getItemsForAction($themes, $this->getName());
+        $this->debug('Getting list of themes...');
+        $themesToUpdate = $this->themeListService->getItemsForAction($themes, $this->getName(), $min_age);
         $this->info(count($themesToUpdate) . ' themes to download metadata for...');
 
         if (count($themesToUpdate) === 0) {
@@ -77,9 +80,7 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
         return Command::SUCCESS;
     }
 
-    /**
-     * @return string[]
-     */
+    /** @return string[] */
     private function calculateStats(): array
     {
         return [
@@ -94,14 +95,11 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
     /** @param string[] $versions */
     private function fetchThemeDetails(InputInterface $input, OutputInterface $output, string $slug, array $versions): void
     {
-        $filename = "/opt/aspiresync/data/theme-raw-data/{$slug}.json";
-        if (file_exists($filename) && $input->getOption('skip-existing')) {
-            $this->info("$slug ... skipped (metadata file already exists)");
-            return;
-        }
-
         $this->stats['themes']++;
-        $data = $this->themeListService->getItemMetadata($slug);
+        $data = $this->wpClient->getThemeMetadata($slug);
+        $error = $data['error'] ?? null;
+
+        $this->themesMetadataService->saveMetadata($data);
 
         if (! empty($data['versions'])) {
             $this->info("$slug ... [" . count($data['versions']) . ' versions]');
@@ -111,16 +109,17 @@ class MetaDownloadThemesCommand extends AbstractBaseCommand
             $this->stats['versions'] += 1;
         } elseif (isset($data['skipped'])) {
             $this->notice((string) $data['skipped']);
-        } elseif (isset($data['error'])) {
-            $this->error("$slug ... ERROR: " . $data['error']);
-            if ('429' === (string) $data['error']) {
+        } elseif ($error) {
+            if ($error === 'Theme not found') {
+                $this->info("$slug ... [not found]");
+            } else {
+                $this->error(message: "$slug ... ERROR: $error");
+            }
+            if ('429' === (string) $error) {
                 $this->progressiveBackoff();
                 $this->fetchThemeDetails($input, $output, $slug, $versions);
                 $this->stats['rate_limited']++;
                 return;
-            }
-            if ('404' === (string) $data['error']) {
-                $this->themeListService->markItemNotFound($slug);
             }
             $this->stats['errors']++;
         } else {

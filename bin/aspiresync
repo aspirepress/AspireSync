@@ -9,7 +9,6 @@ use AspirePress\AspireSync\Commands\RunAllCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesPartialCommand;
 use AspirePress\AspireSync\Commands\Themes\InternalThemeDownloadCommand;
-use AspirePress\AspireSync\Commands\Themes\MetaImportThemesCommand;
 use AspirePress\AspireSync\Commands\Themes\MetaDownloadThemesCommand;
 use AspirePress\AspireSync\Commands\UtilCleanCommand;
 use AspirePress\AspireSync\Commands\UtilUploadCommand;
@@ -36,7 +35,6 @@ $application->add($container->get(MetaDownloadPluginsCommand::class));
 $application->add($container->get(DownloadPluginsPartialCommand::class));
 
 $application->add($container->get(MetaDownloadThemesCommand::class));
-$application->add($container->get(MetaImportThemesCommand::class));
 $application->add($container->get(DownloadThemesCommand::class));
 $application->add($container->get(DownloadThemesPartialCommand::class));
 $application->add($container->get(InternalThemeDownloadCommand::class));

@@ -271,27 +271,4 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
         $versions = $this->sut->getVersionData($data['foo']);
         $this->assertCount(3, $versions);
     }
-
-    public function testNotFoundFunctionality(): void
-    {
-        $this->sut->markItemNotFound('foo');
-        $this->sut->markItemNotFound('bar');
-        $this->sut->markItemNotFound('baz');
-
-        $this->assertTrue($this->sut->isNotFound('bar'));
-        $this->assertFalse($this->sut->isNotFound('bingo'));
-
-        $this->assertEquals(
-            [
-                'foo',
-                'bar',
-                'baz',
-            ],
-            $this->sut->getNotFoundPlugins()
-        );
-
-        $this->sut->markItemNotFound('foo');
-
-        $this->assertCount(3, $this->sut->getNotFoundPlugins());
-    }
 }

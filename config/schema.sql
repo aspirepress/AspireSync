@@ -29,8 +29,9 @@ create index plugin_files_hash_index on sync_plugin_files (hash);
 create table sync_themes
 (
     id              character(36) primary key              not null,
-    name            varchar(255)                           not null,
     slug            varchar(255)                           not null,
+    name            varchar(255)                           not null,
+    status          varchar(255) default 'open'            not null,
     current_version varchar(255),
     updated         timestamp(0) default current_timestamp not null,
     pulled_at       timestamp(0) default current_timestamp not null,
