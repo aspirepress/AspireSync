@@ -65,11 +65,16 @@ class WPEndpointClient implements WpEndpointClientInterface
                 $body = ['error' => $e->getMessage()];
             }
             $body['error'] ??= $e->getMessage();
+            $status = match($body['error']) {
+                'Plugin not found.' => 'not-found',
+                'closed' => 'closed',
+                default => 'error',
+            };
             return [
                 ...$body,
                 'slug' => $slug,
                 'name' => $slug,
-                'status' => $body['error'] === 'closed' ? 'closed' : 'error',
+                'status' => $status,
             ];
         }
     }
