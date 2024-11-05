@@ -23,21 +23,18 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
         shuffle($this->userAgents);
     }
 
-    public function download(string $theme, array $versions, string $numToDownload = 'all', bool $force = false): array
+    public function download(string $theme, array $versions, bool $force = false): array
     {
         $downloadFile = '/opt/aspiresync/data/plugins/%s.%s.zip';
-
-        if (! file_exists('/opt/aspiresync/data/plugins')) {
-            mkdir('/opt/aspiresync/data/plugins');
-        }
-
-        $outcomes     = [];
         $downloadable = $this->pluginMetadataService->getDownloadUrlsForVersions($theme, $versions);
 
         if (! $downloadable) {
-            return $outcomes;
+            return [];
         }
 
+        @mkdir('/opt/aspiresync/data/plugins');
+
+        $outcomes = [];
         foreach ($downloadable as $version => $url) {
             $filePath = sprintf($downloadFile, $theme, $version);
 
@@ -77,16 +74,10 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
 
     private function calculateHash(string $filePath): string
     {
-        $process = new Process([
-            'unzip',
-            '-t',
-            $filePath,
-        ]);
+        $process = new Process(['unzip', '-t', $filePath]);
         $process->run();
-        if ($process->isSuccessful()) {
-            return hash_file('sha256', $filePath);
-        }
-
-        throw new RuntimeException($process->getErrorOutput());
+        return $process->isSuccessful()
+            ? hash_file('sha256', $filePath)
+            : throw new RuntimeException($process->getErrorOutput());
     }
 }

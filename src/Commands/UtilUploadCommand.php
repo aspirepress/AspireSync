@@ -8,7 +8,7 @@ use AspirePress\AspireSync\Services\Interfaces\CallbackInterface;
 use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
 use AspirePress\AspireSync\Services\StatsMetadataService;
 use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
-use AspirePress\AspireSync\Utilities\ListManagementUtil;
+use AspirePress\AspireSync\Utilities\StringUtil;
 use Exception;
 use League\Flysystem\Filesystem;
 use Ramsey\Uuid\Uuid;
@@ -65,7 +65,7 @@ class UtilUploadCommand extends AbstractBaseCommand
 
     private function upload(InputInterface $input, ThemesMetadataService|PluginMetadataService $metadata): int
     {
-        $itemRecords = ListManagementUtil::explodeCommaSeparatedList($input->getOption('slugs'));
+        $itemRecords = StringUtil::explodeAndTrim($input->getOption('slugs'));
         $cleanUp     = $input->getOption('clean');
 
         $this->debug('Preparing to upload files to S3...');

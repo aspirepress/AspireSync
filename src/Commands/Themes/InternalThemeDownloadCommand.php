@@ -6,7 +6,7 @@ namespace AspirePress\AspireSync\Commands\Themes;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\Themes\ThemeDownloadFromWpService;
-use AspirePress\AspireSync\Utilities\ListManagementUtil;
+use AspirePress\AspireSync\Utilities\StringUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,7 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InternalThemeDownloadCommand extends AbstractBaseCommand
 {
-    public function __construct(private ThemeDownloadFromWpService $service)
+    public function __construct(private ThemeDownloadFromWpService $downloadService)
     {
         parent::__construct();
     }
@@ -37,27 +37,18 @@ class InternalThemeDownloadCommand extends AbstractBaseCommand
         $numVersions = $input->getArgument('num-versions');
 
         $this->debug('Determining versions of ' . $theme . '...');
-        $versions = ListManagementUtil::explodeCommaSeparatedList($input->getArgument('version-list'));
-
-        $versionCount = $this->versionCountBasedOnRequestedNumber($versions, $numVersions);
-        $this->info('Downloading ' . $versionCount . ' versions...');
-        $responses = $this->service->download($theme, $versions, $numVersions, $input->getOption('force'));
-        foreach ($responses as $responseCode => $versions) {
-            $this->always($theme . ' ' . $responseCode . ': ' . count($versions));
-        }
-
-        return Command::SUCCESS;
-    }
-
-    /**
-     * @param array<int, string> $versions
-     */
-    private function versionCountBasedOnRequestedNumber(array $versions, string|int $numToDownload): int
-    {
-        return match ($numToDownload) {
+        $versions = StringUtil::explodeAndTrim($input->getArgument('version-list') ?? '');
+        $count    = match ($numVersions) {
             'all' => count($versions),
             'latest' => 1,
-            default => count($versions) > $numToDownload ? (int) $numToDownload : count($versions),
+            default => min(count($versions), (int) $numVersions),
         };
+        $this->info("Downloading $count versions...");
+
+        $responses = $this->downloadService->download($theme, $versions, $numVersions, $input->getOption('force'));
+        foreach ($responses as $responseCode => $versions) {
+            $this->always($theme . ' ' . $responseCode . ': ' . $count);
+        }
+        return Command::SUCCESS;
     }
 }

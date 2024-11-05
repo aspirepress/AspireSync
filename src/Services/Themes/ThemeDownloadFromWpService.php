@@ -23,24 +23,22 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
         shuffle($this->userAgents);
     }
 
-    public function download(string $theme, array $versions, string $numToDownload = 'all', bool $force = false): array
+    /** @return array<string, string>[] */
+    public function download(string $theme, array $versions, bool $force = false): array
     {
-        if (! file_exists('/opt/aspiresync/data/themes')) {
-            mkdir('/opt/aspiresync/data/themes');
-        }
+        @mkdir('/opt/aspiresync/data/themes');
 
-        $outcomes     = [];
         $downloadable = $this->themeMetadataService->getDownloadUrlsForVersions($theme, $versions);
 
         if (! $downloadable) {
-            return $outcomes;
+            return [];
         }
 
+        $outcomes = [];
         foreach ($downloadable as $version => $url) {
             $result                        = $this->runDownload($theme, $version, $url, $force);
             $outcomes[$result['status']][] = $result['version'];
         }
-
         return $outcomes;
     }
 
@@ -57,9 +55,9 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
             return ['status' => '304 Not Modified', 'version' => $version];
         }
         try {
-            $response = $this->guzzle->request('GET', $url, ['headers' => ['User-Agent' => $this->userAgents[0]], 'allow_redirects' => true, 'sink' => $filePath]);
+            $this->guzzle->request('GET', $url, ['headers' => ['User-Agent' => $this->userAgents[0]], 'allow_redirects' => true, 'sink' => $filePath]);
             if (filesize($filePath) === 0) {
-                unlink($filePath);
+                @unlink($filePath);
             }
             $hash = $this->calculateHash($filePath);
             $this->themeMetadataService->setVersionToDownloaded($theme, $version, $hash);
@@ -77,7 +75,7 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
                 return ['status' => $response->getStatusCode() . ' ' . $response->getReasonPhrase(), 'version' => $version];
             }
 
-            unlink($filePath);
+            @unlink($filePath);
             return ['status' => $e->getMessage(), 'version' => $version];
         } catch (RuntimeException $e) {
             @unlink($filePath);
@@ -89,16 +87,10 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
 
     private function calculateHash(string $filePath): string
     {
-        $process = new Process([
-            'unzip',
-            '-t',
-            $filePath,
-        ]);
+        $process = new Process(['unzip', '-t', $filePath]);
         $process->run();
-        if ($process->isSuccessful()) {
-            return hash_file('sha256', $filePath);
-        }
-
-        throw new RuntimeException($process->getErrorOutput());
+        return $process->isSuccessful()
+            ? hash_file('sha256', $filePath)
+            : throw new RuntimeException($process->getErrorOutput());
     }
 }

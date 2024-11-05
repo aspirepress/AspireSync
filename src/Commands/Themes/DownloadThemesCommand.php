@@ -9,8 +9,8 @@ use AspirePress\AspireSync\Services\StatsMetadataService;
 use AspirePress\AspireSync\Services\Themes\ThemeListService;
 use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
 use AspirePress\AspireSync\Utilities\GetItemsFromSourceTrait;
-use AspirePress\AspireSync\Utilities\ListManagementUtil;
 use AspirePress\AspireSync\Utilities\ProcessWaitUtil;
+use AspirePress\AspireSync\Utilities\StringUtil;
 use AspirePress\AspireSync\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -47,7 +47,7 @@ class DownloadThemesCommand extends AbstractBaseCommand
         $themesList  = $input->getOption('themes');
 
         if ($themesList) {
-            $themesList = ListManagementUtil::explodeCommaSeparatedList($themesList);
+            $themesList = StringUtil::explodeAndTrim($themesList);
         }
 
         $this->info('Getting list of themes...');
