@@ -8,18 +8,19 @@ use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
 
+use function Safe\json_decode;
+use function Safe\json_encode;
+
 class WPEndpointClient implements WpEndpointClientInterface
 {
-    public function __construct(private readonly GuzzleClient $guzzle)
-    {
-    }
+    public function __construct(private readonly GuzzleClient $guzzle) {}
 
-    public function getPluginMetadata(string $plugin): string
+    public function getPluginMetadata(string $slug): array
     {
-        $url         = 'https://api.wordpress.org/plugins/info/1.2/';
+        $url = 'https://api.wordpress.org/plugins/info/1.2/';
         $queryParams = [
             'action' => 'plugin_information',
-            'slug'   => $plugin,
+            'slug' => $slug,
             'fields' => [
                 'active_installs',
                 'added',
@@ -58,13 +59,21 @@ class WPEndpointClient implements WpEndpointClientInterface
 
         try {
             $response = $this->guzzle->get($url, ['query' => $queryParams]);
-            return $response->getBody()->getContents();
+            return json_decode($response->getBody()->getContents(), true);
         } catch (ClientException $e) {
-            if ($e->getCode() === 404) {
-                return $e->getResponse()->getBody()->getContents();
+            try {
+                $body = json_decode($e->getResponse()->getBody()->getContents(), true);
+            } catch (\Exception $e) {
+                $body = ['error' => $e->getMessage()];
             }
+            $body['error'] ??= $e->getMessage();
+            return [
+                ...$body,
+                'slug' => $slug,
+                'name' => $slug,
+                'status' => $body['error'] === 'closed' ? 'closed' : 'error',
+            ];
         }
-        return '';
     }
 
     public function getThemeMetadata(string $theme): string

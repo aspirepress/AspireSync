@@ -8,17 +8,11 @@ use Ramsey\Uuid\UuidInterface;
 
 interface MetadataInterface
 {
-    /**
-     * @param array<string, string|array<string, string>> $pluginMetadata
-     * @return array|string[]
-     */
-    public function saveClosedPluginFromWP(array $pluginMetadata, string $pulledAt): array;
+    /** @param array<string, string|array<string, string>> $meta */
+    public function saveErrorPlugin(array $meta): void;
 
-    /**
-     * @param array<string, string|array<string, string>> $pluginMetadata
-     * @return array|string[]
-     */
-    public function saveOpenPluginFromWP(array $pluginMetadata, string $pulledAt): array;
+    /** @param array<string, string|array<string, string>> $meta */
+    public function saveOpenPlugin(array $meta): void;
 
     /**
      * @param string[] $versions

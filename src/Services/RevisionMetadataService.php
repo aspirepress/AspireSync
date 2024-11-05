@@ -33,7 +33,7 @@ class RevisionMetadataService
         $revision = $this->currentRevision[$action]['revision'];
         $sql      = 'INSERT INTO sync_revisions (action, revision, added_at) VALUES (:action, :revision, current_timestamp)';
         $this->pdo->perform($sql, ['action' => $action, 'revision' => $revision]);
-        return (string)$revision;
+        return (string) $revision;
     }
 
     public function getRevisionForAction(string $action): ?string

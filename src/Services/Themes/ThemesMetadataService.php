@@ -383,14 +383,13 @@ class ThemesMetadataService
     {
         $sql = "SELECT 1 FROM sync_not_found_items WHERE item_slug = :item AND item_type = 'theme'";
 
-
         if (! $noLimit) {
             $sql .= " AND created_at > datetime(current_date, '-7 day')";
         }
 
         // dd($sql);
         $result = $this->pdo->fetchOne($sql, ['item' => $item]);
-        return (bool)$result;
+        return (bool) $result;
     }
 
     public function markItemNotFound(string $item): void

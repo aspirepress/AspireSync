@@ -17,116 +17,71 @@ use function Safe\json_encode;
 
 class PluginMetadataService implements MetadataInterface
 {
-    /** @var string[][]  */
+    /** @var string[][] */
     private array $existing;
+
     public function __construct(private ExtendedPdoInterface $pdo)
     {
         $this->existing = $this->loadExistingPlugins();
     }
 
-    /**
-     * @param  array<string, string|array<string, string>>  $pluginMetadata
-     * @return array|string[]
-     */
-    public function saveClosedPluginFromWP(array $pluginMetadata, string $pulledAt): array
+    /** @param array<string, mixed> $meta */
+    public function saveMetadata(array $meta): void
     {
-        $sql = <<<SQL
-            INSERT INTO sync_plugins (id, name, slug, status, updated, pulled_at, metadata) 
-            VALUES (:id, :name, :slug, :status, :closed_date, :pulled_at, :metadata)
-        SQL;
+        isset($meta['error']) ? $this->saveErrorPlugin($meta) : $this->saveOpenPlugin($meta);
+    }
 
-        if (! empty($pluginMetadata['closed_date'])) {
-            $closedDate = date('c', strtotime($pluginMetadata['closed_date']));
+    /** @param array<string, mixed> $meta */
+    public function saveErrorPlugin(array $meta): void
+    {
+        if (! empty($meta['closed_date'])) {
+            $updated = date('c', strtotime($meta['closed_date']));
         } else {
-            $closedDate = date('c');
+            $updated = date('c');
         }
-
-        $pluginMetadata['aspirepress_meta'] = [
-            'seen'      => date('c'),
-            'added'     => date('c'),
-            'updated'   => date('c'),
-            'processed' => null,
-            'finalized' => null,
-        ];
-
-        $this->pdo->beginTransaction();
-
-        try {
-            $this->pdo->perform($sql, [
-                'id'          => Uuid::uuid7()->toString(),
-                'name'        => substr($pluginMetadata['name'], 0, 255),
-                'slug'        => $pluginMetadata['slug'],
-                'closed_date' => $closedDate,
-                'pulled_at'   => $pulledAt,
-                'status'      => $pluginMetadata['error'],
-                'metadata'    => json_encode($pluginMetadata),
-            ]);
-            $this->pdo->commit();
-            return ['error' => ''];
-        } catch (PDOException $e) {
-            $this->pdo->rollBack();
-            return ['error' => $e->getMessage()];
-        }
+        $this->insertPlugin([
+            'id'        => Uuid::uuid7()->toString(),
+            'name'      => substr($meta['name'], 0, 255),
+            'slug'      => $meta['slug'],
+            'updated'   => $updated,
+            'pulled_at' => date('c'),
+            'status'    => $meta['status'] ?? 'error',
+            'metadata'  => $meta,
+        ]);
     }
 
-    /**
-     * @param  array<string, string|array<string, string>>  $pluginMetadata
-     * @return array|string[]
-     */
-    public function saveOpenPluginFromWP(array $pluginMetadata, string $pulledAt): array
+    /** @param array<string, mixed> $meta */
+    public function saveOpenPlugin(array $meta): void
     {
         $this->pdo->beginTransaction();
 
-        try {
-            $name           = substr($pluginMetadata['name'], 0, 255);
-            $slug           = $pluginMetadata['slug'];
-            $currentVersion = $pluginMetadata['version'];
-            $versions       = $pluginMetadata['versions'];
-            $updatedAt      = date('c', strtotime($pluginMetadata['last_updated']));
-            $id             = Uuid::uuid7();
+        $slug           = $meta['slug'];
+        $currentVersion = $meta['version'];
+        $versions       = $meta['versions'] ?: [$currentVersion => $meta['download_link']];
+        $id             = Uuid::uuid7();
 
-            $pluginMetadata['aspirepress_meta'] = [
-                'seen'      => date('c'),
-                'added'     => date('c'),
-                'updated'   => date('c'),
-                'processed' => null,
-                'finalized' => null,
-            ];
+        $this->insertPlugin([
+            'id'              => $id->toString(),
+            'slug'            => $slug,
+            'name'            => mb_substr($meta['name'], 0, 255),
+            'current_version' => $currentVersion,
+            'status'          => 'open',
+            'updated'         => date('c', strtotime($meta['last_updated'])),
+            'pulled_at'       => date('c'),
+            'metadata'        => $meta,
+        ]);
 
-            $sql = <<<'SQL'
-                INSERT INTO sync_plugins (id, name, slug, current_version, status, updated, pulled_at, metadata) 
-                VALUES (:id, :name, :slug, :current_version, :status, :updated_at, :pulled_at, :metadata)
-            SQL;
-            $this->pdo->perform($sql, [
-                'id'              => $id->toString(),
-                'name'            => $name,
-                'slug'            => $slug,
-                'current_version' => $currentVersion,
-                'status'          => 'open',
-                'updated_at'      => $updatedAt,
-                'pulled_at'       => $pulledAt,
-                'metadata'        => json_encode($pluginMetadata),
-            ]);
+        $versionResult = $this->writeVersionsForPlugin($id, $versions, 'wp_cdn');
 
-            if (empty($pluginMetadata['versions'])) {
-                $versions[$pluginMetadata['version']] = $pluginMetadata['download_link'];
-            }
-
-            $versionResult = $this->writeVersionsForPlugin($id, $versions, 'wp_cdn');
-
-            if (! empty($versionResult['error'])) {
-                throw new RuntimeException('Unable to write versions for plugin ' . $slug);
-            }
-            $this->pdo->commit();
-            return ['error' => ''];
-        } catch (Exception $e) {
-            $this->pdo->rollBack();
-            return ['error' => $e->getMessage()];
+        if (! empty($versionResult['error'])) {
+            throw new RuntimeException("Unable to write versions for plugin $slug");
         }
+
+        $this->pdo->commit();
     }
 
     /**
-     * @param  string[]  $versions
+     * @param string[] $versions
      * @return array|string[]
      */
     public function writeVersionsForPlugin(UuidInterface $pluginId, array $versions, string $cdn): array
@@ -166,7 +121,7 @@ class PluginMetadataService implements MetadataInterface
     }
 
     /**
-     * @param  array<int, string>  $versions
+     * @param array<int, string> $versions
      * @return array|string[]
      */
     public function writeVersionProcessed(UuidInterface $pluginId, array $versions, string $hash, string $cdn): array
@@ -174,7 +129,7 @@ class PluginMetadataService implements MetadataInterface
         $sql = <<<'SQL'
             INSERT INTO sync_plugin_files (id, plugin_id, file_url, type, version, created, processed, hash) 
             VALUES (:id, :plugin_id, :file_url, :type, :version, current_timestamp, current_timestamp, :hash)
-        SQL;
+            SQL;
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;
@@ -215,7 +170,7 @@ class PluginMetadataService implements MetadataInterface
     }
 
     /**
-     * @param  array<string, string|array<string, string>>  $fileContents
+     * @param array<string, string|array<string, string>> $fileContents
      * @return array|string[]
      */
     public function updatePluginFromWP(array $fileContents, string $pulledAt): array
@@ -228,7 +183,7 @@ class PluginMetadataService implements MetadataInterface
     }
 
     /**
-     * @param  array<string, string|array<string, string>>  $fileContents
+     * @param array<string, string|array<string, string>> $fileContents
      * @return array|string[]
      */
     private function updateClosedPlugin(array $fileContents, string $pulledAt): array
@@ -262,7 +217,7 @@ class PluginMetadataService implements MetadataInterface
                     updated = :updated, 
                     metadata = :metadata 
                 WHERE slug = :slug
-            SQL;
+                SQL;
             $this->pdo->perform(
                 $sql,
                 [
@@ -271,7 +226,7 @@ class PluginMetadataService implements MetadataInterface
                     'slug'      => $fileContents['slug'],
                     'updated'   => $closedDate,
                     'metadata'  => json_encode($newMetadata),
-                ]
+                ],
             );
             $this->pdo->commit();
             return ['error' => ''];
@@ -282,7 +237,7 @@ class PluginMetadataService implements MetadataInterface
     }
 
     /**
-     * @param  array<string, string|array<string, string>>  $fileContents
+     * @param array<string, string|array<string, string>> $fileContents
      * @return array|string[]
      */
     private function updateOpenPlugin(array $fileContents, string $pulledAt): array
@@ -320,7 +275,7 @@ class PluginMetadataService implements MetadataInterface
                     updated = :updated, 
                     pulled_at = :pulled_at 
                 WHERE slug = :slug
-            SQL;
+                SQL;
             $this->pdo->perform($sql, [
                 'name'            => $name,
                 'slug'            => $slug,
@@ -352,7 +307,7 @@ class PluginMetadataService implements MetadataInterface
     }
 
     /**
-     * @param  string[]  $versions
+     * @param string[] $versions
      * @return string[]
      */
     private function getNewlyDiscoveredVersionsList(string $id, array $versions): array
@@ -396,7 +351,7 @@ class PluginMetadataService implements MetadataInterface
                 FROM sync_plugin_files 
                     LEFT JOIN sync_plugins ON sync_plugins.id = sync_plugin_files.plugin_id 
                 WHERE sync_plugin_files.type = :type AND sync_plugins.status = 'open'
-            SQL;
+                SQL;
             $args     = ['type' => $type];
             if (! empty($revDate)) {
                 $sql            .= ' AND sync_plugins.pulled_at >= :revDate';
@@ -431,7 +386,7 @@ class PluginMetadataService implements MetadataInterface
                     LEFT JOIN sync_plugins ON sync_plugins.id = sync_plugin_files.plugin_id 
                 WHERE sync_plugins.slug = :plugin 
                   AND sync_plugin_files.type = :type
-            SQL;
+                SQL;
 
             $results = $this->pdo->fetchAll($sql, ['plugin' => $plugin, 'type' => $type]);
             $return  = [];
@@ -442,12 +397,19 @@ class PluginMetadataService implements MetadataInterface
             }
             return $return;
         } catch (PDOException $e) {
-            throw new RuntimeException('Unable to get download URLs for plugin ' . $plugin . '; reason: ' . $e->getMessage());
+            throw new RuntimeException('Unable to get download URLs for plugin '
+                . $plugin
+                . '; reason: '
+                . $e->getMessage());
         }
     }
 
-    public function setVersionToDownloaded(string $plugin, string $version, ?string $hash = null, string $type = 'wp_cdn'): void
-    {
+    public function setVersionToDownloaded(
+        string $plugin,
+        string $version,
+        ?string $hash = null,
+        string $type = 'wp_cdn',
+    ): void {
         $sql = <<<'SQL'
             UPDATE sync_plugin_files 
             SET processed = current_timestamp, 
@@ -455,7 +417,7 @@ class PluginMetadataService implements MetadataInterface
             WHERE version = :version 
               AND type = :type 
               AND plugin_id = (SELECT id FROM sync_plugins WHERE slug = :plugin)
-        SQL;
+            SQL;
         $this->pdo->perform($sql, ['plugin' => $plugin, 'type' => $type, 'hash' => $hash, 'version' => $version]);
     }
 
@@ -473,7 +435,7 @@ class PluginMetadataService implements MetadataInterface
               AND sync_plugins.slug = :plugin 
               AND processed IS NULL 
               AND sync_plugin_files.version IN (:versions)
-        SQL;
+            SQL;
         $results = $this->pdo->fetchAll($sql, ['plugin' => $plugin, 'type' => $type, 'versions' => $versions]);
         $return  = [];
         foreach ($results as $result) {
@@ -569,4 +531,29 @@ class PluginMetadataService implements MetadataInterface
         $hashArray = $this->pdo->fetchOne($sql, ['item_id' => $pluginId, 'version' => $version]);
         return $hashArray['hash'] ?? '';
     }
+
+    //region Private API
+
+    private function insertPlugin(array $data): void
+    {
+        $now              = date('c');
+        $data['metadata'] = json_encode([
+            ...$data['metadata'],
+            'aspirepress_meta' => [
+                'seen'      => $now,
+                'added'     => $now,
+                'updated'   => $now,
+                'processed' => null,
+                'finalized' => null,
+            ],
+        ]);
+
+        $sql = <<<SQL
+            INSERT INTO sync_plugins (id, name, slug, status, updated, pulled_at, metadata) 
+            VALUES (:id, :name, :slug, :status, :updated, :pulled_at, :metadata)
+        SQL;
+        $this->pdo->perform($sql, $data);
+    }
+
+    //endregion
 }

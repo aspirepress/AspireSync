@@ -8,7 +8,7 @@ use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 
 class WpEndpointServiceStub implements WpEndpointClientInterface
 {
-    public function getPluginMetadata(string $plugin): string
+    public function getPluginMetadata(string $slug): string
     {
         // TODO: Implement getPlugniMetadata() method.
         return '';

@@ -31,7 +31,7 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
             ],
         ];
 
-        $result = $this->sut->saveOpenPluginFromWP($metadata, date('c'));
+        $result = $this->sut->saveOpenPlugin($metadata, date('c'));
         $this->assertEmpty($result['error']);
 
         $data = $this->sut->getData();
@@ -58,7 +58,7 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
             'versions'      => [],
         ];
 
-        $result = $this->sut->saveOpenPluginFromWP($metadata, date('c'));
+        $result = $this->sut->saveOpenPlugin($metadata, date('c'));
         $this->assertEmpty($result['error']);
 
         $data = $this->sut->getData();
@@ -78,7 +78,7 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
             'closed_date' => date('c'),
         ];
 
-        $result = $this->sut->saveClosedPluginFromWP($metadata, date('c'));
+        $result = $this->sut->saveErrorPlugin($metadata, date('c'));
         $this->assertEmpty($result['error']);
 
         $data = $this->sut->getData();
@@ -107,7 +107,7 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
             ],
         ];
 
-        $result = $this->sut->saveOpenPluginFromWP($metadata, date('c'));
+        $result = $this->sut->saveOpenPlugin($metadata, date('c'));
         $this->assertEmpty($result['error']);
 
         $data = $this->sut->getData();
@@ -172,9 +172,9 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
             ],
         ];
 
-        $this->sut->saveOpenPluginFromWP($metadata, date('c'));
-        $this->sut->saveOpenPluginFromWP($metadata2, date('c'));
-        $this->sut->saveOpenPluginFromWP($metadata3, date('c'));
+        $this->sut->saveOpenPlugin($metadata, date('c'));
+        $this->sut->saveOpenPlugin($metadata2, date('c'));
+        $this->sut->saveOpenPlugin($metadata3, date('c'));
 
         $data = $this->sut->getData();
         $this->assertCount(3, $data);
@@ -204,7 +204,7 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
             ],
         ];
 
-        $this->sut->saveOpenPluginFromWP($metadata, date('c'));
+        $this->sut->saveOpenPlugin($metadata, date('c'));
 
         // We need a new SUT because we load existing plugins at construct time
         $sut = new PluginMetadataService(FunctionalTestHelper::getDb());
@@ -252,9 +252,9 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
             'closed_date' => date('c'),
         ];
 
-        $this->sut->saveOpenPluginFromWP($openMeta, date('c'));
-        $this->sut->saveOpenPluginFromWP($currentlyOpenMeta, date('c'));
-        $this->sut->saveClosedPluginFromWP($changeMeta, date('c'));
+        $this->sut->saveOpenPlugin($openMeta, date('c'));
+        $this->sut->saveOpenPlugin($currentlyOpenMeta, date('c'));
+        $this->sut->saveErrorPlugin($changeMeta, date('c'));
 
         $data = $this->sut->getData();
         $this->assertCount(2, $data);

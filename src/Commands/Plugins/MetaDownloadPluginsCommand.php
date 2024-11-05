@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Commands\Plugins;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
+use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 use AspirePress\AspireSync\Services\Plugins\PluginListService;
+use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
 use AspirePress\AspireSync\Services\StatsMetadataService;
 use AspirePress\AspireSync\Utilities\StringUtil;
 use Symfony\Component\Console\Command\Command;
@@ -23,8 +25,12 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         'rate_limited' => 0,
     ];
 
-    public function __construct(private PluginListService $pluginListService, private StatsMetadataService $statsMetadataService)
-    {
+    public function __construct(
+        private PluginListService $pluginListService,
+        private PluginMetadataService $pluginMetadataService,
+        private StatsMetadataService $statsMetadataService,
+        private WpEndpointClientInterface $wpClient,
+    ) {
         parent::__construct();
     }
 
@@ -87,14 +93,15 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
     /** @param string[] $versions */
     private function fetchPluginDetails(InputInterface $input, OutputInterface $output, string $slug, array $versions): void
     {
-        $filename = "/opt/aspiresync/data/plugin-raw-data/$slug.json";
-        if (file_exists($filename) && $input->getOption('skip-existing')) {
-            $this->info("$slug ... skipped (metadata file already exists)");
-            return;
+        if ($this->pluginListService->isNotFound($slug)) {
+            $this->info("$slug ... skipped (previously marked as not found)");
         }
 
         $this->stats['plugins']++;
-        $data = $this->pluginListService->getItemMetadata($slug);
+        $data = $this->wpClient->getPluginMetadata($slug);
+        $error = $data['error'] ?? null;
+
+        $this->pluginMetadataService->saveMetadata($data);
 
         if (! empty($data['versions'])) {
             $this->info("$slug ... [" . count($data['versions']) . ' versions]');
@@ -104,18 +111,18 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
             $this->stats['versions'] += 1;
         } elseif (isset($data['skipped'])) {
             $this->info((string) $data['skipped']);
-        } elseif (isset($data['error'])) {
-            $this->error("$slug ... ERROR: " . $data['error']);
-            if ('429' === (string) $data['error']) {
+        } elseif ($error) {
+            $this->error(message: "$slug ... ERROR: " . $error);
+            if ('429' === (string) $error) {
                 $this->stats['rate_limited']++;
                 $this->progressiveBackoff();
                 $this->fetchPluginDetails($input, $output, $slug, $versions);
                 return;
             }
-            if ('Plugin not found.' === $data['error']) {
+            if ('Plugin not found.' === $error) {
                 $this->pluginListService->markItemNotFound($slug);
             }
-            if ('Invalid plugin slug.' === $data['error']) {
+            if ('Invalid plugin slug.' === $error) {
                 $this->pluginListService->markItemNotFound($slug);
             }
             $this->stats['errors']++;

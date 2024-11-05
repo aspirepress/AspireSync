@@ -97,11 +97,11 @@ class MetaImportPluginsCommand extends AbstractBaseCommand
                 }
 
                 $this->notice('Writing CLOSED plugin ' . $fileContents['slug']);
-                $result = $this->pluginMetadata->saveClosedPluginFromWP($fileContents, $pulledAt);
+                $result = $this->pluginMetadata->saveErrorPlugin($fileContents);
                 $this->handleResponse($result, $fileContents['slug'], 'closed', 'write');
             } else {
                 $this->notice('Writing OPEN plugin ' . $fileContents['slug']);
-                $result = $this->pluginMetadata->saveOpenPluginFromWP($fileContents, $pulledAt);
+                $result = $this->pluginMetadata->saveOpenPlugin($fileContents);
                 $this->handleResponse($result, $fileContents['slug'], 'open', 'write');
             }
         }
