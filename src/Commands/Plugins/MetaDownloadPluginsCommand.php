@@ -92,10 +92,6 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
     /** @param string[] $versions */
     private function fetchPluginDetails(InputInterface $input, OutputInterface $output, string $slug, array $versions): void
     {
-        if ($this->pluginListService->isNotFound($slug)) {
-            $this->info("$slug ... skipped (previously marked as not found)");
-        }
-
         $this->stats['plugins']++;
         $data  = $this->wpClient->getPluginMetadata($slug);
         $error = $data['error'] ?? null;
@@ -121,12 +117,6 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
                 $this->progressiveBackoff();
                 $this->fetchPluginDetails($input, $output, $slug, $versions);
                 return;
-            }
-            if ('Plugin not found.' === $error) {
-                $this->pluginListService->markItemNotFound($slug);
-            }
-            if ('Invalid plugin slug.' === $error) {
-                $this->pluginListService->markItemNotFound($slug);
             }
             $this->stats['errors']++;
         } else {

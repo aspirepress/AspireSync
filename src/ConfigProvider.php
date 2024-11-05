@@ -8,7 +8,6 @@ use AspirePress\AspireSync\Commands\Plugins\DownloadPluginsCommand;
 use AspirePress\AspireSync\Commands\Plugins\DownloadPluginsPartialCommand;
 use AspirePress\AspireSync\Commands\Plugins\InternalPluginDownloadCommand;
 use AspirePress\AspireSync\Commands\Plugins\MetaDownloadPluginsCommand;
-use AspirePress\AspireSync\Commands\Plugins\MetaImportPluginsCommand;
 use AspirePress\AspireSync\Commands\RunAllCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesPartialCommand;
@@ -26,7 +25,6 @@ use AspirePress\AspireSync\Factories\Plugins\DownloadPluginsCommandFactory;
 use AspirePress\AspireSync\Factories\Plugins\DownloadPluginsPartialCommandFactory;
 use AspirePress\AspireSync\Factories\Plugins\InternalPluginDownloadCommandFactory;
 use AspirePress\AspireSync\Factories\Plugins\MetaDownloadPluginsCommandFactory;
-use AspirePress\AspireSync\Factories\Plugins\MetaImportPluginsCommandFactory;
 use AspirePress\AspireSync\Factories\Plugins\PluginDownloadFromWpServiceFactory;
 use AspirePress\AspireSync\Factories\Plugins\PluginListServiceFactory;
 use AspirePress\AspireSync\Factories\Plugins\PluginMetadataServiceFactory;
@@ -104,7 +102,6 @@ class ConfigProvider
                 InternalPluginDownloadCommand::class => InternalPluginDownloadCommandFactory::class,
                 DownloadPluginsPartialCommand::class => DownloadPluginsPartialCommandFactory::class,
                 MetaDownloadPluginsCommand::class    => MetaDownloadPluginsCommandFactory::class,
-                MetaImportPluginsCommand::class      => MetaImportPluginsCommandFactory::class,
                 UtilUploadCommand::class             => UtilUploadCommandFactory::class,
                 MetaDownloadThemesCommand::class     => MetaDownloadThemesCommandFactory::class,
                 MetaImportThemesCommand::class       => MetaImportThemesCommandFactory::class,

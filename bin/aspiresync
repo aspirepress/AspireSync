@@ -3,7 +3,6 @@
 
 use AspirePress\AspireSync\Commands\Plugins\InternalPluginDownloadCommand;
 use AspirePress\AspireSync\Commands\Plugins\DownloadPluginsCommand;
-use AspirePress\AspireSync\Commands\Plugins\MetaImportPluginsCommand;
 use AspirePress\AspireSync\Commands\Plugins\MetaDownloadPluginsCommand;
 use AspirePress\AspireSync\Commands\Plugins\DownloadPluginsPartialCommand;
 use AspirePress\AspireSync\Commands\RunAllCommand;
@@ -33,7 +32,6 @@ $application->add($container->get(RunAllCommand::class));
 
 $application->add($container->get(InternalPluginDownloadCommand::class));
 $application->add($container->get(DownloadPluginsCommand::class));
-$application->add($container->get(MetaImportPluginsCommand::class));
 $application->add($container->get(MetaDownloadPluginsCommand::class));
 $application->add($container->get(DownloadPluginsPartialCommand::class));
 

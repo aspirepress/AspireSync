@@ -42,7 +42,7 @@ class PluginListService implements ListServiceInterface
         if ($revision) {
             $revision = date('Y-m-d', strtotime($revision));
         }
-        return $this->filter($this->pluginService->getVersionsForUnfinalizedPlugins($revision), $explicitlyRequested);
+        return $this->filter($this->pluginService->getVersionsForUnfinalizedPlugins($revision), $explicitlyRequested, null);
     }
 
     /**
@@ -86,7 +86,7 @@ class PluginListService implements ListServiceInterface
 
         foreach ($allPlugins as $pluginName => $pluginVersions) {
             // Is this the first time we've seen the plugin?
-            if (! $this->pluginService->checkPluginInDatabase($pluginName) && ! $this->isNotFound($pluginName)) {
+            if (! $this->pluginService->checkPluginInDatabase($pluginName)) {
                 $pluginsToUpdate[$pluginName] = [];
             }
 
@@ -135,15 +135,5 @@ class PluginListService implements ListServiceInterface
     public function preserveRevision(string $action): string
     {
         return $this->revisionService->preserveRevision($action);
-    }
-
-    public function isNotFound(string $item): bool
-    {
-        return $this->pluginService->isNotFound($item);
-    }
-
-    public function markItemNotFound(string $item): void
-    {
-        $this->pluginService->markItemNotFound($item);
     }
 }
