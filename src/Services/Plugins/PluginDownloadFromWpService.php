@@ -12,15 +12,10 @@ use Symfony\Component\Process\Process;
 
 class PluginDownloadFromWpService implements DownloadServiceInterface
 {
-    /**
-     * @param array<int, string> $userAgents
-     */
     public function __construct(
-        private array $userAgents,
         private PluginMetadataService $pluginMetadataService,
         private GuzzleClient $guzzle,
     ) {
-        shuffle($this->userAgents);
     }
 
     public function download(string $theme, array $versions, bool $force = false): array
@@ -45,7 +40,7 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
                 continue;
             }
             try {
-                $response = $this->guzzle->request('GET', $url, ['headers' => ['User-Agent' => $this->userAgents[0]], 'allow_redirects' => true, 'sink' => $filePath]);
+                $response = $this->guzzle->request('GET', $url, ['allow_redirects' => true, 'sink' => $filePath]);
                 $outcomes[$response->getStatusCode() . ' ' . $response->getReasonPhrase()][] = $version;
                 if (filesize($filePath) === 0) {
                     unlink($filePath);

@@ -13,10 +13,9 @@ class ThemeDownloadFromWpServiceFactory
 {
     public function __invoke(ServiceManager $serviceManager): ThemeDownloadFromWpService
     {
-        $ua            = $serviceManager->get('config')['user-agents'];
         $themeMetadata = $serviceManager->get(ThemesMetadataService::class);
         $guzzle        = $serviceManager->get(GuzzleClient::class);
 
-        return new ThemeDownloadFromWpService($ua, $themeMetadata, $guzzle);
+        return new ThemeDownloadFromWpService($themeMetadata, $guzzle);
     }
 }

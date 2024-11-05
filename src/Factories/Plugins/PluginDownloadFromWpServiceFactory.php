@@ -13,9 +13,8 @@ class PluginDownloadFromWpServiceFactory
 {
     public function __invoke(ServiceManager $serviceManager): PluginDownloadFromWpService
     {
-        $ua                = $serviceManager->get('config')['user-agents'];
         $pluginMetaService = $serviceManager->get(PluginMetadataService::class);
         $guzzle            = $serviceManager->get(GuzzleClient::class);
-        return new PluginDownloadFromWpService($ua, $pluginMetaService, $guzzle);
+        return new PluginDownloadFromWpService($pluginMetaService, $guzzle);
     }
 }

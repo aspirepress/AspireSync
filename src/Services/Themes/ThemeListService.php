@@ -107,10 +107,7 @@ class ThemeListService implements ListServiceInterface
             $contents = $themes;
         } else {
             try {
-                $themes   = $this->guzzle->get(
-                    'https://themes.svn.wordpress.org/',
-                    ['headers' => ['User-Agent' => 'AspireSync']]
-                );
+                $themes   = $this->guzzle->get('https://themes.svn.wordpress.org/');
                 $contents = $themes->getBody()->getContents();
                 FileUtil::write($filename, $contents);
                 $themes = $contents;
