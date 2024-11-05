@@ -103,7 +103,6 @@ class ThemesMetadataService
         ]);
     }
 
-
     /**
      * @param  array<string, string|array<string, string>>  $fileContents
      * @return string[]

@@ -48,7 +48,7 @@ class ThemesMetaCommand extends AbstractBaseCommand
         $this->writeMessage("Running command {$this->getName()}");
         $this->startTimer();
 
-        $themes = StringUtil::explodeAndTrim($input->getOption('themes') ?? '');
+        $themes  = StringUtil::explodeAndTrim($input->getOption('themes') ?? '');
         $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
 
         $this->debug('Getting list of themes...');
@@ -93,7 +93,7 @@ class ThemesMetaCommand extends AbstractBaseCommand
     private function fetchThemeDetails(InputInterface $input, OutputInterface $output, string $slug, array $versions): void
     {
         $this->stats['themes']++;
-        $data = $this->wpClient->getThemeMetadata($slug);
+        $data  = $this->wpClient->getThemeMetadata($slug);
         $error = $data['error'] ?? null;
 
         $this->themesMetadataService->saveMetadata($data);

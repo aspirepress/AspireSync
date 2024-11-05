@@ -190,7 +190,7 @@ class ThemeListService implements ListServiceInterface
         if ($min_age) {
             $cutoff = time() - $min_age;
             foreach ($filtered as $slug => $value) {
-                $slug = (string) $slug; // purely numeric names get turned into int
+                $slug      = (string) $slug; // purely numeric names get turned into int
                 $timestamp = $this->themesMetadataService->getPulledDateTimestamp($slug);
                 if ($timestamp === null || $timestamp <= $cutoff) {
                     $out[$slug] = $value;

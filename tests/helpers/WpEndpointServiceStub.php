@@ -8,21 +8,13 @@ use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 
 class WpEndpointServiceStub implements WpEndpointClientInterface
 {
-    public function getPluginMetadata(string $slug): string
+    public function getPluginMetadata(string $slug): array
     {
-        // TODO: Implement getPlugniMetadata() method.
-        return '';
+        return [];
     }
 
-    public function getThemeMetadata(string $theme): string
+    public function getThemeMetadata(string $slug): array
     {
-        // TODO: Implement getThemeMetadata() method.
-        return '';
-    }
-
-    public function downloadFile(string $url, string $destination): string
-    {
-        // TODO: Implement downloadFile() method.
-        return '';
+        return [];
     }
 }

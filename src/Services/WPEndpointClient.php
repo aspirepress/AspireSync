@@ -5,20 +5,24 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Services;
 
 use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
+use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
+
 use function Safe\json_decode;
 
 class WPEndpointClient implements WpEndpointClientInterface
 {
-    public function __construct(private readonly GuzzleClient $guzzle) {}
+    public function __construct(private readonly GuzzleClient $guzzle)
+    {
+    }
 
     public function getPluginMetadata(string $slug): array
     {
-        $url = 'https://api.wordpress.org/plugins/info/1.2/';
+        $url         = 'https://api.wordpress.org/plugins/info/1.2/';
         $queryParams = [
             'action' => 'plugin_information',
-            'slug' => $slug,
+            'slug'   => $slug,
             'fields' => [
                 'active_installs',
                 'added',
@@ -61,19 +65,19 @@ class WPEndpointClient implements WpEndpointClientInterface
         } catch (ClientException $e) {
             try {
                 $body = json_decode($e->getResponse()->getBody()->getContents(), true);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $body = ['error' => $e->getMessage()];
             }
             $body['error'] ??= $e->getMessage();
-            $status = match($body['error']) {
+            $status          = match ($body['error']) {
                 'Plugin not found.' => 'not-found',
                 'closed' => 'closed',
                 default => 'error',
             };
             return [
                 ...$body,
-                'slug' => $slug,
-                'name' => $slug,
+                'slug'   => $slug,
+                'name'   => $slug,
                 'status' => $status,
             ];
         }
@@ -108,19 +112,19 @@ class WPEndpointClient implements WpEndpointClientInterface
         } catch (ClientException $e) {
             try {
                 $body = json_decode($e->getResponse()->getBody()->getContents(), true);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $body = ['error' => $e->getMessage()];
             }
             $body['error'] ??= $e->getMessage();
-            $status = match($body['error']) {
-                'Theme not found' => 'not-found',   // note no period on this error message
+            $status          = match ($body['error']) {
+                'Theme not found' => 'not-found', // note no period on this error message
                 'closed' => 'closed',
                 default => 'error',
             };
             return [
                 ...$body,
-                'slug' => $slug,
-                'name' => $slug,
+                'slug'   => $slug,
+                'name'   => $slug,
                 'status' => $status,
             ];
         }

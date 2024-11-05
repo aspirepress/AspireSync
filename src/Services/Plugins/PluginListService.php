@@ -21,6 +21,8 @@ class PluginListService implements ListServiceInterface
 
     /**
      * @param array $filter
+     * @param string $action
+     * @param int|null $min_age
      * @return array<string, string[]>
      */
     public function getItemsForAction(array $filter, string $action, ?int $min_age = null): array

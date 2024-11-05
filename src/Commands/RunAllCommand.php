@@ -54,8 +54,7 @@ class RunAllCommand extends AbstractBaseCommand
     private function runPlugins(): int
     {
         $commands = [
-            'meta:download:plugins',
-            'meta:import:plugins',
+            'plugins:meta',
             'download:plugins',
             'util:upload',
         ];
@@ -73,8 +72,7 @@ class RunAllCommand extends AbstractBaseCommand
     private function runThemes(): int
     {
         $commands = [
-            'meta:download:themes',
-            'meta:import:themes',
+            'themes:meta',
             'download:themes',
             'util:upload',
         ];

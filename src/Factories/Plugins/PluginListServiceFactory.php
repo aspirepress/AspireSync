@@ -8,7 +8,6 @@ use AspirePress\AspireSync\Services\Plugins\PluginListService;
 use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
 use AspirePress\AspireSync\Services\SvnService;
-use AspirePress\AspireSync\Services\WPEndpointClient;
 use Laminas\ServiceManager\ServiceManager;
 
 class PluginListServiceFactory

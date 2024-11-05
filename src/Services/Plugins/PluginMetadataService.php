@@ -492,18 +492,6 @@ class PluginMetadataService implements MetadataInterface
         return $this->pdo->fetchCol($sql);
     }
 
-    public function isNotFound(string $item, bool $noLimit = false): bool
-    {
-        $sql = "SELECT COUNT(*) count FROM sync_not_found_items WHERE item_slug = :item AND item_type = 'plugin'";
-
-        if (! $noLimit) {
-            $sql .= " AND created_at > datetime(current_date, '-7 day')";
-        }
-
-        $result = $this->pdo->fetchOne($sql, ['item' => $item]);
-        return $result['count'] > 0;
-    }
-
     public function getStorageDir(): string
     {
         return '/opt/aspiresync/data/plugins';
