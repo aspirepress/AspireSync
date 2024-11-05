@@ -26,7 +26,7 @@ class ThemeListService implements ListServiceInterface
     ) {
     }
 
-    public function getItemsForAction(array $filter, string $action): array
+    public function getItemsForAction(array $filter, string $action, ?int $min_age = null): array
     {
         if ($lastRevision = $this->revisionService->getRevisionForAction($action)) {
             return $this->filter($this->getThemesToUpdate($filter, $lastRevision, $action), $filter);

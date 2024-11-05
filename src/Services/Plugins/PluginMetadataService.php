@@ -532,6 +532,16 @@ class PluginMetadataService implements MetadataInterface
         return $hashArray['hash'] ?? '';
     }
 
+    public function getPulledDateTimestamp(string $slug): ?int
+    {
+        $sql    = "select unixepoch(pulled_at) timestamp from sync_plugins where slug = :slug";
+        $result = $this->pdo->fetchOne($sql, ['slug' => $slug]);
+        if (! $result) {
+            return null;
+        }
+        return (int) $result['timestamp'];
+    }
+
     //region Private API
 
     private function insertPlugin(array $data): void
@@ -549,7 +559,7 @@ class PluginMetadataService implements MetadataInterface
         ]);
 
         $sql = <<<SQL
-            INSERT INTO sync_plugins (id, name, slug, status, updated, pulled_at, metadata) 
+            INSERT OR REPLACE INTO sync_plugins (id, name, slug, status, updated, pulled_at, metadata) 
             VALUES (:id, :name, :slug, :status, :updated, :pulled_at, :metadata)
         SQL;
         $this->pdo->perform($sql, $data);

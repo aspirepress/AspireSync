@@ -7,9 +7,7 @@ namespace AspirePress\AspireSync\Services;
 use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
-
 use function Safe\json_decode;
-use function Safe\json_encode;
 
 class WPEndpointClient implements WpEndpointClientInterface
 {

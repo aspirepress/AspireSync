@@ -40,7 +40,7 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
             ->setAliases(['plugins:meta'])
             ->setDescription('Fetches the meta data of the plugins')
             ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all plugin meta-data; otherwise, we only update what has changed')
-            ->addOption('skip-existing', null, InputOption::VALUE_NONE, 'Skip downloading metadata files that already exist')
+            ->addOption('skip-newer-than-secs', null, InputOption::VALUE_REQUIRED, 'Skip downloading metadata pulled more recently than N seconds')
             ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins (separated by commas) to explicitly update');
     }
 
@@ -49,12 +49,11 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         $this->always("Running command {$this->getName()}");
         $this->startTimer();
 
-        @mkdir('/opt/aspiresync/data/plugin-raw-data');
-
         $plugins = StringUtil::explodeAndTrim($input->getOption('plugins') ?? '');
+        $min_age = (int)$input->getOption('skip-newer-than-secs') ?: null;
 
         $this->debug('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getItemsForAction($plugins, $this->getName());
+        $pluginsToUpdate = $this->pluginListService->getItemsForAction($plugins, $this->getName(), $min_age);
         $this->debug(count($pluginsToUpdate) . ' plugins to download metadata for...');
 
         if (count($pluginsToUpdate) === 0) {
@@ -96,6 +95,9 @@ class MetaDownloadPluginsCommand extends AbstractBaseCommand
         if ($this->pluginListService->isNotFound($slug)) {
             $this->info("$slug ... skipped (previously marked as not found)");
         }
+
+
+
 
         $this->stats['plugins']++;
         $data = $this->wpClient->getPluginMetadata($slug);

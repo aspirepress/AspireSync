@@ -10,7 +10,7 @@ interface ListServiceInterface
      * @param  array<int, string>  $filter
      * @return array<string, string[]>
      */
-    public function getItemsForAction(array $filter, string $action): array;
+    public function getItemsForAction(array $filter, string $action, ?int $min_age = null): array;
 
     /**
      * @param  array<int, string>  $explicitlyRequested

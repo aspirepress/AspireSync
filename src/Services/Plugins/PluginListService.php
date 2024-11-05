@@ -6,11 +6,7 @@ namespace AspirePress\AspireSync\Services\Plugins;
 
 use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
-use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
-use AspirePress\AspireSync\Utilities\FileUtil;
-
-use function Safe\json_decode;
 
 class PluginListService implements ListServiceInterface
 {
@@ -20,21 +16,20 @@ class PluginListService implements ListServiceInterface
         private SvnServiceInterface $svnService,
         private PluginMetadataService $pluginService,
         private RevisionMetadataService $revisionService,
-        private WpEndpointClientInterface $wpClient,
     ) {
     }
 
     /**
-     * @param  array<int, string>  $filter
+     * @param array $filter
      * @return array<string, string[]>
      */
-    public function getItemsForAction(array $filter, string $action): array
+    public function getItemsForAction(array $filter, string $action, ?int $min_age = null): array
     {
         $lastRevision = $this->revisionService->getRevisionForAction($action);
         $updates      = $lastRevision
             ? $this->getPluginsToUpdate($filter, $lastRevision, $action)
             : $this->pullWholePluginList($action);
-        return $this->filter($updates, $filter);
+        return $this->filter($updates, $filter, $min_age);
     }
 
     /**
@@ -110,20 +105,31 @@ class PluginListService implements ListServiceInterface
      * @param  array<int, string>|null  $filter
      * @return array<string, string[]>
      */
-    private function filter(array $plugins, ?array $filter): array
+    private function filter(array $plugins, ?array $filter, ?int $min_age): array
     {
-        if (! $filter) {
+        if (! $filter && ! $min_age) {
             return $plugins;
         }
 
-        $filtered = [];
-        foreach ($filter as $plugin) {
-            if (array_key_exists($plugin, $plugins)) {
-                $filtered[$plugin] = $plugins[$plugin];
+        $filtered = $filter ? [] : $plugins;
+
+        foreach ($filter as $slug) {
+            if (array_key_exists($slug, $plugins)) {
+                $filtered[$slug] = $plugins[$slug];
             }
         }
 
-        return $filtered;
+        $out = $min_age ? [] : $filtered;
+        if ($min_age) {
+            $cutoff = time() - $min_age;
+            foreach ($filtered as $slug => $value) {
+                $timestamp = $this->pluginService->getPulledDateTimestamp($slug);
+                if ($timestamp === null || $timestamp <= $cutoff) {
+                    $out[$slug] = $value;
+                }
+            }
+        }
+        return $out;
     }
 
     public function preserveRevision(string $action): string

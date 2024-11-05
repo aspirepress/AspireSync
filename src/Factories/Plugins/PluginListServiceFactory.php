@@ -18,7 +18,6 @@ class PluginListServiceFactory
         $pluginService   = $serviceManager->get(PluginMetadataService::class);
         $revisionService = $serviceManager->get(RevisionMetadataService::class);
         $svnService      = $serviceManager->get(SvnService::class);
-        $wpClient        = $serviceManager->get(WPEndpointClient::class);
-        return new PluginListService($svnService, $pluginService, $revisionService, $wpClient);
+        return new PluginListService($svnService, $pluginService, $revisionService);
     }
 }
