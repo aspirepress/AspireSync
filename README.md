@@ -17,7 +17,7 @@ Content Delivery Network.
 
 AspireSync requires a running instance of [AspireCloud](https://github.com/AspirePress/AspireCloud).  Simply clone it and start it up with `make init`.
 
-Once you have AspireCloud started, start the AspireSync service by running `meta/bin/bootstrap`
+Once you have AspireCloud started, start the AspireSync service by running `make init`
 
 Get a shell by typing `make run`.  Once in the shell, type `aspiresync` without arguments for help.
 

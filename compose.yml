@@ -6,11 +6,6 @@ services:
       dockerfile: docker/Dockerfile
       target: devbuild
     environment:
-      DB_HOST: ${DB_HOST:-db.aspiredev.org}
-      DB_NAME: ${DB_NAME:-aspirecloud}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASS: ${DB_PASS:-password}
-      DB_SCHEMA: ${DB_SCHEMA:-public}
       JUICEFS_BUCKET: ${JUICEFS_BUCKET}
       JUICEFS_ACCESS_KEY: ${JUICEFS_ACCESS_KEY}
       JUICEFS_SECRET_KEY: ${JUICEFS_SECRET_KEY}
