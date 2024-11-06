@@ -5,7 +5,7 @@ declare(strict_types=1);
 function get_config_defaults(): array
 {
     $app_env = $_ENV['APP_ENV'] ?? 'production';
-    $app_dir = $_ENV['APP_DIR'] ?? realpath(__DIR__ . '/../..');
+    $app_dir = $_ENV['APP_DIR'] ?? realpath(__DIR__ . '/../aspiresync');
 
     $data_dir = $_ENV['APP_DATA_DIR'] ?? $app_dir . '/data';
     $db_file  = str_contains($app_env, 'test')
