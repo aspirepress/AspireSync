@@ -28,7 +28,7 @@ require "$APP_DIR/vendor/autoload.php";
 
 $CONTAINER = new ContainerBuilder();
 (new PhpFileLoader($CONTAINER, new FileLocator(__DIR__ . '/../config')))->load('services.php');
-$CONTAINER->compile();
+$CONTAINER->compile(resolveEnvPlaceholders: true);
 
 $APP = new Application();
 
