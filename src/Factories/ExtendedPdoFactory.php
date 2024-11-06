@@ -9,6 +9,8 @@ use PDOException;
 
 class ExtendedPdoFactory
 {
+    public const string DEFAULT_INIT_SCRIPT = __DIR__ . '/../../config/schema.sql';
+
     public function __invoke(string $db_file): ExtendedPdo
     {
         $dsn = "sqlite:$db_file";
@@ -23,8 +25,7 @@ class ExtendedPdoFactory
         try {
             $pdo->query("select 1 from sync_plugins limit 1");
         } catch (PDOException $e) {
-            // $init_script = $serviceManager->get('config')['database']['init_script'];
-            $init_script = __DIR__ . '/../../config/schema.sql';
+            $init_script = getenv('DB_INIT_SCRIPT') ?: self::DEFAULT_INIT_SCRIPT;
             $pdo->exec(file_get_contents($init_script));
         }
         return $pdo;

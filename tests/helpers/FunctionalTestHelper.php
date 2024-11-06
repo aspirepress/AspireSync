@@ -4,41 +4,16 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Tests\Helpers;
 
+use Aura\Sql\ExtendedPdo;
 use Aura\Sql\ExtendedPdoInterface;
-use Laminas\ServiceManager\ServiceManager;
 
 abstract class FunctionalTestHelper
 {
-    private static ServiceManager $container;
-    public static function setContainer(ServiceManager $container): void
-    {
-        self::$container = $container;
-    }
-
-    public static function getService(string $name): mixed
-    {
-        return self::$container->get($name);
-    }
-
-    public static function getContainer(): ServiceManager
-    {
-        return self::$container;
-    }
-
     public static function getDb(): ExtendedPdoInterface
     {
-        $pdo = self::$container->get(ExtendedPdoInterface::class);
-        $pdo->exec('SET search_path TO public');  // WTF: this is done in the factory, but doesn't take in tests
+        $pdo = new ExtendedPdo("sqlite::memory:");
+        $pdo->exec('PRAGMA foreign_keys = ON');
+        $pdo->exec(file_get_contents(__DIR__ . '/../../config/schema.sql'));
         return $pdo;
-    }
-
-    public static function resetDatabase(): void
-    {
-        $pdo = self::getDb();
-        $pdo->perform('TRUNCATE sync_plugins CASCADE');
-        $pdo->perform('TRUNCATE sync_themes CASCADE');
-        $pdo->perform('TRUNCATE sync_revisions CASCADE');
-        $pdo->perform('TRUNCATE sync_stats CASCADE');
-        $pdo->perform('TRUNCATE sync_not_found_items CASCADE');
     }
 }

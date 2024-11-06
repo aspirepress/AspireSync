@@ -18,29 +18,29 @@ use Symfony\Component\Dotenv\Dotenv;
 
 ini_set('memory_limit', '4G');
 
-require 'vendor/autoload.php';
+// all-caps variable names because they're globals visible to the rest of the app
 
-$dotenv = new Dotenv();
-$dotenv->loadEnv(__DIR__.'/../.env');
+$APP_DIR = dirname(__DIR__);
 
-$container = new ContainerBuilder();
-$loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../config'));
-$loader->load('services.php');
-$container->compile();
+require "$APP_DIR/vendor/autoload.php";
 
-$application = new Application();
+(new Dotenv())->loadEnv("$APP_DIR/.env");
 
-$application->add($container->get(RunAllCommand::class));
+$CONTAINER = new ContainerBuilder();
+(new PhpFileLoader($CONTAINER, new FileLocator(__DIR__ . '/../config')))->load('services.php');
+$CONTAINER->compile();
 
-$application->add($container->get(InternalPluginDownloadCommand::class));
-$application->add($container->get(DownloadPluginsCommand::class));
-$application->add($container->get(PluginsMetaCommand::class));
-$application->add($container->get(DownloadPluginsPartialCommand::class));
+$APP = new Application();
 
-$application->add($container->get(ThemesMetaCommand::class));
-$application->add($container->get(DownloadThemesCommand::class));
-$application->add($container->get(DownloadThemesPartialCommand::class));
-$application->add($container->get(InternalThemeDownloadCommand::class));
-
+$APP->add($CONTAINER->get(RunAllCommand::class));
+$APP->add($CONTAINER->get(InternalPluginDownloadCommand::class));
+$APP->add($CONTAINER->get(DownloadPluginsCommand::class));
+$APP->add($CONTAINER->get(PluginsMetaCommand::class));
+$APP->add($CONTAINER->get(DownloadPluginsPartialCommand::class));
+$APP->add($CONTAINER->get(ThemesMetaCommand::class));
+$APP->add($CONTAINER->get(DownloadThemesCommand::class));
+$APP->add($CONTAINER->get(DownloadThemesPartialCommand::class));
+$APP->add($CONTAINER->get(InternalThemeDownloadCommand::class));
 // $application->add($container->get(UtilUploadCommand::class));    // borked
-$application->run();
+
+$APP->run();
