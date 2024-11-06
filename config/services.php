@@ -12,6 +12,7 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters = $containerConfigurator->parameters();
     $parameters->set('db_file', $_ENV['DB_FILE'] ?? realpath(__DIR__ . '/../data/aspiresync.sqlite'));
+    $parameters->set('db_init_file', $_ENV['DB_INIT_FILE'] ?? realpath(__DIR__ . '/../config/schema.sql'));
 
     $services = $containerConfigurator->services();
 
@@ -23,8 +24,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->load('AspirePress\\AspireSync\\', '../src/');
 
     $services->set(ExtendedPdoInterface::class)
-        ->factory(service(ExtendedPdoFactory::class))
-        ->args(['%db_file%']);
+        ->factory(service(ExtendedPdoFactory::class));
 
     $services->set(Client::class)->factory(service(GuzzleClientFactory::class));
 
