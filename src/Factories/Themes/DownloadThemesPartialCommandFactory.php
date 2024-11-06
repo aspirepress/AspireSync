@@ -14,10 +14,10 @@ class DownloadThemesPartialCommandFactory
 {
     public function __invoke(ServiceManager $serviceManager): DownloadThemesPartialCommand
     {
-        $listService = $serviceManager->get(ThemeListService::class);
-        $metadata    = $serviceManager->get(ThemesMetadataService::class);
-        $statsMeta   = $serviceManager->get(StatsMetadataService::class);
-
-        return new DownloadThemesPartialCommand($listService, $metadata, $statsMeta);
+        return new DownloadThemesPartialCommand(
+            themeListService: $serviceManager->get(ThemeListService::class),
+            themesMetadataService: $serviceManager->get(ThemesMetadataService::class),
+            statsMetadataService: $serviceManager->get(StatsMetadataService::class)
+        );
     }
 }

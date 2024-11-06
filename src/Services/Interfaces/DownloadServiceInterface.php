@@ -10,5 +10,5 @@ interface DownloadServiceInterface
      * @param string[] $versions
      * @return array<string, string[]>
      */
-    public function download(string $theme, array $versions, bool $force = false): array;
+    public function download(string $slug, array $versions, bool $force = false): array;
 }

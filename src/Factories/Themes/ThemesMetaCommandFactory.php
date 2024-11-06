@@ -15,10 +15,11 @@ class ThemesMetaCommandFactory
 {
     public function __invoke(ServiceManager $serviceManager): ThemesMetaCommand
     {
-        $listSerivce = $serviceManager->get(ThemeListService::class);
-        $themesMeta  = $serviceManager->get(ThemesMetadataService::class);
-        $statsMeta   = $serviceManager->get(StatsMetadataService::class);
-        $wpClient    = $serviceManager->get(WPEndpointClient::class);
-        return new ThemesMetaCommand($listSerivce, $themesMeta, $statsMeta, $wpClient);
+        return new ThemesMetaCommand(
+            themeListService: $serviceManager->get(ThemeListService::class),
+            themesMetadataService: $serviceManager->get(ThemesMetadataService::class),
+            statsMetadataService: $serviceManager->get(StatsMetadataService::class),
+            wpClient: $serviceManager->get(WPEndpointClient::class)
+        );
     }
 }

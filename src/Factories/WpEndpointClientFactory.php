@@ -13,7 +13,6 @@ class WpEndpointClientFactory
 {
     public function __invoke(ServiceManager $serviceManager): WpEndpointClientInterface
     {
-        $guzzle = $serviceManager->get(GuzzleClient::class);
-        return new WPEndpointClient($guzzle);
+        return new WPEndpointClient($serviceManager->get(GuzzleClient::class));
     }
 }

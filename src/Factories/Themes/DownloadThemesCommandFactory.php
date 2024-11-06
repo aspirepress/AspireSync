@@ -14,10 +14,10 @@ class DownloadThemesCommandFactory
 {
     public function __invoke(ServiceManager $serviceManager): DownloadThemesCommand
     {
-        $metadata    = $serviceManager->get(ThemesMetadataService::class);
-        $listService = $serviceManager->get(ThemeListService::class);
-        $statsMeta   = $serviceManager->get(StatsMetadataService::class);
-
-        return new DownloadThemesCommand($listService, $metadata, $statsMeta);
+        return new DownloadThemesCommand(
+            themeListService: $serviceManager->get(ThemeListService::class),
+            themeMetadataService: $serviceManager->get(ThemesMetadataService::class),
+            statsMetadataService: $serviceManager->get(StatsMetadataService::class)
+        );
     }
 }

@@ -15,11 +15,11 @@ class PluginsMetaCommandFactory
 {
     public function __invoke(ServiceManager $serviceManager): PluginsMetaCommand
     {
-        $pluginList = $serviceManager->get(PluginListService::class);
-        $pluginMeta = $serviceManager->get(PluginMetadataService::class);
-        $statsMeta  = $serviceManager->get(StatsMetadataService::class);
-        $wpClient   = $serviceManager->get(WPEndpointClient::class);
-
-        return new PluginsMetaCommand($pluginList, $pluginMeta, $statsMeta, $wpClient);
+        return new PluginsMetaCommand(
+            pluginListService: $serviceManager->get(PluginListService::class),
+            pluginMetadataService: $serviceManager->get(PluginMetadataService::class),
+            statsMetadataService: $serviceManager->get(StatsMetadataService::class),
+            wpClient: $serviceManager->get(WPEndpointClient::class)
+        );
     }
 }

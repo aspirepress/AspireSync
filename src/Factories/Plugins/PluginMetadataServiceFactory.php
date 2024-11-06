@@ -12,7 +12,6 @@ class PluginMetadataServiceFactory
 {
     public function __invoke(ServiceManager $serviceManager): PluginMetadataService
     {
-        $pdo = $serviceManager->get(ExtendedPdoInterface::class);
-        return new PluginMetadataService($pdo);
+        return new PluginMetadataService($serviceManager->get(ExtendedPdoInterface::class));
     }
 }

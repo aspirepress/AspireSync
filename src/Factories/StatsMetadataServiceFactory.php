@@ -12,7 +12,6 @@ class StatsMetadataServiceFactory
 {
     public function __invoke(ServiceManager $serviceManager): StatsMetadataService
     {
-        $pdo = $serviceManager->get(ExtendedPdoInterface::class);
-        return new StatsMetadataService($pdo);
+        return new StatsMetadataService($serviceManager->get(ExtendedPdoInterface::class));
     }
 }

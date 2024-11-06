@@ -14,9 +14,10 @@ class DownloadPluginsCommandFactory
 {
     public function __invoke(ServiceManager $serviceManager): DownloadPluginsCommand
     {
-        $metadata      = $serviceManager->get(PluginMetadataService::class);
-        $pluginService = $serviceManager->get(PluginListService::class);
-        $statsMeta     = $serviceManager->get(StatsMetadataService::class);
-        return new DownloadPluginsCommand($pluginService, $metadata, $statsMeta);
+        return new DownloadPluginsCommand(
+            pluginListService: $serviceManager->get(PluginListService::class),
+            pluginMetadataService: $serviceManager->get(PluginMetadataService::class),
+            statsMetadataService: $serviceManager->get(StatsMetadataService::class)
+        );
     }
 }

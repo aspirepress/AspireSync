@@ -12,7 +12,6 @@ class InternalThemeDownloadCommandFactory
 {
     public function __invoke(ServiceManager $serviceManager): InternalThemeDownloadCommand
     {
-        $downloadService = $serviceManager->get(ThemeDownloadFromWpService::class);
-        return new InternalThemeDownloadCommand($downloadService);
+        return new InternalThemeDownloadCommand($serviceManager->get(ThemeDownloadFromWpService::class));
     }
 }

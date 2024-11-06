@@ -14,10 +14,10 @@ class DownloadPluginsPartialCommandFactory
 {
     public function __invoke(ServiceManager $serviceManager): DownloadPluginsPartialCommand
     {
-        $listService = $serviceManager->get(PluginListService::class);
-        $metadata    = $serviceManager->get(PluginMetadataService::class);
-        $statsMeta   = $serviceManager->get(StatsMetadataService::class);
-
-        return new DownloadPluginsPartialCommand($listService, $metadata, $statsMeta);
+        return new DownloadPluginsPartialCommand(
+            pluginListService: $serviceManager->get(PluginListService::class),
+            pluginMetadataService: $serviceManager->get(PluginMetadataService::class),
+            statsMetadataService: $serviceManager->get(StatsMetadataService::class)
+        );
     }
 }

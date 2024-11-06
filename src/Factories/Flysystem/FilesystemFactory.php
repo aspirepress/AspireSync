@@ -12,11 +12,8 @@ class FilesystemFactory
 {
     public function __invoke(ServiceManager $serviceManager, string $service): Filesystem
     {
-        $config  = $serviceManager->get('config');
-        $adapter = $config['flysystem'][$service] ?? LocalFilesystemAdapter::class;
-
-        $adapter = $serviceManager->get($adapter);
-
-        return new Filesystem($adapter);
+        $config       = $serviceManager->get('config');
+        $adapterClass = $config['flysystem'][$service] ?? LocalFilesystemAdapter::class;
+        return new Filesystem($serviceManager->get($adapterClass));
     }
 }

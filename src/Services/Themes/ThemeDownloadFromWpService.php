@@ -19,11 +19,11 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
     }
 
     /** @return array<string, string>[] */
-    public function download(string $theme, array $versions, bool $force = false): array
+    public function download(string $slug, array $versions, bool $force = false): array
     {
         @mkdir('/opt/aspiresync/data/themes');
 
-        $downloadable = $this->themeMetadataService->getDownloadUrlsForVersions($theme, $versions);
+        $downloadable = $this->themeMetadataService->getDownloadUrlsForVersions($slug, $versions);
 
         if (! $downloadable) {
             return [];
@@ -31,7 +31,7 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
 
         $outcomes = [];
         foreach ($downloadable as $version => $url) {
-            $result                        = $this->runDownload($theme, $version, $url, $force);
+            $result                        = $this->runDownload($slug, $version, $url, $force);
             $outcomes[$result['status']][] = $result['version'];
         }
         return $outcomes;

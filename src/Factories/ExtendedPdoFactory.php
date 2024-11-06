@@ -14,7 +14,6 @@ class ExtendedPdoFactory
     {
         $config = $serviceManager->get('config');
         $pdo    = new ExtendedPdo($config['database']['dsn']);
-
         return $this->initialize($pdo, $serviceManager);
     }
 

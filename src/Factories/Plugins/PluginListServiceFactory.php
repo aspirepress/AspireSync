@@ -14,9 +14,10 @@ class PluginListServiceFactory
 {
     public function __invoke(ServiceManager $serviceManager): PluginListService
     {
-        $pluginService   = $serviceManager->get(PluginMetadataService::class);
-        $revisionService = $serviceManager->get(RevisionMetadataService::class);
-        $svnService      = $serviceManager->get(SvnService::class);
-        return new PluginListService($svnService, $pluginService, $revisionService);
+        return new PluginListService(
+            svnService: $serviceManager->get(SvnService::class),
+            pluginService: $serviceManager->get(PluginMetadataService::class),
+            revisionService: $serviceManager->get(RevisionMetadataService::class)
+        );
     }
 }

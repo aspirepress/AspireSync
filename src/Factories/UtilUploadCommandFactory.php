@@ -37,6 +37,11 @@ class UtilUploadCommandFactory
         $uploadDriver = $config['flysystem']['util:upload'];
         $uploadType   = str_replace('upload_', '', $uploadDriver);
 
-        return new UtilUploadCommand($uploadType, $callback, $flysystem, $statsMeta);
+        return new UtilUploadCommand(
+            uploadType: $uploadType,
+            callback: $callback,
+            flysystem: $flysystem,
+            statsMetadata: $statsMeta
+        );
     }
 }

@@ -12,7 +12,6 @@ class RevisionMetadataServiceFactory
 {
     public function __invoke(ServiceManager $serviceManager): RevisionMetadataService
     {
-        $pdo = $serviceManager->get(ExtendedPdoInterface::class);
-        return new RevisionMetadataService($pdo);
+        return new RevisionMetadataService($serviceManager->get(ExtendedPdoInterface::class));
     }
 }

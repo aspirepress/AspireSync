@@ -12,7 +12,6 @@ class ThemeMetadataServiceFactory
 {
     public function __invoke(ServiceManager $serviceManager): ThemesMetadataService
     {
-        $pdo = $serviceManager->get(ExtendedPdoInterface::class);
-        return new ThemesMetadataService($pdo);
+        return new ThemesMetadataService($serviceManager->get(ExtendedPdoInterface::class));
     }
 }

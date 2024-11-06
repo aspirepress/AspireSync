@@ -6,6 +6,7 @@ namespace AspirePress\AspireSync\Commands\Plugins;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\Plugins\PluginDownloadFromWpService;
+use AspirePress\AspireSync\Utilities\StringUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,7 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InternalPluginDownloadCommand extends AbstractBaseCommand
 {
-    public function __construct(private PluginDownloadFromWpService $service)
+    public function __construct(private PluginDownloadFromWpService $downloadService)
     {
         parent::__construct();
     }
@@ -34,35 +35,22 @@ class InternalPluginDownloadCommand extends AbstractBaseCommand
     {
         $plugin      = $input->getArgument('plugin');
         $numVersions = $input->getArgument('num-versions');
+        $versions    = StringUtil::explodeAndTrim($input->getArgument('version-list'));
 
-        $this->debug("Running {$this->getName()} for $plugin");
+        $this->debug("[{$this->getName()}] $plugin...");
+        $versionsToDownload = match ($numVersions) {
+            'all' => count($versions),
+            'latest' => 1,
+            default => min(count($versions), (int)$numVersions),
+        };
 
-        $this->debug('Determining versions of ' . $plugin . '...');
-        $versions = explode(',', $input->getArgument('version-list'));
+        $this->debug("Downloading $versionsToDownload versions");
+        $responses = $this->downloadService->download($plugin, $versions, $input->getOption('force'));
 
-        array_walk($versions, function (&$value) {
-            $value = trim($value);
-        });
-
-        $versionsToDownload = $this->determineDownloadedVersions($versions, $numVersions);
-        $this->debug('Downloading ' . $versionsToDownload . ' versions...');
-        $responses = $this->service->download($plugin, $versions, $numVersions, $input->getOption('force'));
         foreach ($responses as $responseCode => $versions) {
-            $this->always($plugin . ' ' . $responseCode . ': ' . count($versions));
+            $this->always("$plugin $responseCode: " . count($versions));
         }
 
         return Command::SUCCESS;
-    }
-
-    /**
-     * @param array<int, string> $versions
-     */
-    private function determineDownloadedVersions(array $versions, string|int $numToDownload): int
-    {
-        return match ($numToDownload) {
-            'all' => count($versions),
-            'latest' => 1,
-            default => count($versions) > $numToDownload ? (int) $numToDownload : count($versions),
-        };
     }
 }

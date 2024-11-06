@@ -14,10 +14,10 @@ class ThemeListServiceFactory
 {
     public function __invoke(ServiceManager $serviceManager): ThemeListService
     {
-        $themeMetadata    = $serviceManager->get(ThemesMetadataService::class);
-        $revisionMetadata = $serviceManager->get(RevisionMetadataService::class);
-        $guzzle           = $serviceManager->get(GuzzleClient::class);
-
-        return new ThemeListService($themeMetadata, $revisionMetadata, $guzzle);
+        return new ThemeListService(
+            themesMetadataService: $serviceManager->get(ThemesMetadataService::class),
+            revisionService: $serviceManager->get(RevisionMetadataService::class),
+            guzzle: $serviceManager->get(GuzzleClient::class)
+        );
     }
 }
