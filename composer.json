@@ -12,7 +12,10 @@
     "league/flysystem": "^3.29",
     "league/flysystem-aws-s3-v3": "^3.0",
     "ramsey/uuid": "^4.7",
+    "symfony/config": "^7.1",
     "symfony/console": "^7.1",
+    "symfony/dependency-injection": "^7.1",
+    "symfony/dotenv": "^7.1",
     "symfony/process": "^7.1",
     "symfony/var-dumper": "^7.1",
     "thecodingmachine/safe": "^2.5"

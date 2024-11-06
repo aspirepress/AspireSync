@@ -1,28 +1,32 @@
 #!/usr/bin/env php
 <?php
 
-use AspirePress\AspireSync\Commands\Plugins\InternalPluginDownloadCommand;
 use AspirePress\AspireSync\Commands\Plugins\DownloadPluginsCommand;
-use AspirePress\AspireSync\Commands\Plugins\PluginsMetaCommand;
 use AspirePress\AspireSync\Commands\Plugins\DownloadPluginsPartialCommand;
+use AspirePress\AspireSync\Commands\Plugins\InternalPluginDownloadCommand;
+use AspirePress\AspireSync\Commands\Plugins\PluginsMetaCommand;
 use AspirePress\AspireSync\Commands\RunAllCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesPartialCommand;
 use AspirePress\AspireSync\Commands\Themes\InternalThemeDownloadCommand;
 use AspirePress\AspireSync\Commands\Themes\ThemesMetaCommand;
-use AspirePress\AspireSync\Commands\UtilUploadCommand;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application;
-
-require 'vendor/autoload.php';
-
-$config = require './config/config.php';
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
+use Symfony\Component\Dotenv\Dotenv;
 
 ini_set('memory_limit', '4G');
 
-$dependencies                       = $config['dependencies'];
-$dependencies['services']['config'] = $config;
+require 'vendor/autoload.php';
 
-$container = new \Laminas\ServiceManager\ServiceManager($dependencies);
+$dotenv = new Dotenv();
+$dotenv->loadEnv(__DIR__.'/../.env');
+
+$container = new ContainerBuilder();
+$loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../config'));
+$loader->load('services.php');
+$container->compile();
 
 $application = new Application();
 
@@ -38,5 +42,5 @@ $application->add($container->get(DownloadThemesCommand::class));
 $application->add($container->get(DownloadThemesPartialCommand::class));
 $application->add($container->get(InternalThemeDownloadCommand::class));
 
-$application->add($container->get(UtilUploadCommand::class));
+// $application->add($container->get(UtilUploadCommand::class));    // borked
 $application->run();

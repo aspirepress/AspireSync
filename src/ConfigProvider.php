@@ -13,7 +13,6 @@ use AspirePress\AspireSync\Commands\Themes\DownloadThemesCommand;
 use AspirePress\AspireSync\Commands\Themes\DownloadThemesPartialCommand;
 use AspirePress\AspireSync\Commands\Themes\InternalThemeDownloadCommand;
 use AspirePress\AspireSync\Commands\Themes\ThemesMetaCommand;
-use AspirePress\AspireSync\Commands\UtilUploadCommand;
 use AspirePress\AspireSync\Factories\ExtendedPdoFactory;
 use AspirePress\AspireSync\Factories\Flysystem\AwsS3V3AdapterFactory;
 use AspirePress\AspireSync\Factories\Flysystem\FilesystemFactory;
@@ -53,6 +52,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use UtilUploadCommand;
 
 class ConfigProvider
 {
