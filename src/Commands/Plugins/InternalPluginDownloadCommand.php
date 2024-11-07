@@ -33,22 +33,22 @@ class InternalPluginDownloadCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $plugin      = $input->getArgument('plugin');
+        $slug        = $input->getArgument('plugin');
         $numVersions = $input->getArgument('num-versions');
         $versions    = StringUtil::explodeAndTrim($input->getArgument('version-list'));
 
-        $this->debug("[{$this->getName()}] $plugin...");
+        $this->debug("[{$this->getName()}] $slug...");
         $versionsToDownload = match ($numVersions) {
             'all' => count($versions),
             'latest' => 1,
-            default => min(count($versions), (int)$numVersions),
+            default => min(count($versions), (int) $numVersions),
         };
 
         $this->debug("Downloading $versionsToDownload versions");
-        $responses = $this->downloadService->download($plugin, $versions, $input->getOption('force'));
+        $responses = $this->downloadService->download($slug, $versions, $input->getOption('force'));
 
         foreach ($responses as $responseCode => $versions) {
-            $this->always("$plugin $responseCode: " . count($versions));
+            $this->always("$slug $responseCode: " . count($versions));
         }
 
         return Command::SUCCESS;

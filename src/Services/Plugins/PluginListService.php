@@ -36,7 +36,7 @@ class PluginListService implements ListServiceInterface
      * @param array<int, string> $explicitlyRequested
      * @return array<string, array<string>>
      */
-    public function getUpdatedListOfItems(?array $explicitlyRequested, string $action = 'meta:download:plugins'): array
+    public function getUpdatedListOfItems(?array $explicitlyRequested, string $action = 'meta:plugins:download'): array
     {
         $revision = $this->revisionService->getRevisionDateForAction($action);
         if ($revision) {

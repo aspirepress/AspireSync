@@ -34,7 +34,7 @@ class ThemeListService implements ListServiceInterface
         return $this->filter($updates, $filter, $min_age);
     }
 
-    public function getUpdatedListOfItems(?array $explicitlyRequested, string $action = 'meta:download:themes'): array
+    public function getUpdatedListOfItems(?array $explicitlyRequested, string $action = 'meta:themes:download'): array
     {
         $revision = $this->revisionService->getRevisionDateForAction($action);
         if ($revision) {

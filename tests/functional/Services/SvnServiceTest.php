@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Tests\Functional\Services;
 
-use AspirePress\AspireSync\Services\SvnService;
 use AspirePress\AspireSync\Tests\Functional\AbstractFunctionalTestBase;
-use GuzzleHttp\Client as GuzzleClient;
 
 class SvnServiceTest extends AbstractFunctionalTestBase
 {

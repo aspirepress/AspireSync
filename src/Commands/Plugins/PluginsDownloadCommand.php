@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands\Themes;
+namespace AspirePress\AspireSync\Commands\Plugins;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
+use AspirePress\AspireSync\Services\Plugins\PluginListService;
+use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
 use AspirePress\AspireSync\Services\StatsMetadataService;
-use AspirePress\AspireSync\Services\Themes\ThemeListService;
-use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
 use AspirePress\AspireSync\Utilities\GetItemsFromSourceTrait;
 use AspirePress\AspireSync\Utilities\ProcessWaitUtil;
-use AspirePress\AspireSync\Utilities\StringUtil;
 use AspirePress\AspireSync\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,66 +18,72 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
-class DownloadThemesCommand extends AbstractBaseCommand
+class PluginsDownloadCommand extends AbstractBaseCommand
 {
     use GetItemsFromSourceTrait;
 
-    public function __construct(private ThemeListService $themeListService, private ThemesMetadataService $themeMetadataService, private StatsMetadataService $statsMetadataService)
-    {
+    public function __construct(
+        private PluginListService $pluginListService,
+        private PluginMetadataService $pluginMetadataService,
+        private StatsMetadataService $statsMetadataService
+    ) {
         parent::__construct();
     }
 
     protected function configure(): void
     {
-        $this->setName('download:themes')
-            ->setAliases(['themes:grab'])
-            ->setDescription('Grabs themes (with number of specified versions or explicitly specified themes) from the origin repo')
+        $this->setName('plugins:download')
+            ->setDescription('Grabs plugins (with number of specified versions or explicitly specified plugins) from the origin repo')
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
-            ->addOption('themes', null, InputOption::VALUE_OPTIONAL, 'List of themes to request')
+            ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins to request')
             ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists')
-            ->addOption('download-all', 'd', InputOption::VALUE_NONE, 'Download all themes');
+            ->addOption('download-all', 'd', InputOption::VALUE_NONE, 'Download all plugins');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->always('Running command ' . $this->getName());
+        $this->always("Running command {$this->getName()}");
         $this->startTimer();
         $numVersions = $input->getArgument('num-versions');
-        $themesList  = $input->getOption('themes');
+        $pluginList  = $input->getOption('plugins');
 
-        if ($themesList) {
-            $themesList = StringUtil::explodeAndTrim($themesList);
+        if ($pluginList) {
+            $pluginList = explode(',', $pluginList);
+            foreach ($pluginList as $k => $plugin) {
+                $pluginList[$k] = trim($plugin);
+            }
         }
 
-        $this->info('Getting list of themes...');
+        $this->debug('Getting list of plugins...');
+
         if ($input->getOption('download-all')) {
-            $themesToUpdate = $this->themeListService->getUpdatedListOfItems($themesList, 'default');
+            $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems($pluginList, 'default');
         } else {
-            $themesToUpdate = $this->themeListService->getUpdatedListOfItems($themesList);
+            $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems($pluginList);
         }
 
-        $this->info(count($themesToUpdate) . ' themes to download...');
-        if (count($themesToUpdate) === 0) {
-            $this->always('No themes to download...exiting...');
+        $this->debug(count($pluginsToUpdate) . ' plugins to download...');
+        if (count($pluginsToUpdate) === 0) {
+            $this->success('No plugins to download...exiting...');
             return Command::SUCCESS;
         }
 
         $processes = [];
 
-        foreach ($themesToUpdate as $theme => $versions) {
-            $versions = $this->determineVersionsToDownload($theme, $versions, $numVersions);
+        foreach ($pluginsToUpdate as $plugin => $versions) {
+            $versions = $this->determineVersionsToDownload($plugin, $versions, $numVersions);
 
             $versionList = implode(',', $versions);
 
             if (empty($versionList)) {
-                $this->notice('No downloadable versions found for ' . $theme . '...skipping...');
+                $this->notice('No downloadable versions found for ' . $plugin . '...skipping...');
                 continue;
             }
 
             $command = [
                 'aspiresync',
-                'internal:theme-download',
-                $theme,
+                'internal:plugin-download',
+                $plugin,
                 $versionList,
                 $numVersions,
             ];
@@ -89,8 +94,8 @@ class DownloadThemesCommand extends AbstractBaseCommand
 
             $process = new Process($command);
             $process->start();
-
             $processes[] = $process;
+
             if (count($processes) >= 24) {
                 $this->debug('Max processes reached...waiting for space...');
                 $stats = ProcessWaitUtil::wait($processes);
@@ -100,7 +105,7 @@ class DownloadThemesCommand extends AbstractBaseCommand
             }
         }
 
-        $this->info('Waiting for all processes to finish...');
+        $this->debug('Waiting for all processes to finish...');
 
         $stats = ProcessWaitUtil::waitAtEndOfScript($processes);
         foreach ($stats as $stat) {
@@ -108,7 +113,7 @@ class DownloadThemesCommand extends AbstractBaseCommand
             $this->info($stat);
         }
 
-        $this->info('All processes finished...');
+        $this->debug('All processes finished...');
 
         // Output statistics
         $this->endTimer();
@@ -121,13 +126,13 @@ class DownloadThemesCommand extends AbstractBaseCommand
      * @param string[] $versions
      * @return array<int, string>
      */
-    private function determineVersionsToDownload(string $theme, array $versions, string $numToDownload): array
+    private function determineVersionsToDownload(string $plugin, array $versions, string $numToDownload): array
     {
         $download = match ($numToDownload) {
             'all' => $versions,
             'latest' => [VersionUtil::getLatestVersion($versions)],
             default => VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload),
         };
-        return $this->themeMetadataService->getUnprocessedVersions($theme, $download);
+        return $this->pluginMetadataService->getUnprocessedVersions($plugin, $download);
     }
 }

@@ -36,8 +36,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('meta:download:plugins')
-            ->setAliases(['plugins:meta'])
+        $this->setName('plugins:meta')
             ->setDescription('Fetches the meta data of the plugins')
             ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all plugin meta-data; otherwise, we only update what has changed')
             ->addOption('skip-newer-than-secs', null, InputOption::VALUE_REQUIRED, 'Skip downloading metadata pulled more recently than N seconds')

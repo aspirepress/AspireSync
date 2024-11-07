@@ -55,7 +55,7 @@ class RunAllCommand extends AbstractBaseCommand
     {
         $commands = [
             'plugins:meta',
-            'download:plugins',
+            'plugins:download',
             'util:upload',
         ];
 
@@ -73,7 +73,7 @@ class RunAllCommand extends AbstractBaseCommand
     {
         $commands = [
             'themes:meta',
-            'download:themes',
+            'themes:download',
             'util:upload',
         ];
 

@@ -18,66 +18,66 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
-class DownloadPluginsCommand extends AbstractBaseCommand
+class PluginsDownloadPartialCommand extends AbstractBaseCommand
 {
     use GetItemsFromSourceTrait;
 
-    public function __construct(
-        private PluginListService $pluginListService,
-        private PluginMetadataService $pluginMetadataService,
-        private StatsMetadataService $statsMetadataService
-    ) {
+    public function __construct(private PluginListService $pluginListService, private PluginMetadataService $pluginMetadataService, private StatsMetadataService $statsMetadataService)
+    {
         parent::__construct();
     }
 
     protected function configure(): void
     {
-        $this->setName('download:plugins')
-            ->setAliases(['plugins:grab'])
-            ->setDescription('Grabs plugins (with number of specified versions or explicitly specified plugins) from the origin repo')
-            ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
-            ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins to request')
+        $this->setName('plugins:download:partial')
+            ->setDescription('Pulls a partial number of plugins based on the full list of plugins')
+            ->addArgument('num-to-pull', InputArgument::REQUIRED, 'Number of plugins to pull')
+            ->addArgument('offset', InputArgument::OPTIONAL, 'Offset to start pulling from', 0)
+            ->AddOption('versions', null, InputOption::VALUE_OPTIONAL, 'Number of versions to request', 'latest')
             ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists')
-            ->addOption('download-all', 'd', InputOption::VALUE_NONE, 'Download all plugins');
+            ->addOption('download-all', 'd', InputOption::VALUE_NONE, 'Download all plugins (limited by offset and limit)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->always("Running command {$this->getName()}");
-        $this->startTimer();
-        $numVersions = $input->getArgument('num-versions');
-        $pluginList  = $input->getOption('plugins');
 
-        if ($pluginList) {
-            $pluginList = explode(',', $pluginList);
-            foreach ($pluginList as $k => $plugin) {
-                $pluginList[$k] = trim($plugin);
-            }
-        }
+        $this->startTimer();
+        $numVersions = $input->getOption('versions');
+        $numToPull   = (int) $input->getArgument('num-to-pull');
+        $offset      = (int) $input->getArgument('offset');
 
         $this->debug('Getting list of plugins...');
-
         if ($input->getOption('download-all')) {
-            $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems($pluginList, 'default');
+            $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems([], 'default');
         } else {
-            $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems($pluginList);
+            $pluginsToUpdate = $this->pluginListService->getUpdatedListOfItems([]);
         }
 
-        $this->debug(count($pluginsToUpdate) . ' plugins to download...');
-        if (count($pluginsToUpdate) === 0) {
+        $totalPlugins = count($pluginsToUpdate);
+
+        $this->debug($totalPlugins . ' plugins to download...');
+
+        if ($totalPlugins === 0) {
             $this->success('No plugins to download...exiting...');
             return Command::SUCCESS;
         }
 
+        if ($offset > $totalPlugins) {
+            $this->failure('Offset is greater than total plugins...exiting...');
+            return Command::FAILURE;
+        }
+        $this->info('Limiting plugin download to ' . $numToPull . ' plugins... (offset by ' . $offset . ')');
+        $pluginsToUpdate = array_slice($pluginsToUpdate, $offset, $numToPull);
+
         $processes = [];
 
         foreach ($pluginsToUpdate as $plugin => $versions) {
-            $versions = $this->determineVersionsToDownload($plugin, $versions, $numVersions);
-
+            $versions    = $this->determineVersionsToDownload($plugin, $versions, $numVersions);
             $versionList = implode(',', $versions);
 
             if (empty($versionList)) {
-                $this->notice('No downloadable versions found for ' . $plugin . '...skipping...');
+                $this->notice('No versions found for ' . $plugin . '...skipping...');
                 continue;
             }
 
@@ -100,8 +100,8 @@ class DownloadPluginsCommand extends AbstractBaseCommand
             if (count($processes) >= 24) {
                 $this->debug('Max processes reached...waiting for space...');
                 $stats = ProcessWaitUtil::wait($processes);
-                $this->info($stats);
                 $this->processStats($stats);
+                $this->info($stats);
                 $this->debug('Process ended; starting another...');
             }
         }
@@ -114,12 +114,13 @@ class DownloadPluginsCommand extends AbstractBaseCommand
             $this->info($stat);
         }
 
-        $this->debug('All processes finished...');
+        $this->debug('All processes finished!');
 
-        // Output statistics
         $this->endTimer();
+
         $this->always($this->getRunInfo($this->getCalculatedStats()));
         $this->statsMetadataService->logStats($this->getName(), $this->stats);
+
         return Command::SUCCESS;
     }
 

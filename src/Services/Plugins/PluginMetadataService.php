@@ -502,13 +502,6 @@ class PluginMetadataService implements MetadataInterface
         return '/plugins/';
     }
 
-    public function getHashForId(string $pluginId, string $version): string
-    {
-        $sql       = "SELECT hash FROM sync_plugin_files WHERE plugin_id = :item_id AND version = :version AND type = 'wp_cdn'";
-        $hashArray = $this->pdo->fetchOne($sql, ['item_id' => $pluginId, 'version' => $version]);
-        return $hashArray['hash'] ?? '';
-    }
-
     public function getPulledDateTimestamp(string $slug): ?int
     {
         $sql    = "select unixepoch(pulled_at) timestamp from sync_plugins where slug = :slug";
