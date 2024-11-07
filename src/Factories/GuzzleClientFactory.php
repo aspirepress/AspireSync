@@ -46,7 +46,7 @@ class GuzzleClientFactory
         );
         $handler->push($retryMiddleware);
 
-        return new GuzzleClient(['handler' => $handler, 'timeout' => 5, 'connect_timeout' => 2]);
+        return new GuzzleClient(['handler' => $handler, 'timeout' => 15, 'connect_timeout' => 2]);
     }
 }
 
