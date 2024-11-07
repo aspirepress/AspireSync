@@ -6,7 +6,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/download/2.5.2/install-php-extensions /usr/local/bin/
 
-RUN apt update && apt install -y bash fuse git locales sqlite3 subversion
+RUN apt update && apt install -y bash fuse git locales sqlite3 subversion zip
 
 # whine: why can't i just install a locale as a package?
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
