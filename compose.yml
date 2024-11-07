@@ -1,14 +1,9 @@
 services:
   aspiresync:
-    privileged: true  # required for juicefs
     build:
       context: .
       dockerfile: docker/Dockerfile
       target: devbuild
-    environment:
-      JUICEFS_BUCKET: ${JUICEFS_BUCKET}
-      JUICEFS_ACCESS_KEY: ${JUICEFS_ACCESS_KEY}
-      JUICEFS_SECRET_KEY: ${JUICEFS_SECRET_KEY}
     networks:
       - app-net
       - aspire-net
