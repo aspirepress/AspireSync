@@ -7,6 +7,7 @@ namespace AspirePress\AspireSync\Commands\Plugins;
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\Plugins\PluginListService;
 use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
+use AspirePress\AspireSync\Services\ProcessManager;
 use AspirePress\AspireSync\Services\StatsMetadataService;
 use AspirePress\AspireSync\Utilities\HasStats;
 use AspirePress\AspireSync\Utilities\ProcessWaitUtil;
@@ -25,9 +26,13 @@ class PluginsDownloadCommand extends AbstractBaseCommand
     public function __construct(
         private PluginListService $pluginListService,
         private PluginMetadataService $pluginMetadataService,
-        private StatsMetadataService $statsMetadataService
+        private StatsMetadataService $statsMetadataService,
+        private ProcessManager $processManager,
     ) {
         parent::__construct();
+        $this->processManager->setProcessStartDelay(200 /* milliseconds */);
+        $this->processManager->setProcessStartCallback($this->onDownloadProcessStarted(...));
+        $this->processManager->setProcessFinishCallback($this->onDownloadProcessFinished(...));
     }
 
     protected function configure(): void
@@ -68,7 +73,7 @@ class PluginsDownloadCommand extends AbstractBaseCommand
             return Command::SUCCESS;
         }
 
-        $processes = [];
+        $commands = [];
 
         foreach ($pluginsToUpdate as $plugin => $versions) {
             $versions = $this->determineVersionsToDownload($plugin, $versions, $numVersions);
@@ -76,7 +81,7 @@ class PluginsDownloadCommand extends AbstractBaseCommand
             $versionList = implode(',', $versions);
 
             if (empty($versionList)) {
-                $this->notice('No downloadable versions found for ' . $plugin . '...skipping...');
+                // $this->notice('No downloadable versions found for ' . $plugin . '...skipping...');
                 continue;
             }
 
@@ -92,34 +97,30 @@ class PluginsDownloadCommand extends AbstractBaseCommand
                 $command[] = '-f';
             }
 
-            $process = new Process($command);
-            $process->start();
-            $processes[] = $process;
-
-            if (count($processes) >= 24) {
-                // $this->debug('Max processes reached...waiting for space...');
-                $stats = ProcessWaitUtil::wait($processes);
-                $this->info($stats);
-                $this->processStats($stats);
-                // $this->debug('Process ended; starting another...');
-            }
+            $commands[] = $command;
         }
 
-        $this->debug('Waiting for all processes to finish...');
-
-        $stats = ProcessWaitUtil::waitAtEndOfScript($processes);
-        foreach ($stats as $stat) {
-            $this->processStats($stat);
-            $this->info($stat);
+        foreach ($commands as $command) {
+            $this->debug("QUEUE: " . implode(' ', $command));
+            $this->processManager->addProcess(new Process($command), );
         }
 
-        $this->debug('All processes finished...');
+        $this->notice("Total download jobs queued: " . count($commands));
+        $this->processManager->waitForAllProcesses();
 
         // Output statistics
         $this->endTimer();
         $this->always($this->getRunInfo($this->getCalculatedStats()));
         $this->statsMetadataService->logStats($this->getName(), $this->stats);
         return Command::SUCCESS;
+    }
+
+    private function onDownloadProcessStarted(Process $process): void {
+        $this->debug("START: " . str_replace("'", "", $process->getCommandLine()));
+    }
+
+    private function onDownloadProcessFinished(Process $process): void {
+        $this->info($process->getOutput());
     }
 
     /**
