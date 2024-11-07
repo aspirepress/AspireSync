@@ -32,11 +32,11 @@ $CONTAINER->compile(resolveEnvPlaceholders: true);
 
 $APP = new Application();
 
-$APP->add($CONTAINER->get(RunAllCommand::class));
 $APP->add($CONTAINER->get(InternalPluginDownloadCommand::class));
 $APP->add($CONTAINER->get(PluginsDownloadCommand::class));
 $APP->add($CONTAINER->get(PluginsMetaCommand::class));
 $APP->add($CONTAINER->get(PluginsDownloadPartialCommand::class));
+
 $APP->add($CONTAINER->get(ThemesMetaCommand::class));
 $APP->add($CONTAINER->get(ThemesDownloadCommand::class));
 $APP->add($CONTAINER->get(ThemesDownloadPartialCommand::class));
