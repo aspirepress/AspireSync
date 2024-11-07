@@ -8,7 +8,7 @@ use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\StatsMetadataService;
 use AspirePress\AspireSync\Services\Themes\ThemeListService;
 use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
-use AspirePress\AspireSync\Utilities\GetItemsFromSourceTrait;
+use AspirePress\AspireSync\Utilities\HasStats;
 use AspirePress\AspireSync\Utilities\ProcessWaitUtil;
 use AspirePress\AspireSync\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
@@ -20,7 +20,7 @@ use Symfony\Component\Process\Process;
 
 class ThemesDownloadPartialCommand extends AbstractBaseCommand
 {
-    use GetItemsFromSourceTrait;
+    use HasStats;
 
     public function __construct(private ThemeListService $themeListService, private ThemesMetadataService $themesMetadataService, private StatsMetadataService $statsMetadataService)
     {

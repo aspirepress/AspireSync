@@ -8,7 +8,7 @@ use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\Plugins\PluginListService;
 use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
 use AspirePress\AspireSync\Services\StatsMetadataService;
-use AspirePress\AspireSync\Utilities\GetItemsFromSourceTrait;
+use AspirePress\AspireSync\Utilities\HasStats;
 use AspirePress\AspireSync\Utilities\ProcessWaitUtil;
 use AspirePress\AspireSync\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
@@ -20,7 +20,7 @@ use Symfony\Component\Process\Process;
 
 class PluginsDownloadPartialCommand extends AbstractBaseCommand
 {
-    use GetItemsFromSourceTrait;
+    use HasStats;
 
     public function __construct(private PluginListService $pluginListService, private PluginMetadataService $pluginMetadataService, private StatsMetadataService $statsMetadataService)
     {

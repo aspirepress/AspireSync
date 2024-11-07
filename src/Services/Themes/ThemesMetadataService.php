@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Services\Themes;
 
 use Aura\Sql\ExtendedPdoInterface;
-use Exception;
 use PDOException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
-
-use function Safe\json_decode;
 use function Safe\json_encode;
 
 class ThemesMetadataService
@@ -76,7 +73,7 @@ class ThemesMetadataService
             'metadata'        => $meta,
         ]);
 
-        $versionResult = $this->writeVersionsForTheme($id, $versions, 'wp_cdn');
+        $versionResult = $this->writeVersionsForTheme($id, $versions);
 
         if (! empty($versionResult['error'])) {
             throw new RuntimeException('Unable to write versions for theme ' . $slug);
@@ -101,104 +98,6 @@ class ThemesMetadataService
             'status'    => $meta['status'] ?? 'error',
             'metadata'  => $meta,
         ]);
-    }
-
-    /**
-     * @param  array<string, string|array<string, string>>  $fileContents
-     * @return string[]
-     */
-    private function updateTheme(array $fileContents, string $pulledAt): array
-    {
-        $this->pdo->beginTransaction();
-
-        try {
-            $mdSql      = 'SELECT id, metadata FROM sync_themes WHERE slug = :slug';
-            $result     = $this->pdo->fetchOne($mdSql, ['slug' => $fileContents['slug']]);
-            $metadata   = json_decode($result['metadata'], true);
-            $id         = Uuid::fromString($result['id']);
-            $apMetadata = $metadata['aspirepress_meta'];
-
-            $newMetadata                     = $fileContents;
-            $newMetadata['aspirepress_meta'] = [
-                'seen'      => $apMetadata['seen'],
-                'added'     => $apMetadata['added'],
-                'updated'   => date('c'),
-                'processed' => null,
-                'finalized' => null,
-            ];
-
-            $name           = substr($fileContents['name'], 0, 255);
-            $slug           = $fileContents['slug'];
-            $currentVersion = $fileContents['version'];
-            $versions       = $fileContents['versions'];
-            $updatedAt      = date('c', strtotime($fileContents['last_updated']));
-
-            $sql = 'UPDATE sync_themes SET metadata = :metadata, name = :name, current_version = :current_version, updated = :updated, pulled_at = :pulled_at WHERE slug = :slug';
-            $this->pdo->perform($sql, [
-                'name'            => $name,
-                'slug'            => $slug,
-                'current_version' => $currentVersion,
-                'updated'         => $updatedAt,
-                'pulled_at'       => $pulledAt,
-                'metadata'        => json_encode($newMetadata),
-            ]);
-
-            if (empty($fileContents['versions'])) {
-                $versions = [$fileContents['version'] => $fileContents['download_link']];
-            }
-
-            $newVersions = $this->getNewlyDiscoveredVersionsList($id, $versions);
-
-            $versionResult = $this->writeVersionsForTheme($id, $newVersions, 'wp_cdn');
-
-            if (! empty($versionResult['error'])) {
-                throw new Exception('Unable to write versions for theme ' . $slug);
-            }
-
-            $this->pdo->commit();
-            return ['error' => ''];
-        } catch (Exception $e) {
-            $this->pdo->rollBack();
-            return ['error' => $e->getMessage()];
-        }
-    }
-
-    /**
-     * @param  array<string, string[]>  $versions
-     * @return array|string[]
-     */
-    public function writeVersionProcessed(UuidInterface $themeId, array $versions, string $hash, string $cdn = 'wp_cdn'): array
-    {
-        $sql = 'INSERT INTO sync_theme_files (id, theme_id, file_url, type, version, created, processed, hash) VALUES (:id, :theme_id, :file_url, :type, :version, current_timestamp, current_timestamp, :hash)';
-
-        if (! $this->pdo->inTransaction()) {
-            $ourTransaction = true;
-            $this->pdo->beginTransaction();
-        }
-
-        try {
-            foreach ($versions as $version => $url) {
-                $this->pdo->perform($sql, [
-                    'id'       => Uuid::uuid7()->toString(),
-                    'theme_id' => $themeId->toString(),
-                    'file_url' => $url,
-                    'type'     => $cdn,
-                    'version'  => $version,
-                    'hash'     => $hash,
-                ]);
-            }
-
-            if (isset($ourTransaction)) {
-                $this->pdo->commit();
-            }
-
-            return ['error' => ''];
-        } catch (PDOException $e) {
-            if (isset($ourTransaction)) {
-                $this->pdo->rollBack();
-            }
-            return ['error' => $e->getMessage()];
-        }
     }
 
     /**
@@ -236,25 +135,6 @@ class ThemesMetadataService
             }
             return ['error' => $e->getMessage()];
         }
-    }
-
-    /**
-     * @param  string[]  $versions
-     * @return string[]
-     */
-    private function getNewlyDiscoveredVersionsList(UuidInterface $id, array $versions): array
-    {
-        $existingVersions = "SELECT version FROM sync_theme_files WHERE type = 'wp_cdn' AND theme_id = :id";
-        $existingVersions = $this->pdo->fetchCol($existingVersions, ['id' => $id->toString()]);
-
-        $newVersions = [];
-        foreach ($versions as $version => $url) {
-            if (! in_array($version, $existingVersions, true)) {
-                $newVersions[$version] = $url;
-            }
-        }
-
-        return $newVersions;
     }
 
     /**
@@ -328,24 +208,6 @@ class ThemesMetadataService
     }
 
     /**
-     * @return string[]
-     */
-    public function getVersionData(string $themeId, ?string $version, string $type = 'wp_cdn'): array|bool
-    {
-        $sql  = 'SELECT * FROM sync_theme_files WHERE theme_id = :theme_id AND type = :type';
-        $args = [
-            'theme_id' => $themeId,
-            'type'     => $type,
-        ];
-        if ($version) {
-            $sql            .= ' AND version = :version';
-            $args['version'] = $version;
-        }
-
-        return $this->pdo->fetchOne($sql, $args);
-    }
-
-    /**
      * @param array<int, string> $filterBy
      * @return string[]
      */
@@ -373,23 +235,6 @@ class ThemesMetadataService
     {
         $sql = "SELECT item_slug FROM sync_not_found_items WHERE item_type = 'theme'";
         return $this->pdo->fetchAll($sql);
-    }
-
-    public function getStorageDir(): string
-    {
-        return '/opt/aspiresync/data/themes';
-    }
-
-    public function getS3Path(): string
-    {
-        return '/themes/';
-    }
-
-    public function getHashForId(string $themeId, string $version): string
-    {
-        $sql       = "SELECT hash FROM sync_theme_files WHERE theme_id = :item_id AND version = :version AND type = 'wp_cdn'";
-        $hashArray = $this->pdo->fetchOne($sql, ['item_id' => $themeId, 'version' => $version]);
-        return $hashArray['hash'] ?? '';
     }
 
     public function getPulledDateTimestamp(string $slug): ?int

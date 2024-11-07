@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Utilities;
 
-trait GetItemsFromSourceTrait
+trait HasStats
 {
     /** @var array<string, int> */
     private array $stats = [
