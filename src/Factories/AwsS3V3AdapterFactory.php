@@ -19,11 +19,10 @@ class AwsS3V3AdapterFactory
     ): AwsS3V3Adapter {
         $config = [
             'region'  => $region,
-            'version' => 'latest',
         ];
 
         if ($endpoint) {
-            $config['bucket_endpoint'] = $endpoint;
+            $config['endpoint'] = $endpoint;
         }
 
         if ($key && $secret) {
@@ -31,6 +30,14 @@ class AwsS3V3AdapterFactory
         }
 
         $client = new S3Client($config);
+
+        // Fail fast: if configuration is no good, we want to know. Flysystem swallows errors, the S3 SDK does not.
+        $client->putObject([
+            'Bucket'     => 'aspiresync-dev',
+            'Key'        => 'stamp',
+            'Body'      => date('c'),
+        ]);
+
         return new AwsS3V3Adapter($client, $bucket);
     }
 }

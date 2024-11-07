@@ -10,7 +10,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
 use League\Flysystem\Filesystem;
 
-class PluginDownloadFromWpService implements DownloadServiceInterface
+class PluginDownloadService implements DownloadServiceInterface
 {
     public function __construct(
         private PluginMetadataService $pluginMetadataService,
@@ -30,7 +30,7 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
 
         $outcomes = [];
         foreach ($downloadable as $version => $url) {
-            $outcome              = $this->runDownload($slug, $version, $url, $force);
+            $outcome              = $this->runDownload($slug, (string)$version, $url, $force);
             $outcomes[$outcome] ??= [];
             $outcomes[$outcome][] = $version;
         }
@@ -51,9 +51,9 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
             $options = ['headers' => ['User-Agent' => 'AspireSync/0.5'], 'allow_redirects' => true];
             $response = $this->guzzle->request('GET', $url, $options);
             $fs->write($path, $response->getBody()->getContents());
-            if ($fs->fileSize($path) === 0) {
-                $fs->delete($path);
-            }
+            // if ($fs->fileSize($path) === 0) {
+            //     $fs->delete($path);
+            // }
             $this->pluginMetadataService->setVersionToDownloaded($slug, $version);
             return "{$response->getStatusCode()} {$response->getReasonPhrase()}";
         } catch (ClientException $e) {

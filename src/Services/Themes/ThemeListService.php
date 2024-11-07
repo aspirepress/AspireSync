@@ -19,7 +19,7 @@ class ThemeListService implements ListServiceInterface
     private int $prevRevision = 0;
 
     public function __construct(
-        private ThemesMetadataService $themesMetadataService,
+        private ThemeMetadataService $themesMetadataService,
         private RevisionMetadataService $revisionService,
         private GuzzleClient $guzzle,
     ) {

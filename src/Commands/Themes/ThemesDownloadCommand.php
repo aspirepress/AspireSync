@@ -7,7 +7,7 @@ namespace AspirePress\AspireSync\Commands\Themes;
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\StatsMetadataService;
 use AspirePress\AspireSync\Services\Themes\ThemeListService;
-use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
+use AspirePress\AspireSync\Services\Themes\ThemeMetadataService;
 use AspirePress\AspireSync\Utilities\HasStats;
 use AspirePress\AspireSync\Utilities\ProcessWaitUtil;
 use AspirePress\AspireSync\Utilities\StringUtil;
@@ -23,7 +23,7 @@ class ThemesDownloadCommand extends AbstractBaseCommand
 {
     use HasStats;
 
-    public function __construct(private ThemeListService $themeListService, private ThemesMetadataService $themeMetadataService, private StatsMetadataService $statsMetadataService)
+    public function __construct(private ThemeListService $themeListService, private ThemeMetadataService $themeMetadataService, private StatsMetadataService $statsMetadataService)
     {
         parent::__construct();
     }
@@ -65,6 +65,7 @@ class ThemesDownloadCommand extends AbstractBaseCommand
         $processes = [];
 
         foreach ($themesToUpdate as $theme => $versions) {
+            $this->debug("$theme ...");
             $versions = $this->determineVersionsToDownload($theme, $versions, $numVersions);
 
             $versionList = implode(',', $versions);
@@ -91,11 +92,11 @@ class ThemesDownloadCommand extends AbstractBaseCommand
 
             $processes[] = $process;
             if (count($processes) >= 24) {
-                $this->debug('Max processes reached...waiting for space...');
+                // $this->debug('Max processes reached...waiting for space...');
                 $stats = ProcessWaitUtil::wait($processes);
                 $this->info($stats);
                 $this->processStats($stats);
-                $this->debug('Process ended; starting another...');
+                // $this->debug('Process ended; starting another...');
             }
         }
 

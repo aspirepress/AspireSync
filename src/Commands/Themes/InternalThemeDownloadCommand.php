@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Commands\Themes;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
-use AspirePress\AspireSync\Services\Themes\ThemeDownloadFromWpService;
+use AspirePress\AspireSync\Services\Themes\ThemeDownloadService;
 use AspirePress\AspireSync\Utilities\StringUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -15,7 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InternalThemeDownloadCommand extends AbstractBaseCommand
 {
-    public function __construct(private ThemeDownloadFromWpService $downloadService)
+    public function __construct(private ThemeDownloadService $downloadService)
     {
         parent::__construct();
     }
@@ -33,10 +33,10 @@ class InternalThemeDownloadCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $theme       = $input->getArgument('theme');
+        $slug        = $input->getArgument('theme');
         $numVersions = $input->getArgument('num-versions');
 
-        $this->debug('Determining versions of ' . $theme . '...');
+        $this->debug('Determining versions of ' . $slug . '...');
         $versions = StringUtil::explodeAndTrim($input->getArgument('version-list') ?? '');
         $count    = match ($numVersions) {
             'all' => count($versions),
@@ -45,9 +45,9 @@ class InternalThemeDownloadCommand extends AbstractBaseCommand
         };
         $this->info("Downloading $count versions...");
 
-        $responses = $this->downloadService->download($theme, $versions, $input->getOption('force'));
+        $responses = $this->downloadService->download($slug, $versions, $input->getOption('force'));
         foreach ($responses as $responseCode => $versions) {
-            $this->always($theme . ' ' . $responseCode . ': ' . $count);
+            $this->always("$slug $responseCode: " . count($versions));
         }
         return Command::SUCCESS;
     }

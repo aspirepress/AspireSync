@@ -10,10 +10,10 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
 use League\Flysystem\Filesystem;
 
-class ThemeDownloadFromWpService implements DownloadServiceInterface
+class ThemeDownloadService implements DownloadServiceInterface
 {
     public function __construct(
-        private ThemesMetadataService $themeMetadataService,
+        private ThemeMetadataService $themeMetadataService,
         private GuzzleClient $guzzle,
         private Filesystem $filesystem,
     ) {
@@ -30,7 +30,7 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
 
         $outcomes = [];
         foreach ($downloadable as $version => $url) {
-            $outcome              = $this->runDownload($slug, $version, $url, $force);
+            $outcome              = $this->runDownload($slug, (string) $version, $url, $force);
             $outcomes[$outcome] ??= [];
             $outcomes[$outcome][] = $version;
         }

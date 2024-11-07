@@ -11,7 +11,7 @@ use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 use function Safe\json_encode;
 
-class ThemesMetadataService
+class ThemeMetadataService
 {
     /** @var array<string, string[]> */
     private array $existing;
@@ -143,7 +143,15 @@ class ThemesMetadataService
      */
     public function getUnprocessedVersions(string $theme, array $versions, string $type = 'wp_cdn'): array
     {
-        $sql     = 'SELECT version FROM sync_theme_files LEFT JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id WHERE type = :type AND sync_themes.slug = :theme AND processed IS NULL AND sync_theme_files.version IN (:versions)';
+        $sql     = <<<'SQL'
+            SELECT version 
+            FROM sync_theme_files 
+                LEFT JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id 
+            WHERE type = :type 
+              AND sync_themes.slug = :theme 
+              AND processed IS NULL 
+              AND sync_theme_files.version IN (:versions)
+        SQL;
         $results = $this->pdo->fetchAll($sql, ['theme' => $theme, 'type' => $type, 'versions' => $versions]);
         $return  = [];
         foreach ($results as $result) {

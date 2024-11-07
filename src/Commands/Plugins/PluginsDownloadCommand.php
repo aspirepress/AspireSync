@@ -97,11 +97,11 @@ class PluginsDownloadCommand extends AbstractBaseCommand
             $processes[] = $process;
 
             if (count($processes) >= 24) {
-                $this->debug('Max processes reached...waiting for space...');
+                // $this->debug('Max processes reached...waiting for space...');
                 $stats = ProcessWaitUtil::wait($processes);
                 $this->info($stats);
                 $this->processStats($stats);
-                $this->debug('Process ended; starting another...');
+                // $this->debug('Process ended; starting another...');
             }
         }
 

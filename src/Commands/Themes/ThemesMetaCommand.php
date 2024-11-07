@@ -8,7 +8,7 @@ use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 use AspirePress\AspireSync\Services\StatsMetadataService;
 use AspirePress\AspireSync\Services\Themes\ThemeListService;
-use AspirePress\AspireSync\Services\Themes\ThemesMetadataService;
+use AspirePress\AspireSync\Services\Themes\ThemeMetadataService;
 use AspirePress\AspireSync\Utilities\StringUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,7 +27,7 @@ class ThemesMetaCommand extends AbstractBaseCommand
 
     public function __construct(
         private readonly ThemeListService $themeListService,
-        private readonly ThemesMetadataService $themesMetadataService,
+        private readonly ThemeMetadataService $themesMetadataService,
         private readonly StatsMetadataService $statsMetadataService,
         private readonly WpEndpointClientInterface $wpClient,
     ) {
