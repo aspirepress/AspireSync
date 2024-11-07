@@ -50,7 +50,7 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
         }
 
         try {
-            $response = $this->guzzle->request('GET', $url, ['allow_redirects' => true, 'sink' => $filePath]);
+            $response = $this->guzzle->request('GET', $url, ['headers' => ['User-Agent' => 'AspireSync/0.5'], 'allow_redirects' => true, 'sink' => $filePath]);
             if (filesize($filePath) === 0) {
                 unlink($filePath);
             }
