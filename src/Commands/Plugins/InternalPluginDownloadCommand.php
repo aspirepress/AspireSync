@@ -7,6 +7,7 @@ namespace AspirePress\AspireSync\Commands\Plugins;
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\Plugins\PluginDownloadFromWpService;
 use AspirePress\AspireSync\Utilities\StringUtil;
+use PHPUnit\Util\Filesystem;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,7 +16,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InternalPluginDownloadCommand extends AbstractBaseCommand
 {
-    public function __construct(private PluginDownloadFromWpService $downloadService)
+    public function __construct(
+        private PluginDownloadFromWpService $downloadService,
+    )
     {
         parent::__construct();
     }

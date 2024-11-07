@@ -5,24 +5,23 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Services\Themes;
 
 use AspirePress\AspireSync\Services\Interfaces\DownloadServiceInterface;
+use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
-use RuntimeException;
-use Symfony\Component\Process\Process;
+use League\Flysystem\Filesystem;
 
 class ThemeDownloadFromWpService implements DownloadServiceInterface
 {
     public function __construct(
         private ThemesMetadataService $themeMetadataService,
         private GuzzleClient $guzzle,
+        private Filesystem $filesystem,
     ) {
     }
 
     /** @return array<string, string>[] */
     public function download(string $slug, array $versions, bool $force = false): array
     {
-        @mkdir('/opt/aspiresync/data/themes');
-
         $downloadable = $this->themeMetadataService->getDownloadUrlsForVersions($slug, $versions);
 
         if (! $downloadable) {
@@ -31,8 +30,9 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
 
         $outcomes = [];
         foreach ($downloadable as $version => $url) {
-            $result                        = $this->runDownload($slug, $version, $url, $force);
-            $outcomes[$result['status']][] = $result['version'];
+            $outcome              = $this->runDownload($slug, $version, $url, $force);
+            $outcomes[$outcome] ??= [];
+            $outcomes[$outcome][] = $version;
         }
         return $outcomes;
     }
@@ -40,52 +40,44 @@ class ThemeDownloadFromWpService implements DownloadServiceInterface
     /**
      * @return array<string, string>
      */
-    private function runDownload(string $theme, string $version, string $url, bool $force): array
+    private function runDownload(string $slug, string $version, string $url, bool $force = false): string
     {
-        $filePath = "/opt/aspiresync/data/themes/{$theme}.{$version}.zip";
+        $fs   = $this->filesystem;
+        $path = "/themes/{$slug}.{$version}.zip";
 
-        if (file_exists($filePath) && ! $force) {
-            $hash = $this->calculateHash($filePath);
-            $this->themeMetadataService->setVersionToDownloaded($theme, $version, $hash);
-            return ['status' => '304 Not Modified', 'version' => $version];
+        if ($fs->fileExists($path) && ! $force) {
+            $this->themeMetadataService->setVersionToDownloaded($slug, $version);
+            return '304 Not Modified';
         }
         try {
-            $this->guzzle->request('GET', $url, ['allow_redirects' => true, 'sink' => $filePath]);
-            if (filesize($filePath) === 0) {
-                @unlink($filePath);
+            $options  = ['headers' => ['User-Agent' => 'AspireSync/0.5'], 'allow_redirects' => true];
+            $response = $this->guzzle->request('GET', $url, $options);
+            $fs->write($path, $response->getBody()->getContents());
+            if ($fs->fileSize($path) === 0) {
+                $fs->delete($path);
             }
-            $hash = $this->calculateHash($filePath);
-            $this->themeMetadataService->setVersionToDownloaded($theme, $version, $hash);
+            $this->themeMetadataService->setVersionToDownloaded($slug, $version);
+            return '200 OK';
         } catch (ClientException $e) {
             if (method_exists($e, 'getResponse')) {
                 $response = $e->getResponse();
                 if ($response->getStatusCode() === 404) {
-                    $this->themeMetadataService->setVersionToDownloaded($theme, $version);
+                    $this->themeMetadataService->setVersionToDownloaded($slug, $version);
                 }
                 if ($response->getStatusCode() === 429) {
                     sleep(2);
-                    return $this->runDownload($theme, $version, $url, $force);
+                    return $this->runDownload($slug, $version, $url, $force);
                 }
 
-                return ['status' => $response->getStatusCode() . ' ' . $response->getReasonPhrase(), 'version' => $version];
+                return $response->getStatusCode() . ' ' . $response->getReasonPhrase();
             }
 
-            @unlink($filePath);
-            return ['status' => $e->getMessage(), 'version' => $version];
-        } catch (RuntimeException $e) {
-            @unlink($filePath);
-            return ['status' => $e->getMessage(), 'version' => $version];
+            $fs->delete($path);
+            return $e->getMessage();
+        } catch (Exception $e) {
+            $fs->delete($path);
+            return $e->getMessage();
         }
 
-        return [];
-    }
-
-    private function calculateHash(string $filePath): string
-    {
-        $process = new Process(['unzip', '-t', $filePath]);
-        $process->run();
-        return $process->isSuccessful()
-            ? hash_file('sha256', $filePath)
-            : throw new RuntimeException($process->getErrorOutput());
     }
 }

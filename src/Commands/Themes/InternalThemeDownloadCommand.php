@@ -45,7 +45,7 @@ class InternalThemeDownloadCommand extends AbstractBaseCommand
         };
         $this->info("Downloading $count versions...");
 
-        $responses = $this->downloadService->download($theme, $versions, $numVersions, $input->getOption('force'));
+        $responses = $this->downloadService->download($theme, $versions, $input->getOption('force'));
         foreach ($responses as $responseCode => $versions) {
             $this->always($theme . ' ' . $responseCode . ': ' . $count);
         }
