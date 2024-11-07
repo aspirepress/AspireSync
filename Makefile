@@ -1,5 +1,5 @@
 
-DB_FILE ?= data/aspiresync.db
+DB_FILE ?= data/aspiresync.sqlite
 
 ifneq (,$(wildcard ./.env))
     include .env
