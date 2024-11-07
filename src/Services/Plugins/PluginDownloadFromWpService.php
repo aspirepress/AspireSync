@@ -32,8 +32,9 @@ class PluginDownloadFromWpService implements DownloadServiceInterface
 
         $outcomes = [];
         foreach ($downloadable as $version => $url) {
-            $outcome            = $this->downloadOne($url, $slug, $version, $force);
-            $outcomes[$outcome] = $version;
+            $outcome              = $this->downloadOne($url, $slug, $version, $force);
+            $outcomes[$outcome] ??= [];
+            $outcomes[$outcome][] = $version;
         }
         return $outcomes;
     }
