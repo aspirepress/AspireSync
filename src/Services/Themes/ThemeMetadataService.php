@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services\Themes;
 
+use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
 use Aura\Sql\ExtendedPdoInterface;
 use PDOException;
 use Ramsey\Uuid\Uuid;
@@ -11,7 +12,7 @@ use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 use function Safe\json_encode;
 
-class ThemeMetadataService
+class ThemeMetadataService implements MetadataServiceInterface
 {
     /** @var array<string, string[]> */
     private array $existing;

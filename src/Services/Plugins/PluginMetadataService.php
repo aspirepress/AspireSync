@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services\Plugins;
 
+use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
 use Aura\Sql\ExtendedPdoInterface;
 use Exception;
 use PDOException;
@@ -13,7 +14,7 @@ use RuntimeException;
 use function Safe\json_decode;
 use function Safe\json_encode;
 
-class PluginMetadataService
+class PluginMetadataService implements MetadataServiceInterface
 {
     /** @var string[][] */
     private array $existing;
@@ -407,7 +408,7 @@ class PluginMetadataService
      * @param string[] $versions
      * @return string[]
      */
-    public function getUnprocessedVersions(string $plugin, array $versions, string $type = 'wp_cdn'): array
+    public function getUnprocessedVersions(string $slug, array $versions, string $type = 'wp_cdn'): array
     {
         $sql     = <<<'SQL'
             SELECT version 
@@ -418,12 +419,8 @@ class PluginMetadataService
               AND processed IS NULL 
               AND sync_plugin_files.version IN (:versions)
             SQL;
-        $results = $this->pdo->fetchAll($sql, ['plugin' => $plugin, 'type' => $type, 'versions' => $versions]);
-        $return  = [];
-        foreach ($results as $result) {
-            $return[] = $result['version'];
-        }
-        return $return;
+        $results = $this->pdo->fetchAll($sql, ['plugin' => $slug, 'type' => $type, 'versions' => $versions]);
+        return array_map(fn ($row) => $row['version'], $results);
     }
 
     /**
