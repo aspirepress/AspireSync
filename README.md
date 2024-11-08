@@ -41,10 +41,3 @@ You can configure the following environment variables to determine where uploads
 | S3_ENDPOINT          | The S3 API endpoint, only required if using S3 storage from a provider other than AWS                                    |
 | S3_KEY               | The AWS access_key_id for S3.  Optional if host/container roles are in effect.                                           |
 | S3_SECRET            | The companion secret to the `S3_KEY`;   Optional if host/container roles are in effect.                                  |
-
-## License
-
-The AspireSync tool is licensed under the MIT license. You may use and distribute it freely.
-
-The code that this tool is designed to download is likely licensed under the GPL. Please respect that license. However,
-because this tool does not implement GPL components, it is not required to be licensed under the GPL.
