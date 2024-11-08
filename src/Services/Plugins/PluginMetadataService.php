@@ -379,9 +379,10 @@ class PluginMetadataService
                 JOIN sync_plugins ON sync_plugins.id = sync_plugin_files.plugin_id 
             WHERE sync_plugins.slug = :slug 
               AND sync_plugin_files.version = :version
+              AND sync_plugin_files.type = :type
         SQL;
 
-        $result = $this->pdo->fetchOne($sql, ['slug' => $slug, 'type' => $type]);
+        $result = $this->pdo->fetchOne($sql, ['slug' => $slug, 'type' => $type, 'version' => $version]);
         return $result['file_url'];
     }
 
