@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Utilities;
 
-use InvalidArgumentException;
-
 abstract class VersionUtil
 {
     /**
@@ -52,7 +50,7 @@ abstract class VersionUtil
     public static function cleanVersion(string $version): array
     {
         // $version = trim($version); // XXX bad idea, the data needs to be cleaned at the source.
-        if (!preg_match('/^[-A-Za-z0-9_.]+$/', $version)) {
+        if (! preg_match('/^[-A-Za-z0-9_.]+$/', $version)) {
             $encoded = urlencode($version);
             return [null, "Invalid version [urlencoded version: $encoded]"];
         }

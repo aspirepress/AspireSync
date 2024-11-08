@@ -56,11 +56,11 @@ class PluginDownloadService implements DownloadServiceInterface
                 }
                 return $ret($response->getReasonPhrase(), $response->getStatusCode());
             } else {
-                return $ret($e->getMessage(), (int)$e->getCode());
+                return $ret($e->getMessage(), (int) $e->getCode());
             }
         } catch (Exception $e) {
             $fs->delete($path);
-            return $ret($e->getMessage(), (int)$e->getCode());
+            return $ret($e->getMessage(), (int) $e->getCode());
         }
     }
 }

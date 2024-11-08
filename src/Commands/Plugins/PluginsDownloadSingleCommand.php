@@ -15,7 +15,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PluginsDownloadSingleCommand extends AbstractBaseCommand
 {
-    public function __construct(private PluginDownloadService $downloadService) {
+    public function __construct(private PluginDownloadService $downloadService)
+    {
         parent::__construct();
     }
 
@@ -35,7 +36,7 @@ class PluginsDownloadSingleCommand extends AbstractBaseCommand
         $force   = $input->getOption('force');
 
         [$version, $message] = VersionUtil::cleanVersion($version);
-        if (!$version) {
+        if (! $version) {
             $this->error($message);
             return Command::FAILURE;
         }

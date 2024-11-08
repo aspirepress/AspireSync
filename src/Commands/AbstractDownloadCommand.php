@@ -34,8 +34,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         $this->processManager->setProcessFinishCallback($this->onDownloadProcessFinished(...));
     }
 
-    abstract protected function getCategory(): string;  // 'plugins' | 'themes'
-
+    abstract protected function getCategory(): string;
 
     protected function configure(): void
     {
@@ -54,8 +53,8 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
 
         $this->always("Running command {$this->getName()}");
         $this->startTimer();
-        $numVersions = $input->getArgument('num-versions');
-        $listing  = $input->getOption($category);
+        $numVersions          = $input->getArgument('num-versions');
+        $listing              = $input->getOption($category);
         $listing and $listing = StringUtil::explodeAndTrim($listing);
 
         $this->debug("Getting list of $category...");
@@ -72,19 +71,19 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
             return Command::SUCCESS;
         }
 
-        $flags = [];
+        $flags                                  = [];
         $input->getOption('force') and $flags[] = '--force';
-        $commands = [];
+
         $counter = 0;
         foreach ($pending as $slug => $versions) {
             $counter++;
             $versions = $this->determineVersionsToDownload($slug, $versions, $numVersions);
-            if (!$versions) {
+            if (! $versions) {
                 $this->debug("No downloadable versions found for $slug");
             }
             foreach ($versions as $version) {
                 [$version, $message] = VersionUtil::cleanVersion($version);
-                if (!$version) {
+                if (! $version) {
                     $this->notice("Skipping $slug: $message");
                     continue;
                 }

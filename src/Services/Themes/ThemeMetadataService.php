@@ -10,6 +10,7 @@ use PDOException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
+
 use function Safe\json_encode;
 
 class ThemeMetadataService implements MetadataServiceInterface
@@ -59,7 +60,6 @@ class ThemeMetadataService implements MetadataServiceInterface
         }
         return $return;
     }
-
 
     /** @param array<string, mixed> $meta */
     public function saveMetadata(array $meta): void
@@ -271,7 +271,6 @@ class ThemeMetadataService implements MetadataServiceInterface
         }
         return (int) $result['timestamp'];
     }
-
 
     //region Private API
 

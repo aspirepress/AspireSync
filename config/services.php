@@ -13,18 +13,19 @@ use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+
 use function Symfony\Component\DependencyInjection\Loader\Configurator\expr;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
-    $env = fn(string $name, ?string $default = null) => ($_ENV[$name] ?? null) ?: $default;
+    $env = fn(string $name, ?string $default = null) => $_ENV[$name] ?? null ?: $default;
 
     $downloads_dir = $env('DOWNLOADS_DIR', dirname(__DIR__) . '/data/download');
-    if (!str_starts_with($downloads_dir, '/')) {
+    if (! str_starts_with($downloads_dir, '/')) {
         $downloads_dir = dirname(__DIR__) . $downloads_dir;
     }
-    
+
     $parameters = $containerConfigurator->parameters();
     $parameters->set('db_file', $env('DB_FILE', realpath(__DIR__ . '/../data/aspiresync.sqlite')));
     $parameters->set('db_init_file', $env('DB_INIT_FILE', realpath(__DIR__ . '/../config/schema.sql')));
@@ -46,8 +47,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         // ->bind(LoggerInterface::class . ' $requestLogger', service('monolog.logger.request'))
 
     $services->load('AspirePress\\AspireSync\\', '../src/');
-
-
 
     $services->set(AwsS3V3Adapter::class)->factory(service(AwsS3V3AdapterFactory::class));
     $services->set(ExtendedPdoInterface::class)->factory(service(ExtendedPdoFactory::class));

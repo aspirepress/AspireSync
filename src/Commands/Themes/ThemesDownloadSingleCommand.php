@@ -36,7 +36,7 @@ class ThemesDownloadSingleCommand extends AbstractBaseCommand
         $force   = $input->getOption('force');
 
         [$version, $message] = VersionUtil::cleanVersion($version);
-        if (!$version) {
+        if (! $version) {
             $this->error($message);
             return Command::FAILURE;
         }
