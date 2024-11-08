@@ -46,7 +46,7 @@ class PluginDownloadService implements DownloadServiceInterface
             }
             $fs->write($path, $contents);
             $this->pluginMeta->setVersionToDownloaded($slug, $version);
-            return $ret($response->getReasonPhrase(), $response->getStatusCode());
+            return $ret($response->getReasonPhrase() ?: 'OK', $response->getStatusCode() ?: 200);
         } catch (ClientException $e) {
             $fs->delete($path);
             if (method_exists($e, 'getResponse')) {

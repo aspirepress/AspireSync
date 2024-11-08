@@ -42,7 +42,7 @@ class PluginsDownloadSingleCommand extends AbstractBaseCommand
 
         $response = $this->downloadService->download($slug, $version, $force);
         // TODO: fire a PluginDownloaded event with response
-        $this->debug($response['message']);
+        $this->always("{$response['url']} {$response['status']} {$response['message']}");
 
         return Command::SUCCESS;
     }
