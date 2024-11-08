@@ -20,7 +20,7 @@ class ThemeDownloadService implements DownloadServiceInterface
     }
 
     /** @return array<string, string>[] */
-    public function download(string $slug, array $versions, bool $force = false): array
+    public function download(string $slug, string $version, bool $force = false): array
     {
         $downloadable = $this->themeMetadataService->getDownloadUrlsForVersions($slug, $versions);
 

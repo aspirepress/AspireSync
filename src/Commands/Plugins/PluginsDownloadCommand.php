@@ -10,7 +10,6 @@ use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
 use AspirePress\AspireSync\Services\ProcessManager;
 use AspirePress\AspireSync\Services\StatsMetadataService;
 use AspirePress\AspireSync\Utilities\HasStats;
-use AspirePress\AspireSync\Utilities\ProcessWaitUtil;
 use AspirePress\AspireSync\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -30,7 +29,7 @@ class PluginsDownloadCommand extends AbstractBaseCommand
         private ProcessManager $processManager,
     ) {
         parent::__construct();
-        $this->processManager->setProcessStartDelay(200 /* milliseconds */);
+        $this->processManager->setProcessStartDelay(200); /* milliseconds */
         $this->processManager->setProcessStartCallback($this->onDownloadProcessStarted(...));
         $this->processManager->setProcessFinishCallback($this->onDownloadProcessFinished(...));
     }
@@ -41,8 +40,8 @@ class PluginsDownloadCommand extends AbstractBaseCommand
             ->setDescription('Grabs plugins (with number of specified versions or explicitly specified plugins) from the origin repo')
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
             ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins to request')
-            ->addOption('force-download', 'f', InputOption::VALUE_NONE, 'Force download even if file exists')
-            ->addOption('download-all', 'd', InputOption::VALUE_NONE, 'Download all plugins');
+            ->addOption('force', null, InputOption::VALUE_NONE, 'Force download even if file exists')
+            ->addOption('download-all', null, InputOption::VALUE_NONE, 'Download all plugins');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -73,54 +72,43 @@ class PluginsDownloadCommand extends AbstractBaseCommand
             return Command::SUCCESS;
         }
 
+        $flags = ['--ansi'];
+        $input->getOption('force') and $flags[] = '--force';
         $commands = [];
-
         foreach ($pluginsToUpdate as $plugin => $versions) {
             $versions = $this->determineVersionsToDownload($plugin, $versions, $numVersions);
-
-            $versionList = implode(',', $versions);
-
-            if (empty($versionList)) {
-                // $this->notice('No downloadable versions found for ' . $plugin . '...skipping...');
-                continue;
+            foreach ($versions as $version) {
+                [$version, $message] = VersionUtil::cleanVersion($version);
+                if (!$version) {
+                    $this->notice("Skipping $plugin: $message");
+                    continue;
+                }
+                $commands[] = ['aspiresync', 'plugins:download:single', ...$flags, $plugin, $version];
             }
-
-            $command = [
-                'aspiresync',
-                'internal:plugin-download',
-                $plugin,
-                $versionList,
-                $numVersions,
-            ];
-
-            if ($input->getOption('force-download')) {
-                $command[] = '-f';
-            }
-
-            $commands[] = $command;
         }
 
         foreach ($commands as $command) {
             $this->debug("QUEUE: " . implode(' ', $command));
-            $this->processManager->addProcess(new Process($command), );
+            $this->processManager->addProcess(new Process($command));
         }
 
-        $this->notice("Total download jobs queued: " . count($commands));
+        $this->notice("Total downloads queued: " . count($commands));
         $this->processManager->waitForAllProcesses();
 
-        // Output statistics
         $this->endTimer();
         $this->always($this->getRunInfo($this->getCalculatedStats()));
         $this->statsMetadataService->logStats($this->getName(), $this->stats);
         return Command::SUCCESS;
     }
 
-    private function onDownloadProcessStarted(Process $process): void {
+    private function onDownloadProcessStarted(Process $process): void
+    {
         $this->debug("START: " . str_replace("'", "", $process->getCommandLine()));
     }
 
-    private function onDownloadProcessFinished(Process $process): void {
-        $this->info($process->getOutput());
+    private function onDownloadProcessFinished(Process $process): void
+    {
+        echo $process->getOutput();
     }
 
     /**

@@ -3,11 +3,11 @@
 
 use AspirePress\AspireSync\Commands\Plugins\PluginsDownloadCommand;
 use AspirePress\AspireSync\Commands\Plugins\PluginsDownloadPartialCommand;
-use AspirePress\AspireSync\Commands\Plugins\InternalPluginDownloadCommand;
+use AspirePress\AspireSync\Commands\Plugins\PluginsDownloadSingleCommand;
 use AspirePress\AspireSync\Commands\Plugins\PluginsMetaCommand;
 use AspirePress\AspireSync\Commands\Themes\ThemesDownloadCommand;
 use AspirePress\AspireSync\Commands\Themes\ThemesDownloadPartialCommand;
-use AspirePress\AspireSync\Commands\Themes\InternalThemeDownloadCommand;
+use AspirePress\AspireSync\Commands\Themes\ThemesDownloadSingleCommand;
 use AspirePress\AspireSync\Commands\Themes\ThemesMetaCommand;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application;
@@ -31,7 +31,7 @@ $CONTAINER->compile(resolveEnvPlaceholders: true);
 
 $APP = new Application();
 
-$APP->add($CONTAINER->get(InternalPluginDownloadCommand::class));
+$APP->add($CONTAINER->get(PluginsDownloadSingleCommand::class));
 $APP->add($CONTAINER->get(PluginsDownloadCommand::class));
 $APP->add($CONTAINER->get(PluginsMetaCommand::class));
 $APP->add($CONTAINER->get(PluginsDownloadPartialCommand::class));
@@ -39,6 +39,6 @@ $APP->add($CONTAINER->get(PluginsDownloadPartialCommand::class));
 $APP->add($CONTAINER->get(ThemesMetaCommand::class));
 $APP->add($CONTAINER->get(ThemesDownloadCommand::class));
 $APP->add($CONTAINER->get(ThemesDownloadPartialCommand::class));
-$APP->add($CONTAINER->get(InternalThemeDownloadCommand::class));
+$APP->add($CONTAINER->get(ThemesDownloadSingleCommand::class));
 
 $APP->run();

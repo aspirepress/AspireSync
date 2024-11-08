@@ -14,54 +14,29 @@ use Symfony\Component\Process\Process;
 /** The process manager for executing multiple processes in parallel. */
 class ProcessManager implements ProcessManagerInterface
 {
-    /** The number of processes to run in parallel. */
-    protected int $numberOfParallelProcesses;
-
-    /** The interval to wait between the polls of the processes, in milliseconds. */
-    protected int $pollInterval;
-
-    /** The time to delay the start of processes to space them out, in milliseconds. */
-    protected int $processStartDelay;
-
     /**
      * The processes currently waiting to be executed.
      *
      * @var array<array{Process<string>, callable|null, array<mixed>}>
      */
-    protected array $pendingProcessData = [];
+    private array $pendingProcessData = [];
 
     /**
      * The processes currently running.
      *
      * @var array<Process<string>>
      */
-    protected array $runningProcesses = [];
+    private array $runningProcesses = [];
 
-    /** The callback for when a process is about to be started. */
-    protected ?Closure $processStartCallback;
-
-    /** The callback for when a process has finished. */
-    protected ?Closure $processFinishCallback;
-
-    /** The callback for when a process timed out. */
-    protected ?Closure $processTimeoutCallback;
-
-    /** The callback for when a process is checked. */
-    protected ?Closure $processCheckCallback;
-
-    /**
-     * @param int $numberOfParallelProcesses The number of processes to run in parallel.
-     * @param int $pollInterval The interval to wait between the polls of the processes, in milliseconds.
-     * @param int $processStartDelay The time to delay the start of processes to space them out, in milliseconds.
-     */
     public function __construct(
-        int $numberOfParallelProcesses = 1,
-        int $pollInterval = 100,
-        int $processStartDelay = 0
+        protected int $numberOfParallelProcesses = 1,
+        protected int $pollInterval = 100,
+        protected int $processStartDelay = 0,
+        protected ?Closure $processStartCallback = null,
+        protected ?Closure $processFinishCallback = null,
+        protected ?Closure $processTimeoutCallback = null,
+        protected ?Closure $processCheckCallback = null,
     ) {
-        $this->numberOfParallelProcesses = $numberOfParallelProcesses;
-        $this->pollInterval              = $pollInterval;
-        $this->processStartDelay         = $processStartDelay;
     }
 
     /**

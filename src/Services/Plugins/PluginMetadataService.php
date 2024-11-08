@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services\Plugins;
 
-use AspirePress\AspireSync\Services\Interfaces\MetadataInterface;
 use Aura\Sql\ExtendedPdoInterface;
 use Exception;
 use PDOException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
-
 use function Safe\json_decode;
 use function Safe\json_encode;
 
-class PluginMetadataService implements MetadataInterface
+class PluginMetadataService
 {
     /** @var string[][] */
     private array $existing;
@@ -373,35 +371,18 @@ class PluginMetadataService implements MetadataInterface
         }
     }
 
-    /**
-     * @param array<int, string> $versions
-     * @return array<string, string>
-     */
-    public function getDownloadUrlsForVersions(string $plugin, array $versions, string $type = 'wp_cdn'): array
+    public function getDownloadUrl(string $slug, string $version, string $type = 'wp_cdn'): string
     {
-        try {
-            $sql = <<<'SQL'
-                SELECT version, file_url 
-                FROM sync_plugin_files 
-                    LEFT JOIN sync_plugins ON sync_plugins.id = sync_plugin_files.plugin_id 
-                WHERE sync_plugins.slug = :plugin 
-                  AND sync_plugin_files.type = :type
-                SQL;
+        $sql = <<<'SQL'
+            SELECT file_url
+            FROM sync_plugin_files 
+                JOIN sync_plugins ON sync_plugins.id = sync_plugin_files.plugin_id 
+            WHERE sync_plugins.slug = :slug 
+              AND sync_plugin_files.version = :version
+        SQL;
 
-            $results = $this->pdo->fetchAll($sql, ['plugin' => $plugin, 'type' => $type]);
-            $return  = [];
-            foreach ($results as $result) {
-                if (in_array($result['version'], $versions, true)) {
-                    $return[$result['version']] = $result['file_url'];
-                }
-            }
-            return $return;
-        } catch (PDOException $e) {
-            throw new RuntimeException('Unable to get download URLs for plugin '
-                . $plugin
-                . '; reason: '
-                . $e->getMessage());
-        }
+        $result = $this->pdo->fetchOne($sql, ['slug' => $slug, 'type' => $type]);
+        return $result['file_url'];
     }
 
     public function setVersionToDownloaded(

@@ -6,9 +6,6 @@ namespace AspirePress\AspireSync\Services\Interfaces;
 
 interface DownloadServiceInterface
 {
-    /**
-     * @param string[] $versions
-     * @return array<string, string[]>
-     */
-    public function download(string $slug, array $versions, bool $force = false): array;
+    /** @return array{message:string, url:string|null} */
+    public function download(string $slug, string $version, bool $force = false): array;
 }

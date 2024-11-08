@@ -13,63 +13,54 @@ use League\Flysystem\Filesystem;
 class PluginDownloadService implements DownloadServiceInterface
 {
     public function __construct(
-        private PluginMetadataService $pluginMetadataService,
+        private PluginMetadataService $pluginMeta,
         private GuzzleClient $guzzle,
         private Filesystem $filesystem,
     ) {
     }
 
-    /** @return array<string,string[]> */
-    public function download(string $slug, array $versions, bool $force = false): array
+    /** @return array{status:int|null, message:string, url:string|null} */
+    public function download(string $slug, string $version, bool $force = false): array
     {
-        $downloadable = $this->pluginMetadataService->getDownloadUrlsForVersions($slug, $versions);
-
-        if (! $downloadable) {
-            return [];
+        $url = $this->pluginMeta->getDownloadUrl($slug, $version);
+        if (! $url) {
+            return ['message' => 'No download URL found for $slug $version', 'status' => null, 'url' => null];
         }
 
-        $outcomes = [];
-        foreach ($downloadable as $version => $url) {
-            $outcome              = $this->runDownload($slug, (string)$version, $url, $force);
-            $outcomes[$outcome] ??= [];
-            $outcomes[$outcome][] = $version;
-        }
-        return $outcomes;
-    }
+        $ret = fn(string $message, int $status = 200) => ['message' => $message, 'status' => $status, 'url' => $url];
 
-    private function runDownload(string $slug, string $version, string $url, bool $force = false): string
-    {
-        $fs = $this->filesystem;
+        $fs   = $this->filesystem;
         $path = "/plugins/$slug.$version.zip";
 
         if ($fs->fileExists($path) && ! $force) {
-            $this->pluginMetadataService->setVersionToDownloaded($slug, $version);
-            return '304 Not Modified';
+            $this->pluginMeta->setVersionToDownloaded($slug, $version);
+            return $ret('Not Modified', 304);
         }
 
         try {
-            $options = ['headers' => ['User-Agent' => 'AspireSync/0.5'], 'allow_redirects' => true];
+            $options  = ['headers' => ['User-Agent' => 'AspireSync/0.5'], 'allow_redirects' => true];
             $response = $this->guzzle->request('GET', $url, $options);
-            $fs->write($path, $response->getBody()->getContents());
-            // if ($fs->fileSize($path) === 0) {
-            //     $fs->delete($path);
-            // }
-            $this->pluginMetadataService->setVersionToDownloaded($slug, $version);
-            return "{$response->getStatusCode()} {$response->getReasonPhrase()}";
+            $contents = $response->getBody()->getContents();
+            if (! $contents) {
+                return $ret('Empty response', 204); // code indicates success, but no state gets written
+            }
+            $fs->write($path, $contents);
+            $this->pluginMeta->setVersionToDownloaded($slug, $version);
+            return $ret($response->getReasonPhrase(), $response->getStatusCode());
         } catch (ClientException $e) {
             $fs->delete($path);
             if (method_exists($e, 'getResponse')) {
                 $response = $e->getResponse();
                 if ($response->getStatusCode() === 404) {
-                    $this->pluginMetadataService->setVersionToDownloaded($slug, $version);
+                    $this->pluginMeta->setVersionToDownloaded($slug, $version);
                 }
-                return "{$response->getStatusCode()} {$response->getReasonPhrase()}";
+                return $ret($response->getReasonPhrase(), $response->getStatusCode());
             } else {
-                return $e->getMessage();
+                return $ret($e->getMessage(), (int)$e->getCode());
             }
         } catch (Exception $e) {
             $fs->delete($path);
-            return $e->getMessage();
+            return $ret($e->getMessage(), (int)$e->getCode());
         }
     }
 }
