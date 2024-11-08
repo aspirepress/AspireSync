@@ -75,24 +75,26 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         $flags = [];
         $input->getOption('force') and $flags[] = '--force';
         $commands = [];
+        $counter = 0;
         foreach ($pending as $slug => $versions) {
+            $counter++;
             $versions = $this->determineVersionsToDownload($slug, $versions, $numVersions);
+            if (!$versions) {
+                $this->debug("No downloadable versions found for $slug");
+            }
             foreach ($versions as $version) {
                 [$version, $message] = VersionUtil::cleanVersion($version);
                 if (!$version) {
                     $this->notice("Skipping $slug: $message");
                     continue;
                 }
-                $commands[] = ['aspiresync', "$category:download:single", $slug, $version, ...$flags];
+                $command = ['aspiresync', "$category:download:single", $slug, $version, ...$flags];
+                $this->debug("QUEUE #$counter: " . implode(' ', $command));
+                $process = new Process($command);
+                $this->processManager->addProcess($process);
             }
         }
 
-        foreach ($commands as $command) {
-            $this->debug("QUEUE: " . implode(' ', $command));
-            $this->processManager->addProcess(new Process($command));
-        }
-
-        $this->info("Total downloads queued: " . count($commands));
         $this->processManager->waitForAllProcesses();
 
         $this->endTimer();

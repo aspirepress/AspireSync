@@ -13,71 +13,54 @@ use League\Flysystem\Filesystem;
 class ThemeDownloadService implements DownloadServiceInterface
 {
     public function __construct(
-        private ThemeMetadataService $themeMetadataService,
+        private ThemeMetadataService $themeMeta,
         private GuzzleClient $guzzle,
         private Filesystem $filesystem,
     ) {
     }
 
-    /** @return array<string, string>[] */
+    /** @return array{status:int|null, message:string, url:string|null} */
     public function download(string $slug, string $version, bool $force = false): array
     {
-        $downloadable = $this->themeMetadataService->getDownloadUrlsForVersions($slug, $versions);
-
-        if (! $downloadable) {
-            return [];
+        $url = $this->themeMeta->getDownloadUrl($slug, $version);
+        if (! $url) {
+            return ['message' => 'No download URL found for $slug $version', 'status' => null, 'url' => null];
         }
 
-        $outcomes = [];
-        foreach ($downloadable as $version => $url) {
-            $outcome              = $this->runDownload($slug, (string) $version, $url, $force);
-            $outcomes[$outcome] ??= [];
-            $outcomes[$outcome][] = $version;
-        }
-        return $outcomes;
-    }
+        $ret = fn(string $message, int $status = 200) => ['message' => $message, 'status' => $status, 'url' => $url];
 
-    /**
-     * @return array<string, string>
-     */
-    private function runDownload(string $slug, string $version, string $url, bool $force = false): string
-    {
         $fs   = $this->filesystem;
-        $path = "/themes/{$slug}.{$version}.zip";
+        $path = "/themes/$slug.$version.zip";
 
         if ($fs->fileExists($path) && ! $force) {
-            $this->themeMetadataService->setVersionToDownloaded($slug, $version);
-            return '304 Not Modified';
+            $this->themeMeta->setVersionToDownloaded($slug, $version);
+            return $ret('Not Modified', 304);
         }
+
         try {
             $options  = ['headers' => ['User-Agent' => 'AspireSync/0.5'], 'allow_redirects' => true];
             $response = $this->guzzle->request('GET', $url, $options);
-            $fs->write($path, $response->getBody()->getContents());
-            if ($fs->fileSize($path) === 0) {
-                $fs->delete($path);
+            $contents = $response->getBody()->getContents();
+            if (! $contents) {
+                return $ret('Empty response', 204); // code indicates success, but no state gets written
             }
-            $this->themeMetadataService->setVersionToDownloaded($slug, $version);
-            return '200 OK';
+            $fs->write($path, $contents);
+            $this->themeMeta->setVersionToDownloaded($slug, $version);
+            return $ret($response->getReasonPhrase() ?: 'OK', $response->getStatusCode() ?: 200);
         } catch (ClientException $e) {
+            $fs->delete($path);
             if (method_exists($e, 'getResponse')) {
                 $response = $e->getResponse();
                 if ($response->getStatusCode() === 404) {
-                    $this->themeMetadataService->setVersionToDownloaded($slug, $version);
+                    $this->themeMeta->setVersionToDownloaded($slug, $version);
                 }
-                if ($response->getStatusCode() === 429) {
-                    sleep(2);
-                    return $this->runDownload($slug, $version, $url, $force);
-                }
-
-                return $response->getStatusCode() . ' ' . $response->getReasonPhrase();
+                return $ret($response->getReasonPhrase(), $response->getStatusCode());
+            } else {
+                return $ret($e->getMessage(), (int) $e->getCode());
             }
-
-            $fs->delete($path);
-            return $e->getMessage();
         } catch (Exception $e) {
             $fs->delete($path);
-            return $e->getMessage();
+            return $ret($e->getMessage(), (int) $e->getCode());
         }
-
     }
 }

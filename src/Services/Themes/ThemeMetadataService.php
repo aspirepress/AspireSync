@@ -22,6 +22,45 @@ class ThemeMetadataService implements MetadataServiceInterface
         $this->existing = $this->loadExistingThemes();
     }
 
+    public function getDownloadUrl(string $slug, string $version, string $type = 'wp_cdn'): string
+    {
+        $sql = <<<'SQL'
+            SELECT file_url
+            FROM sync_theme_files 
+                JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id 
+            WHERE sync_themes.slug = :slug 
+              AND sync_theme_files.version = :version
+              AND sync_theme_files.type = :type
+        SQL;
+
+        $result = $this->pdo->fetchOne($sql, ['slug' => $slug, 'type' => $type, 'version' => $version]);
+        return $result['file_url'];
+    }
+
+    /**
+     * @param string[] $versions
+     * @return string[]
+     */
+    public function getUnprocessedVersions(string $theme, array $versions, string $type = 'wp_cdn'): array
+    {
+        $sql     = <<<'SQL'
+            SELECT version 
+            FROM sync_theme_files 
+                LEFT JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id 
+            WHERE type = :type 
+              AND sync_themes.slug = :theme 
+              AND processed IS NULL 
+              AND sync_theme_files.version IN (:versions)
+        SQL;
+        $results = $this->pdo->fetchAll($sql, ['theme' => $theme, 'type' => $type, 'versions' => $versions]);
+        $return  = [];
+        foreach ($results as $result) {
+            $return[] = $result['version'];
+        }
+        return $return;
+    }
+
+
     /** @param array<string, mixed> $meta */
     public function saveMetadata(array $meta): void
     {
@@ -139,29 +178,6 @@ class ThemeMetadataService implements MetadataServiceInterface
     }
 
     /**
-     * @param string[] $versions
-     * @return string[]
-     */
-    public function getUnprocessedVersions(string $theme, array $versions, string $type = 'wp_cdn'): array
-    {
-        $sql     = <<<'SQL'
-            SELECT version 
-            FROM sync_theme_files 
-                LEFT JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id 
-            WHERE type = :type 
-              AND sync_themes.slug = :theme 
-              AND processed IS NULL 
-              AND sync_theme_files.version IN (:versions)
-        SQL;
-        $results = $this->pdo->fetchAll($sql, ['theme' => $theme, 'type' => $type, 'versions' => $versions]);
-        $return  = [];
-        foreach ($results as $result) {
-            $return[] = $result['version'];
-        }
-        return $return;
-    }
-
-    /**
      * @param array<int, string> $versions
      * @return array<string, string>
      */
@@ -255,6 +271,7 @@ class ThemeMetadataService implements MetadataServiceInterface
         }
         return (int) $result['timestamp'];
     }
+
 
     //region Private API
 

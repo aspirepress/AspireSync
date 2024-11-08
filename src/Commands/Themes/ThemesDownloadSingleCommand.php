@@ -6,7 +6,7 @@ namespace AspirePress\AspireSync\Commands\Themes;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\Themes\ThemeDownloadService;
-use AspirePress\AspireSync\Utilities\StringUtil;
+use AspirePress\AspireSync\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,34 +22,29 @@ class ThemesDownloadSingleCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('internal:theme-download')
-            ->setDescription('Download all versions of a given theme')
-            ->setHidden()
+        $this->setName('themes:download:single')
+            ->setDescription('Download an individual theme version')
             ->addArgument('theme', InputArgument::REQUIRED, 'Theme name')
-            ->addArgument('version-list', InputArgument::REQUIRED, 'List of versions to download')
-            ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to download', 'all')
-            ->addOption('force', 'f', InputOption::VALUE_NONE, 'Force download even if file exists');
+            ->addArgument('version', InputArgument::REQUIRED, 'Theme version')
+            ->addOption('force', null, InputOption::VALUE_NONE, 'Force download even if file exists');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $slug        = $input->getArgument('theme');
-        $numVersions = $input->getArgument('num-versions');
+        $slug    = $input->getArgument('theme');
+        $version = $input->getArgument('version');
+        $force   = $input->getOption('force');
 
-        $this->debug('Determining versions of ' . $slug . '...');
-        $versions = StringUtil::explodeAndTrim($input->getArgument('version-list') ?? '');
-        $count    = match ($numVersions) {
-            'all' => count($versions),
-            'latest' => 1,
-            default => min(count($versions), (int) $numVersions),
-        };
-        $this->info("Downloading $count versions...");
-
-        $responses = $this->downloadService->download($slug, $versions, $input->getOption('force'));
-
-        foreach ($responses as $responseCode => $versions) {
-            $this->always("$slug $responseCode: " . count($versions));
+        [$version, $message] = VersionUtil::cleanVersion($version);
+        if (!$version) {
+            $this->error($message);
+            return Command::FAILURE;
         }
+
+        $response = $this->downloadService->download($slug, $version, $force);
+        // TODO: fire a ThemeDownloaded event with response
+        $this->always("{$response['url']} {$response['status']} {$response['message']}");
+
         return Command::SUCCESS;
     }
 }
