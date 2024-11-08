@@ -72,7 +72,7 @@ class PluginsDownloadCommand extends AbstractBaseCommand
             return Command::SUCCESS;
         }
 
-        $flags = ['--ansi'];
+        $flags = [];
         $input->getOption('force') and $flags[] = '--force';
         $commands = [];
         foreach ($pluginsToUpdate as $plugin => $versions) {
@@ -83,7 +83,7 @@ class PluginsDownloadCommand extends AbstractBaseCommand
                     $this->notice("Skipping $plugin: $message");
                     continue;
                 }
-                $commands[] = ['aspiresync', 'plugins:download:single', ...$flags, $plugin, $version];
+                $commands[] = ['aspiresync', 'plugins:download:single', $plugin, $version, ...$flags];
             }
         }
 
@@ -92,7 +92,7 @@ class PluginsDownloadCommand extends AbstractBaseCommand
             $this->processManager->addProcess(new Process($command));
         }
 
-        $this->notice("Total downloads queued: " . count($commands));
+        $this->info("Total downloads queued: " . count($commands));
         $this->processManager->waitForAllProcesses();
 
         $this->endTimer();
