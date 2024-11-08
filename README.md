@@ -41,17 +41,17 @@ values are **required**.
 AspireSync also uploads files to a location of your choosing, either in S3(-compatible) storage or local storage
 somewhere on disk.
 
-You can configure the following enviornment variables to determine where uploads are placed.
+You can configure the following environment variables to determine where uploads are placed.
 
-| Env Variable          | Description                                                                                                                                                 |
-|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| UPLOAD_ASSETS_ADAPTER | Which adapter to use for file system uploads (current options are `upload_local_filesystem` or `upload_aws_s3`)                                             |
-| UPLOAD_DIR            | The fully qualified directory path to upload files into if UPLOAD_ASSETS_ADAPTER is set to `upload_local_filesystem`                                        |
-| AWS_BUCKET            | The bucket to use for Amazon S3 uploads                                                                                                                     |
-| AWS_REGION            | Defaults to `us-east-2`, this is the Amazon region to use                                                                                                   |
-| AWS_S3_ENDPOINT       | This is a hard-coded bucket endpoint, useful for S3-compatible storage. This is not a required parameter and will default to `null`                         |
-| AWS_S3_KEY            | For users of access keys with AWS IAM, this is the access key. If this is not provided, the client will attempt authenticaton through an attached IAM role. |
-| AWS_S3_SECRET         | The companion secret to the `AWS_S3_KEY`; this is optional and if omitted will default to IAM role authentication.                                          |
+| Env Variable          | Description                                                                                                                                                  |
+|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| UPLOAD_ASSETS_ADAPTER | Which adapter to use for file system uploads (current options are `upload_local_filesystem` or `upload_aws_s3`)                                              |
+| UPLOAD_DIR            | The fully qualified directory path to upload files into if UPLOAD_ASSETS_ADAPTER is set to `upload_local_filesystem`                                         |
+| AWS_BUCKET            | The bucket to use for Amazon S3 uploads                                                                                                                      |
+| AWS_REGION            | Defaults to `us-east-2`, this is the Amazon region to use                                                                                                    |
+| AWS_S3_ENDPOINT       | This is a hard-coded bucket endpoint, useful for S3-compatible storage. This is not a required parameter and will default to `null`                          |
+| AWS_S3_KEY            | For users of access keys with AWS IAM, this is the access key. If this is not provided, the client will attempt authentication through an attached IAM role. |
+| AWS_S3_SECRET         | The companion secret to the `AWS_S3_KEY`; this is optional and if omitted will default to IAM role authentication.                                           |
 
 ## Usage
 
