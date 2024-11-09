@@ -26,9 +26,9 @@ class PluginsMetaCommand extends AbstractBaseCommand
     ];
 
     public function __construct(
-        private PluginListService $pluginListService,
-        private PluginMetadataService $pluginMetadataService,
-        private StatsMetadataService $statsMetadataService,
+        private PluginListService $listService,
+        private PluginMetadataService $meta,
+        private StatsMetadataService $statsMeta,
         private WpEndpointClientInterface $wpClient,
     ) {
         parent::__construct();
@@ -48,32 +48,33 @@ class PluginsMetaCommand extends AbstractBaseCommand
         $this->always("Running command {$this->getName()}");
         $this->startTimer();
 
-        $plugins = StringUtil::explodeAndTrim($input->getOption('plugins') ?? '');
+        $slugs = StringUtil::explodeAndTrim($input->getOption('plugins') ?? '');
         $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
 
         $this->debug('Getting list of plugins...');
-        $pluginsToUpdate = $this->pluginListService->getItemsForAction($plugins, $this->getName(), $min_age);
-        $this->debug(count($pluginsToUpdate) . ' plugins to download metadata for...');
+        $pending = $this->listService->getItemsForAction($slugs, $this->getName(), $min_age);
 
-        if (count($pluginsToUpdate) === 0) {
-            $this->success('No plugin metadata to download...exiting...');
+        if (count($pending) === 0) {
+            $this->success('No plugin metadata to download. exiting.');
             return Command::SUCCESS;
         }
 
-        foreach ($pluginsToUpdate as $plugin => $versions) {
-            $this->fetchPluginDetails($input, $output, $plugin, $versions);
+        $this->info("Downloading metadata for " . count($pending) . " plugins");
+
+        foreach ($pending as $slug => $versions) {
+            $this->fetchPluginDetails($input, $output, $slug, $versions);
         }
 
         if ($input->getOption('plugins')) {
             $this->debug("Not saving revision when --plugins was specified");
         } else {
-            $revision = $this->pluginListService->preserveRevision($this->getName());
+            $revision = $this->listService->preserveRevision($this->getName());
             $this->debug("Updated current revision to $revision");
         }
         $this->endTimer();
 
         $this->always($this->getRunInfo($this->calculateStats()));
-        $this->statsMetadataService->logStats($this->getName(), $this->stats);
+        $this->statsMeta->logStats($this->getName(), $this->stats);
         return Command::SUCCESS;
     }
 
@@ -95,7 +96,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
         $data  = $this->wpClient->getPluginMetadata($slug);
         $error = $data['error'] ?? null;
 
-        $this->pluginMetadataService->saveMetadata($data);
+        $this->meta->saveMetadata($data);
 
         if (! empty($data['versions'])) {
             $this->info("$slug ... [" . count($data['versions']) . ' versions]');

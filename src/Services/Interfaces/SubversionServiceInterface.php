@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services\Interfaces;
 
-interface SvnServiceInterface
+interface SubversionServiceInterface
 {
     /**
      * @return array{revision: int, items: array<string, array<int, string>>}
      */
-    public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): array;
+    public function getUpdatedSlugs(string $type, int $prevRevision, int $lastRevision): array;
 
     /**
      * @return array{revision: int, items: array<string, array<int, string>>}

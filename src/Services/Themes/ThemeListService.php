@@ -19,37 +19,37 @@ class ThemeListService implements ListServiceInterface
     private int $prevRevision = 0;
 
     public function __construct(
-        private ThemeMetadataService $themesMetadataService,
-        private RevisionMetadataService $revisionService,
+        private ThemeMetadataService $meta,
+        private RevisionMetadataService $revisions,
         private GuzzleClient $guzzle,
     ) {
     }
 
     public function getItemsForAction(array $filter, string $action, ?int $min_age = null): array
     {
-        $lastRevision = $this->revisionService->getRevisionForAction($action);
+        $lastRevision = $this->revisions->getRevisionForAction($action);
         $updates      = $lastRevision
             ? $this->getThemesToUpdate($filter, $lastRevision, $action)
             : $this->pullWholeThemeList($action);
         return $this->filter($updates, $filter, $min_age);
     }
 
-    public function getUpdatedListOfItems(?array $explicitlyRequested, string $action = 'meta:themes:download'): array
+    public function getUpdatedListOfItems(?array $requested, string $action = 'meta:themes:download'): array
     {
-        $revision = $this->revisionService->getRevisionDateForAction($action);
+        $revision = $this->revisions->getRevisionDateForAction($action);
         if ($revision) {
             $revision = date('Y-m-d', strtotime($revision));
         }
         return $this->filter(
-            $this->themesMetadataService->getVersionsForUnfinalizedThemes($revision),
-            $explicitlyRequested,
+            $this->meta->getVersionsForUnfinalizedThemes($revision),
+            $requested,
             null
         );
     }
 
     public function preserveRevision(string $action): string
     {
-        return $this->revisionService->preserveRevision($action);
+        return $this->revisions->preserveRevision($action);
     }
 
     /**
@@ -68,7 +68,7 @@ class ThemeListService implements ListServiceInterface
             return $this->addNewAndRequestedThemes($action, $explicitlyRequested, $explicitlyRequested);
         }
 
-        // TODO: move this to SvnService
+        // TODO: move this to SubversionService
         $command = explode(' ', "svn log -v -q --xml https://themes.svn.wordpress.org -r $targetRev:$currentRev");
         $process = new Process($command);
         $process->run();
@@ -92,7 +92,7 @@ class ThemeListService implements ListServiceInterface
             }
         }
 
-        $this->revisionService->setCurrentRevision($action, $revision);
+        $this->revisions->setCurrentRevision($action, $revision);
         return $this->addNewAndRequestedThemes($action, $themesToUpdate, $explicitlyRequested);
     }
 
@@ -128,7 +128,7 @@ class ThemeListService implements ListServiceInterface
 
         $filename = '/opt/aspiresync/data/raw-theme-list';
         FileUtil::writeLines($filename, $themes);
-        $this->revisionService->setCurrentRevision($action, $revision);
+        $this->revisions->setCurrentRevision($action, $revision);
         return $themesToReturn;
     }
 
@@ -150,7 +150,7 @@ class ThemeListService implements ListServiceInterface
         foreach ($allThemes as $themeName => $themeVersion) {
             // Is this the first time we've seen the theme?
             $themeName = (string) $themeName;
-            if (! $this->themesMetadataService->checkThemeInDatabase($themeName)) {
+            if (! $this->meta->checkThemeInDatabase($themeName)) {
                 $themesToUpdate[$themeName] = [];
             }
 
@@ -188,7 +188,7 @@ class ThemeListService implements ListServiceInterface
             $cutoff = time() - $min_age;
             foreach ($filtered as $slug => $value) {
                 $slug      = (string) $slug; // purely numeric names get turned into int
-                $timestamp = $this->themesMetadataService->getPulledDateTimestamp($slug);
+                $timestamp = $this->meta->getPulledDateTimestamp($slug);
                 if ($timestamp === null || $timestamp <= $cutoff) {
                     $out[$slug] = $value;
                 }

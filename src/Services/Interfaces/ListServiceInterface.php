@@ -13,10 +13,10 @@ interface ListServiceInterface
     public function getItemsForAction(array $filter, string $action, ?int $min_age = null): array;
 
     /**
-     * @param  array<int, string>  $explicitlyRequested
+     * @param  array<int, string>  $requested
      * @return array<string, array<string>>
      */
-    public function getUpdatedListOfItems(?array $explicitlyRequested): array;
+    public function getUpdatedListOfItems(?array $requested): array;
 
     public function preserveRevision(string $action): string;
 }

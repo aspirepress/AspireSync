@@ -4,54 +4,40 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services;
 
-use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
+use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
 use AspirePress\AspireSync\Utilities\FileUtil;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
-class SvnService implements SvnServiceInterface
+class SubversionService implements SubversionServiceInterface
 {
     public function __construct(private readonly GuzzleClient $guzzle)
     {
     }
 
-    public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): array
+    /** @return array{revision: string, slugs: string[]} */
+    public function getUpdatedSlugs(string $type, int $prevRevision, int $lastRevision): array
     {
-        $targetRev  = $lastRevision;
-        $currentRev = 'HEAD';
-
-        if ($targetRev === $prevRevision) {
-            return [
-                'revision' => $targetRev,
-                'items'    => [],
-            ];
+        if ($prevRevision === $lastRevision) {
+            return ['revision' => $lastRevision, 'slugs' => []];
         }
 
-        $command = [
-            'svn',
-            'log',
-            '-v',
-            '-q',
-            '--xml',
-            'https://' . $type . '.svn.wordpress.org',
-            "-r",
-            "$targetRev:$currentRev",
-        ];
-        // svn log -v -q --xml https://plugins.svn.wordpress.org -r 3179185:HEAD
+        $command = ['svn', 'log', '-v', '-q', '--xml', "https://$type.svn.wordpress.org", "-r", "$lastRevision:HEAD"];
+        // example: svn log -v -q --xml https://plugins.svn.wordpress.org -r 3179185:HEAD
 
         $process = new Process($command);
         $process->run();
 
         if (! $process->isSuccessful()) {
-            throw new RuntimeException('Unable to get list of ' . $type . ' to update' . $process->getErrorOutput());
+            throw new RuntimeException("Unable to get list of $type to update: {$process->getErrorOutput()}");
         }
 
         $output = simplexml_load_string($process->getOutput());
 
-        $itemsToUpdate = [];
-        $entries       = $output->logentry;
+        $slugs   = [];
+        $entries = $output->logentry;
 
         $revision = $lastRevision;
         foreach ($entries as $entry) {
@@ -59,14 +45,11 @@ class SvnService implements SvnServiceInterface
             $path     = (string) $entry->paths->path[0];
             preg_match('#/([A-z\-_]+)/#', $path, $matches);
             if ($matches) {
-                $item                 = trim($matches[1]);
-                $itemsToUpdate[$item] = [];
+                $item         = trim($matches[1]);
+                $slugs[$item] = [];
             }
         }
-        return [
-            'revision' => $revision,
-            'items'    => $itemsToUpdate,
-        ];
+        return ['revision' => $revision, 'slugs' => $slugs];
     }
 
     public function pullWholeItemsList(string $type): array

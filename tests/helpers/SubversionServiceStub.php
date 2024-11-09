@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Tests\Helpers;
 
-use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
+use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
 
-class SvnServiceStub implements SvnServiceInterface
+class SubversionServiceStub implements SubversionServiceInterface
 {
-    public function getRevisionForType(string $type, int $prevRevision, int $lastRevision): array
+    public function getUpdatedSlugs(string $type, int $prevRevision, int $lastRevision): array
     {
         return [
             'revision' => 123,

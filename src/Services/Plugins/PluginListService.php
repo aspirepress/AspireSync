@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Services\Plugins;
 
 use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
-use AspirePress\AspireSync\Services\Interfaces\SvnServiceInterface;
+use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
 
 class PluginListService implements ListServiceInterface
@@ -13,19 +13,19 @@ class PluginListService implements ListServiceInterface
     private int $prevRevision = 0;
 
     public function __construct(
-        private SvnServiceInterface $svnService,
-        private PluginMetadataService $pluginService,
-        private RevisionMetadataService $revisionService,
+        private SubversionServiceInterface $svn,
+        private PluginMetadataService $meta,
+        private RevisionMetadataService $revisions,
     ) {
     }
 
     /**
-     * @param array $filter
+     * @param string[] $filter
      * @return array<string, string[]>
      */
     public function getItemsForAction(array $filter, string $action, ?int $min_age = null): array
     {
-        $lastRevision = $this->revisionService->getRevisionForAction($action);
+        $lastRevision = $this->revisions->getRevisionForAction($action);
         $updates      = $lastRevision
             ? $this->getPluginsToUpdate($filter, $lastRevision, $action)
             : $this->pullWholePluginList($action);
@@ -33,48 +33,53 @@ class PluginListService implements ListServiceInterface
     }
 
     /**
-     * @param array<int, string> $explicitlyRequested
-     * @return array<string, array<string>>
-     */
-    public function getUpdatedListOfItems(?array $explicitlyRequested, string $action = 'meta:plugins:download'): array
-    {
-        $revision = $this->revisionService->getRevisionDateForAction($action);
-        if ($revision) {
-            $revision = date('Y-m-d', strtotime($revision));
-        }
-        return $this->filter($this->pluginService->getVersionsForUnfinalizedPlugins($revision), $explicitlyRequested, null);
-    }
-
-    /**
+     * @param array<int, string> $requested
      * @return array<string, string[]>
      */
+    public function getUpdatedListOfItems(?array $requested, string $action = 'meta:plugins:download'): array
+    {
+        $revDate = $this->revisions->getRevisionDateForAction($action);
+        if ($revDate) {
+            $revDate = date('Y-m-d', strtotime($revDate));
+        }
+        return $this->filter($this->meta->getVersionsForUnfinalizedPlugins($revDate), $requested, null);
+    }
+
+    public function preserveRevision(string $action): string
+    {
+        return $this->revisions->preserveRevision($action);
+    }
+
+    //region Private API
+
+    /** @return array<string, string[]> */
     private function pullWholePluginList(string $action = 'default'): array
     {
-        $result          = $this->svnService->pullWholeItemsList('plugins');
+        $result          = $this->svn->pullWholeItemsList('plugins');
         $pluginsToReturn = $result['items'];
         $revision        = $result['revision'];
-        $this->revisionService->setCurrentRevision($action, $revision);
+        $this->revisions->setCurrentRevision($action, $revision);
         return $pluginsToReturn;
     }
 
     /**
-     * @param array<int, string> $explicitlyRequested
+     * @param string[] $requested
      * @return array<string, string[]>
      */
-    private function getPluginsToUpdate(?array $explicitlyRequested, string $lastRevision, string $action = 'default'): array
+    private function getPluginsToUpdate(?array $requested, string $lastRevision, string $action = 'default'): array
     {
-        $output = $this->svnService->getRevisionForType('plugins', $this->prevRevision, (int) $lastRevision);
+        $output = $this->svn->getUpdatedSlugs('plugins', $this->prevRevision, (int) $lastRevision);
 
-        $revision        = $output['revision'];
-        $pluginsToUpdate = $output['items'];
-        $this->revisionService->setCurrentRevision($action, $revision);
+        $revision = $output['revision'];
+        $slugs    = $output['slugs'];
+        $this->revisions->setCurrentRevision($action, $revision);
 
-        return $this->addNewAndRequestedPlugins($action, $pluginsToUpdate, $explicitlyRequested);
+        return $this->addNewAndRequestedPlugins($action, $slugs, $requested);
     }
 
     /**
-     * Takes the entire list of plugins, and adds any we have not seen before, plus merges plugins that we have explicitly
-     * queued for update.
+     * Takes the entire list of plugins, and adds any we have not seen before,
+     * plus merges plugins that we have explicitly queued for update.
      *
      * @param array<int|string, string|string[]> $pluginsToUpdate
      * @param array<int, string> $explicitlyRequested
@@ -86,7 +91,7 @@ class PluginListService implements ListServiceInterface
 
         foreach ($allPlugins as $pluginName => $pluginVersions) {
             // Is this the first time we've seen the plugin?
-            if (! $this->pluginService->checkPluginInDatabase($pluginName)) {
+            if (! $this->meta->checkPluginInDatabase($pluginName)) {
                 $pluginsToUpdate[$pluginName] = [];
             }
 
@@ -123,7 +128,7 @@ class PluginListService implements ListServiceInterface
         if ($min_age) {
             $cutoff = time() - $min_age;
             foreach ($filtered as $slug => $value) {
-                $timestamp = $this->pluginService->getPulledDateTimestamp($slug);
+                $timestamp = $this->meta->getPulledDateTimestamp($slug);
                 if ($timestamp === null || $timestamp <= $cutoff) {
                     $out[$slug] = $value;
                 }
@@ -132,8 +137,5 @@ class PluginListService implements ListServiceInterface
         return $out;
     }
 
-    public function preserveRevision(string $action): string
-    {
-        return $this->revisionService->preserveRevision($action);
-    }
+    //endregion
 }
