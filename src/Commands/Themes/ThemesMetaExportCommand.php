@@ -34,7 +34,7 @@ class ThemesMetaExportCommand extends AbstractBaseCommand
         $this->startTimer();
 
         foreach ($this->meta->exportAllMetadata() as $json) {
-            echo $json;
+            echo $json . PHP_EOL;
         }
 
         return Command::SUCCESS;
