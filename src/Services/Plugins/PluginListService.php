@@ -74,7 +74,7 @@ class PluginListService implements ListServiceInterface
         $slugs    = $output['slugs'];
         $this->revisions->setCurrentRevision($action, $revision);
 
-        return $this->addNewAndRequestedPlugins($action, $slugs, $requested);
+        return $this->addNewAndRequested($action, $slugs, $requested);
     }
 
     /**
@@ -85,7 +85,7 @@ class PluginListService implements ListServiceInterface
      * @param array<int, string> $explicitlyRequested
      * @return array<string, string[]>
      */
-    private function addNewAndRequestedPlugins(string $action, array $pluginsToUpdate = [], ?array $explicitlyRequested = []): array
+    private function addNewAndRequested(string $action, array $pluginsToUpdate = [], ?array $explicitlyRequested = []): array
     {
         $allPlugins = $this->pullWholePluginList($action);
 

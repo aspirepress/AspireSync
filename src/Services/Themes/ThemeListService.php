@@ -6,22 +6,16 @@ namespace AspirePress\AspireSync\Services\Themes;
 
 use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
-use AspirePress\AspireSync\Utilities\FileUtil;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\ClientException;
-use RuntimeException;
-use Symfony\Component\Process\Process;
-
-use function Safe\filemtime;
+use AspirePress\AspireSync\Services\SubversionService;
 
 class ThemeListService implements ListServiceInterface
 {
     private int $prevRevision = 0;
 
     public function __construct(
+        private SubversionService $svn,
         private ThemeMetadataService $meta,
         private RevisionMetadataService $revisions,
-        private GuzzleClient $guzzle,
     ) {
     }
 
@@ -53,97 +47,42 @@ class ThemeListService implements ListServiceInterface
     }
 
     /**
-     * @param array<int, string> $explicitlyRequested
+     * @param string[] $requested
      * @return array<string, string[]>
      */
-    private function getThemesToUpdate(
-        ?array $explicitlyRequested,
-        string $lastRevision,
-        string $action = 'default',
-    ): array {
-        $targetRev  = (int) $lastRevision;
-        $currentRev = 'HEAD';
+    private function getThemesToUpdate(?array $requested, string $lastRevision, string $action = 'default'): array
+    {
+        $output = $this->svn->getUpdatedSlugs('themes', $this->prevRevision, (int) $lastRevision);
 
-        if ($targetRev === $this->prevRevision) {
-            return $this->addNewAndRequestedThemes($action, $explicitlyRequested, $explicitlyRequested);
-        }
-
-        // TODO: move this to SubversionService
-        $command = explode(' ', "svn log -v -q --xml https://themes.svn.wordpress.org -r $targetRev:$currentRev");
-        $process = new Process($command);
-        $process->run();
-
-        if (! $process->isSuccessful()) {
-            throw new RuntimeException('Unable to get list of themes to update' . $process->getErrorOutput());
-        }
-
-        $output  = simplexml_load_string($process->getOutput());
-        $entries = $output->logentry;
-
-        $themesToUpdate = [];
-        $revision       = $lastRevision;
-        foreach ($entries as $entry) {
-            $revision = (int) $entry->attributes()['revision'];
-            $path     = (string) $entry->paths->path[0];
-            preg_match('#/([A-z\-_]+)/#', $path, $matches);
-            if ($matches) {
-                $theme                  = trim($matches[1]);
-                $themesToUpdate[$theme] = [];
-            }
-        }
-
+        $revision = $output['revision'];
+        $slugs    = $output['slugs'];
         $this->revisions->setCurrentRevision($action, $revision);
-        return $this->addNewAndRequestedThemes($action, $themesToUpdate, $explicitlyRequested);
+
+        return $this->addNewAndRequested($action, $slugs, $requested);
     }
 
-    /**
-     * @return array<string, string[]>
-     */
+    /** @return array<string, string[]> */
     private function pullWholeThemeList(string $action = 'default'): array
     {
-        $filename = '/opt/aspiresync/data/raw-svn-theme-list';
-        if (file_exists($filename) && filemtime($filename) > time() - 43200) {
-            $themes   = FileUtil::read($filename);
-            $contents = $themes;
-        } else {
-            try {
-                $themes   = $this->guzzle->get('https://themes.svn.wordpress.org/');
-                $contents = $themes->getBody()->getContents();
-                FileUtil::write($filename, $contents);
-                $themes = $contents;
-            } catch (ClientException $e) {
-                throw new RuntimeException('Unable to download theme list: ' . $e->getMessage());
-            }
-        }
-        preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $themes, $matches);
-        $themes = $matches[1];
-
-        $themesToReturn = [];
-        foreach ($themes as $theme) {
-            $themesToReturn[(string) $theme] = [];
-        }
-
-        preg_match('/Revision ([0-9]+):/', $contents, $matches);
-        $revision = (int) $matches[1];
-
-        $filename = '/opt/aspiresync/data/raw-theme-list';
-        FileUtil::writeLines($filename, $themes);
+        $result   = $this->svn->pullWholeItemsList('themes');
+        $slugs    = $result['slugs'];
+        $revision = $result['revision'];
         $this->revisions->setCurrentRevision($action, $revision);
-        return $themesToReturn;
+        return $slugs;
     }
 
     /**
-     * Takes the entire list of themes, and adds any we have not seen before, plus merges themes that we have explicitly
-     * queued for update.
+     * Takes the entire list of themes, and adds any we have not seen before,
+     * plus merges themes that we have explicitly queued for update.
      *
      * @param array<int|string, string|string[]> $themesToUpdate
-     * @param array<int, string> $explicitlyRequested
+     * @param array<int, string> $requested
      * @return array<string, string[]>
      */
-    private function addNewAndRequestedThemes(
+    private function addNewAndRequested(
         string $action,
         array $themesToUpdate = [],
-        ?array $explicitlyRequested = [],
+        ?array $requested = [],
     ): array {
         $allThemes = $this->pullWholeThemeList($action);
 
@@ -154,7 +93,7 @@ class ThemeListService implements ListServiceInterface
                 $themesToUpdate[$themeName] = [];
             }
 
-            if (in_array($themeName, $explicitlyRequested, true)) {
+            if (in_array($themeName, $requested, true)) {
                 $themesToUpdate[$themeName] = [];
             }
         }

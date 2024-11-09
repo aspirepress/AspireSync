@@ -52,6 +52,7 @@ class SubversionService implements SubversionServiceInterface
         return ['revision' => $revision, 'slugs' => $slugs];
     }
 
+    /** @return array{slugs: string[], revision: int} */
     public function pullWholeItemsList(string $type): array
     {
         $html = FileUtil::cacheFile(
@@ -64,9 +65,9 @@ class SubversionService implements SubversionServiceInterface
         preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $html, $matches);
         $items = $matches[1];
 
-        $itemsToReturn = [];
+        $slugs = [];
         foreach ($items as $item) {
-            $itemsToReturn[$item] = [];
+            $slugs[$item] = [];
         }
 
         preg_match('/Revision (\d+):/', $html, $matches);
@@ -74,7 +75,7 @@ class SubversionService implements SubversionServiceInterface
 
         FileUtil::writeLines("/opt/aspiresync/data/raw-$type-list", $items);
 
-        return ['items' => $itemsToReturn, 'revision' => $revision];
+        return ['slugs' => $slugs, 'revision' => $revision];
     }
 
     private function fetchRawSvnHtml(string $type): string
