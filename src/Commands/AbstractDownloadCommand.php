@@ -30,7 +30,6 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
     ) {
         parent::__construct();
         $this->processManager->setNumberOfParallelProcesses(20);
-        $this->processManager->setProcessStartDelay(200); // milliseconds
         $this->processManager->setProcessStartCallback($this->onDownloadProcessStarted(...));
         $this->processManager->setProcessFinishCallback($this->onDownloadProcessFinished(...));
     }
