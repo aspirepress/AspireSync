@@ -16,16 +16,14 @@ abstract class AbstractBaseCommand extends Command
 {
     use ErrorWritingTrait;
 
-    protected const ITERATE_UP   = 1;
-    protected const ITERATE_DOWN = 2;
+    protected const int ITERATE_UP   = 1;
+    protected const int ITERATE_DOWN = 2;
 
     private int $progressiveBackoffLevel = 1;
 
     private float $startTime;
 
     private float $endTime;
-
-    protected OutputInterface $io;
 
     protected function startTimer(): void
     {
@@ -44,18 +42,18 @@ abstract class AbstractBaseCommand extends Command
 
     /**
      * @param string[] $info
-     * @return string[];
+     * @return string[]
      */
     protected function getRunInfo(array $info = []): array
     {
         $output   = [];
         $time     = round($this->getElapsedTime(), 4);
-        $output[] = "Took $time seconds...";
+        $output[] = "Time elapsed: $time seconds";
 
         return array_merge($output, $info);
     }
 
-    protected function progressiveBackoff(OutputInterface $output): void
+    protected function progressiveBackoff(): void
     {
         $sleep = $this->progressiveBackoffLevel * 2;
 

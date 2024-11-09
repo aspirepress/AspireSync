@@ -5,19 +5,29 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Factories;
 
 use Aura\Sql\ExtendedPdo;
-use Laminas\ServiceManager\ServiceManager;
+use PDOException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class ExtendedPdoFactory
 {
-    public function __invoke(ServiceManager $serviceManager): ExtendedPdo
+    public function __invoke(
+        #[Autowire(param: 'db_file')] string $db_file,
+        #[Autowire(param: 'db_init_file')] string $db_init_file,
+    ): ExtendedPdo {
+        $dsn = "sqlite:$db_file";
+        $pdo = new ExtendedPdo($dsn);
+        return $this->initialize($pdo, $db_init_file);
+    }
+
+    private function initialize(ExtendedPdo $pdo, string $db_init_file): ExtendedPdo
     {
-        $config   = $serviceManager->get('config');
-        $dbConfig = $config['database'];
-
-        $dsn = 'pgsql:host=' . $dbConfig['host'] . ';dbname=' . $dbConfig['name'];
-
-        $pdo = new ExtendedPdo($dsn, $dbConfig['user'], $dbConfig['pass']);
-        $pdo->exec('SET search_path TO ' . $dbConfig['schema']);
+        $pdo->connect();
+        $pdo->exec('PRAGMA foreign_keys = ON');
+        try {
+            $pdo->query("select 1 from sync_plugins limit 1");
+        } catch (PDOException $e) {
+            $pdo->exec(file_get_contents($db_init_file));
+        }
         return $pdo;
     }
 }

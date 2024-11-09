@@ -6,206 +6,94 @@ namespace AspirePress\AspireSync\Services\Themes;
 
 use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
-use AspirePress\AspireSync\Utilities\FileUtil;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\ClientException;
-use RuntimeException;
-use Symfony\Component\Process\Process;
-
-use function Safe\filemtime;
-use function Safe\json_decode;
+use AspirePress\AspireSync\Services\SubversionService;
 
 class ThemeListService implements ListServiceInterface
 {
     private int $prevRevision = 0;
 
     public function __construct(
-        private ThemesMetadataService $themesMetadataService,
-        private RevisionMetadataService $revisionService,
-        private GuzzleClient $guzzle,
+        private SubversionService $svn,
+        private ThemeMetadataService $meta,
+        private RevisionMetadataService $revisions,
     ) {
     }
 
-    public function getItemsForAction(array $filter, string $action): array
+    public function getItemsForAction(array $filter, string $action, ?int $min_age = null): array
     {
-        if ($lastRevision = $this->revisionService->getRevisionForAction($action)) {
-            return $this->filter($this->getThemesToUpdate($filter, $lastRevision, $action), $filter);
-        }
-        return $this->filter($this->pullWholeThemeList($action), $filter);
+        $lastRevision = $this->revisions->getRevisionForAction($action);
+        $updates      = $lastRevision
+            ? $this->getThemesToUpdate($filter, $lastRevision, $action)
+            : $this->pullWholeThemeList($action);
+        return $this->filter($updates, $filter, $min_age);
     }
 
-    public function getItemMetadata(string $slug): array
+    public function getUpdatedListOfItems(?array $requested, string $action = 'meta:themes:download'): array
     {
-        if ($this->isNotFound($slug)) {
-            return ['skipped' => "$slug previously marked not found; skipping..."];
-        }
-
-        $url         = 'https://api.wordpress.org/themes/info/1.2/';
-        $queryParams = [
-            'action' => 'theme_information',
-            'slug'   => $slug,
-            'fields' => [
-                'description',
-                'sections',
-                'rating',
-                'ratings',
-                'downloaded',
-                'download_link',
-                'last_updated',
-                'homepage',
-                'tags',
-                'template',
-                'parent',
-                'versions',
-                'screenshot_url',
-                'active_installs',
-            ],
-        ];
-        try {
-            $response = $this->guzzle->get($url, ['query' => $queryParams]);
-            $data     = json_decode($response->getBody()->getContents(), true);
-            $filename = "/opt/aspiresync/data/theme-raw-data/{$slug}.json";
-            FileUtil::writeJson($filename, $data);
-            return $data;
-        } catch (ClientException $e) {
-            return ['error' => $e->getCode()];
-        }
-    }
-
-    public function getUpdatedListOfItems(?array $explicitlyRequested, string $action = 'meta:download:themes'): array
-    {
-        $revision = $this->revisionService->getRevisionDateForAction($action);
+        $revision = $this->revisions->getRevisionDateForAction($action);
         if ($revision) {
             $revision = date('Y-m-d', strtotime($revision));
         }
         return $this->filter(
-            $this->themesMetadataService->getVersionsForUnfinalizedThemes($revision),
-            $explicitlyRequested
+            $this->meta->getVersionsForUnfinalizedThemes($revision),
+            $requested,
+            null
         );
     }
 
-    public function preserveRevision(string $action): void
+    public function preserveRevision(string $action): string
     {
-        $this->revisionService->preserveRevision($action);
+        return $this->revisions->preserveRevision($action);
     }
 
     /**
-     * @param array<int, string> $explicitlyRequested
+     * @param string[] $requested
      * @return array<string, string[]>
      */
-    private function getThemesToUpdate(
-        ?array $explicitlyRequested,
-        string $lastRevision,
-        string $action = 'default',
-    ): array {
-        $targetRev  = (int) $lastRevision;
-        $currentRev = 'HEAD';
+    private function getThemesToUpdate(?array $requested, string $lastRevision, string $action = 'default'): array
+    {
+        $output = $this->svn->getUpdatedSlugs('themes', $this->prevRevision, (int) $lastRevision);
 
-        if ($targetRev === $this->prevRevision) {
-            return $this->addNewAndRequestedThemes($action, $explicitlyRequested, $explicitlyRequested);
-        }
+        $revision = $output['revision'];
+        $slugs    = $output['slugs'];
+        $this->revisions->setCurrentRevision($action, $revision);
 
-        $command = [
-            'svn',
-            'log',
-            '-v',
-            '-q',
-            '--xml',
-            'https://themes.svn.wordpress.org',
-            "-r",
-            "$targetRev:$currentRev",
-        ];
-
-        $process = new Process($command);
-        $process->run();
-
-        if (! $process->isSuccessful()) {
-            throw new RuntimeException('Unable to get list of themes to update' . $process->getErrorOutput());
-        }
-
-        $output  = simplexml_load_string($process->getOutput());
-        $entries = $output->logentry;
-
-        $themesToUpdate = [];
-        $revision       = $lastRevision;
-        foreach ($entries as $entry) {
-            $revision = (int) $entry->attributes()['revision'];
-            $path     = (string) $entry->paths->path[0];
-            preg_match('#/([A-z\-_]+)/#', $path, $matches);
-            if ($matches) {
-                $theme                  = trim($matches[1]);
-                $themesToUpdate[$theme] = [];
-            }
-        }
-
-        $this->revisionService->setCurrentRevision($action, $revision);
-        $themesToUpdate = $this->addNewAndRequestedThemes($action, $themesToUpdate, $explicitlyRequested);
-
-        return $themesToUpdate;
+        return $this->addNewAndRequested($action, $slugs, $requested);
     }
 
-    /**
-     * @return array<string, string[]>
-     */
+    /** @return array<string, string[]> */
     private function pullWholeThemeList(string $action = 'default'): array
     {
-        $filename = '/opt/aspiresync/data/raw-svn-theme-list';
-        if (file_exists($filename) && filemtime($filename) > time() - 43200) {
-            $themes   = FileUtil::read($filename);
-            $contents = $themes;
-        } else {
-            try {
-                $themes   = $this->guzzle->get(
-                    'https://themes.svn.wordpress.org/',
-                    ['headers' => ['User-Agent' => 'AspireSync']]
-                );
-                $contents = $themes->getBody()->getContents();
-                FileUtil::write($filename, $contents);
-                $themes = $contents;
-            } catch (ClientException $e) {
-                throw new RuntimeException('Unable to download theme list: ' . $e->getMessage());
-            }
-        }
-        preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $themes, $matches);
-        $themes = $matches[1];
-
-        $themesToReturn = [];
-        foreach ($themes as $theme) {
-            $themesToReturn[(string) $theme] = [];
-        }
-
-        preg_match('/Revision ([0-9]+)\:/', $contents, $matches);
-        $revision = (int) $matches[1];
-
-        $filename = '/opt/aspiresync/data/raw-theme-list';
-        FileUtil::writeLines($filename, $themes);
-        $this->revisionService->setCurrentRevision($action, $revision);
-        return $themesToReturn;
+        $result   = $this->svn->pullWholeItemsList('themes');
+        $slugs    = $result['slugs'];
+        $revision = $result['revision'];
+        $this->revisions->setCurrentRevision($action, $revision);
+        return $slugs;
     }
 
     /**
-     * Takes the entire list of themes, and adds any we have not seen before, plus merges plugins that we have explicitly
-     * queued for update.
+     * Takes the entire list of themes, and adds any we have not seen before,
+     * plus merges themes that we have explicitly queued for update.
      *
      * @param array<int|string, string|string[]> $themesToUpdate
-     * @param array<int, string> $explicitlyRequested
+     * @param array<int, string> $requested
      * @return array<string, string[]>
      */
-    private function addNewAndRequestedThemes(
+    private function addNewAndRequested(
         string $action,
         array $themesToUpdate = [],
-        ?array $explicitlyRequested = [],
+        ?array $requested = [],
     ): array {
         $allThemes = $this->pullWholeThemeList($action);
 
         foreach ($allThemes as $themeName => $themeVersion) {
             // Is this the first time we've seen the theme?
             $themeName = (string) $themeName;
-            if (! $this->themesMetadataService->checkThemeInDatabase($themeName) && ! $this->isNotFound($themeName)) {
+            if (! $this->meta->checkThemeInDatabase($themeName)) {
                 $themesToUpdate[$themeName] = [];
             }
 
-            if (in_array($themeName, $explicitlyRequested)) {
+            if (in_array($themeName, $requested, true)) {
                 $themesToUpdate[$themeName] = [];
             }
         }
@@ -220,29 +108,31 @@ class ThemeListService implements ListServiceInterface
      * @param array<int, string>|null $filter
      * @return array<string, string[]>
      */
-    private function filter(array $themes, ?array $filter): array
+    private function filter(array $themes, ?array $filter, ?int $min_age): array
     {
-        if (! $filter) {
+        if (! $filter && ! $min_age) {
             return $themes;
         }
 
-        $filtered = [];
-        foreach ($filter as $theme) {
-            if (array_key_exists($theme, $themes)) {
-                $filtered[$theme] = $themes[$theme];
+        $filtered = $filter ? [] : $themes;
+
+        foreach ($filter as $slug) {
+            if (array_key_exists($slug, $themes)) {
+                $filtered[$slug] = $themes[$slug];
             }
         }
 
-        return $filtered;
-    }
-
-    public function isNotFound(string $item): bool
-    {
-        return $this->themesMetadataService->isNotFound($item);
-    }
-
-    public function markItemNotFound(string $item): void
-    {
-        $this->themesMetadataService->markItemNotFound($item);
+        $out = $min_age ? [] : $filtered;
+        if ($min_age) {
+            $cutoff = time() - $min_age;
+            foreach ($filtered as $slug => $value) {
+                $slug      = (string) $slug; // purely numeric names get turned into int
+                $timestamp = $this->meta->getPulledDateTimestamp($slug);
+                if ($timestamp === null || $timestamp <= $cutoff) {
+                    $out[$slug] = $value;
+                }
+            }
+        }
+        return $out;
     }
 }

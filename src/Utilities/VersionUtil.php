@@ -43,9 +43,25 @@ abstract class VersionUtil
     }
 
     /**
+     * Currently a validator, does NOT actually clean the version yet.
+     *
+     * @return array{0:string|null, 1:string}  [$cleanedVersion, $message]
+     */
+    public static function cleanVersion(string $version): array
+    {
+        // $version = trim($version); // XXX bad idea, the data needs to be cleaned at the source.
+        if (! preg_match('/^[-A-Za-z0-9_.]+$/', $version)) {
+            $encoded = urlencode($version);
+            return [null, "Invalid version [urlencoded version: $encoded]"];
+        }
+        return [$version, 'version ok'];
+    }
+
+    /**
+     * Sorts versions in order from earliest to latest (e.g. 1.0, 1.1., 2.0)
+     *
      * @param array<int, string> $versions
      * @return array<int, string>
-     * Sorts versions in order from earliest to latest (e.g. 1.0, 1.1., 2.0)
      */
     private static function getParsedVersions(array $versions): array
     {

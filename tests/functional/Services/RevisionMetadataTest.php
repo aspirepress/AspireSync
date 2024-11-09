@@ -57,8 +57,6 @@ class RevisionMetadataTest extends AbstractFunctionalTestBase
 //        $this->assertEquals(9987, $revision);
         $sut->preserveRevision('foo:bar');
 
-        $sut = null;
-
         $sut      = new RevisionMetadataService(FunctionalTestHelper::getDb());
         $revision = $sut->getRevisionForAction('foo:bar');
         $this->assertEquals(9987, $revision);

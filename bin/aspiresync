@@ -1,48 +1,44 @@
 #!/usr/bin/env php
 <?php
 
-use AspirePress\AspireSync\Commands\Plugins\InternalPluginDownloadCommand;
-use AspirePress\AspireSync\Commands\Plugins\DownloadPluginsCommand;
-use AspirePress\AspireSync\Commands\Plugins\MetaImportPluginsCommand;
-use AspirePress\AspireSync\Commands\Plugins\MetaDownloadPluginsCommand;
-use AspirePress\AspireSync\Commands\Plugins\DownloadPluginsPartialCommand;
-use AspirePress\AspireSync\Commands\RunAllCommand;
-use AspirePress\AspireSync\Commands\Themes\DownloadThemesCommand;
-use AspirePress\AspireSync\Commands\Themes\DownloadThemesPartialCommand;
-use AspirePress\AspireSync\Commands\Themes\InternalThemeDownloadCommand;
-use AspirePress\AspireSync\Commands\Themes\MetaImportThemesCommand;
-use AspirePress\AspireSync\Commands\Themes\MetaDownloadThemesCommand;
-use AspirePress\AspireSync\Commands\UtilCleanCommand;
-use AspirePress\AspireSync\Commands\UtilUploadCommand;
+use AspirePress\AspireSync\Commands\Plugins\PluginsDownloadCommand;
+use AspirePress\AspireSync\Commands\Plugins\PluginsDownloadSingleCommand;
+use AspirePress\AspireSync\Commands\Plugins\PluginsMetaCommand;
+use AspirePress\AspireSync\Commands\Plugins\PluginsMetaDumpCommand;
+use AspirePress\AspireSync\Commands\Themes\ThemesDownloadCommand;
+use AspirePress\AspireSync\Commands\Themes\ThemesDownloadSingleCommand;
+use AspirePress\AspireSync\Commands\Themes\ThemesMetaCommand;
+use AspirePress\AspireSync\Commands\Themes\ThemesMetaDumpCommand;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application;
-
-require 'vendor/autoload.php';
-
-$config = require './config/config.php';
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
+use Symfony\Component\Dotenv\Dotenv;
 
 ini_set('memory_limit', '4G');
 
-$dependencies                       = $config['dependencies'];
-$dependencies['services']['config'] = $config;
+// all-caps variable names because they're globals visible to the rest of the app
 
-$container = new \Laminas\ServiceManager\ServiceManager($dependencies);
+$APP_DIR = dirname(__DIR__);
 
-$application = new Application();
+require "$APP_DIR/vendor/autoload.php";
 
-$application->add($container->get(RunAllCommand::class));
+(new Dotenv())->loadEnv("$APP_DIR/.env");
 
-$application->add($container->get(InternalPluginDownloadCommand::class));
-$application->add($container->get(DownloadPluginsCommand::class));
-$application->add($container->get(MetaImportPluginsCommand::class));
-$application->add($container->get(MetaDownloadPluginsCommand::class));
-$application->add($container->get(DownloadPluginsPartialCommand::class));
+$CONTAINER = new ContainerBuilder();
+(new PhpFileLoader($CONTAINER, new FileLocator(__DIR__ . '/../config')))->load('services.php');
+$CONTAINER->compile(resolveEnvPlaceholders: true);
 
-$application->add($container->get(MetaDownloadThemesCommand::class));
-$application->add($container->get(MetaImportThemesCommand::class));
-$application->add($container->get(DownloadThemesCommand::class));
-$application->add($container->get(DownloadThemesPartialCommand::class));
-$application->add($container->get(InternalThemeDownloadCommand::class));
+$APP = new Application();
 
-$application->add($container->get(UtilCleanCommand::class));
-$application->add($container->get(UtilUploadCommand::class));
-$application->run();
+$APP->add($CONTAINER->get(PluginsDownloadCommand::class));
+$APP->add($CONTAINER->get(PluginsDownloadSingleCommand::class));
+$APP->add($CONTAINER->get(PluginsMetaCommand::class));
+$APP->add($CONTAINER->get(PluginsMetaDumpCommand::class));
+
+$APP->add($CONTAINER->get(ThemesDownloadCommand::class));
+$APP->add($CONTAINER->get(ThemesDownloadSingleCommand::class));
+$APP->add($CONTAINER->get(ThemesMetaCommand::class));
+$APP->add($CONTAINER->get(ThemesMetaDumpCommand::class));
+
+$APP->run();

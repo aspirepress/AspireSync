@@ -4,22 +4,21 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Utilities;
 
-use Symfony\Component\Console\Output\Output;
 use Symfony\Component\Console\Output\OutputInterface;
 
 trait ErrorWritingTrait
 {
-    protected const ERROR   = 1;
-    protected const WARNING = 2;
-    protected const NOTICE  = 3;
-    protected const INFO    = 4;
-    protected const DEBUG   = 5;
+    protected const int ERROR   = 1;
+    protected const int WARNING = 2;
+    protected const int NOTICE  = 3;
+    protected const int INFO    = 4;
+    protected const int DEBUG   = 5;
 
-    protected const SUCCESS_MSG = 6;
+    protected const int SUCCESS_MSG = 6;
 
-    protected const FAILURE_MSG = 7;
+    protected const int FAILURE_MSG = 7;
 
-    protected const ALWAYS_WRITE = 8;
+    protected const int ALWAYS_WRITE = 8;
 
     protected OutputInterface $io;
 
@@ -38,19 +37,19 @@ trait ErrorWritingTrait
                 break;
 
             case self::WARNING:
-                $this->io->writeln("<fg=black;bg=yellow>" . OutputManagementUtil::warning($message) . "</>", Output::VERBOSITY_VERBOSE);
+                $this->io->writeln("<fg=black;bg=yellow>" . OutputManagementUtil::warning($message) . "</>", OutputInterface::VERBOSITY_VERBOSE);
                 break;
 
             case self::INFO:
-                $this->io->writeln("<fg=green>" . OutputManagementUtil::info($message) . "</>", Output::VERBOSITY_VERBOSE);
+                $this->io->writeln("<fg=green>" . OutputManagementUtil::info($message) . "</>", OutputInterface::VERBOSITY_VERBOSE);
                 break;
 
             case self::NOTICE:
-                $this->io->writeln("<fg=yellow>" . OutputManagementUtil::notice($message) . "</>", Output::VERBOSITY_VERY_VERBOSE);
+                $this->io->writeln("<fg=yellow>" . OutputManagementUtil::notice($message) . "</>", OutputInterface::VERBOSITY_VERY_VERBOSE);
                 break;
 
             case self::DEBUG:
-                $this->io->writeln("<fg=yellow>" . OutputManagementUtil::debug($message) . "</>", Output::VERBOSITY_DEBUG);
+                $this->io->writeln("<fg=yellow>" . OutputManagementUtil::debug($message) . "</>", OutputInterface::VERBOSITY_DEBUG);
                 break;
 
             case self::SUCCESS_MSG:
@@ -58,7 +57,7 @@ trait ErrorWritingTrait
                 break;
 
             case self::ALWAYS_WRITE:
-                $this->io->writeln("<fg=green>" . OutputManagementUtil::generic($message) . "</>", Output::VERBOSITY_QUIET);
+                $this->io->writeln("<fg=green>" . OutputManagementUtil::generic($message) . "</>", OutputInterface::VERBOSITY_QUIET);
         }
     }
 

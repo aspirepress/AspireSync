@@ -11,12 +11,12 @@ abstract class StatsUtil
     /** @var array<string, int> */
     private static array $stats = [];
 
-    public const RAW       = true;
-    public const FORMATTED = false;
+    public const true RAW        = true;
+    public const false FORMATTED = false;
 
-    public const RESET_ALL = 1;
+    public const int RESET_ALL = 1;
 
-    public const RESET_VALUES = 2;
+    public const int RESET_VALUES = 2;
 
     /**
      * @param array<int, string> $stats

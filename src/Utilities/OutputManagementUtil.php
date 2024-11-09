@@ -6,15 +6,15 @@ namespace AspirePress\AspireSync\Utilities;
 
 abstract class OutputManagementUtil
 {
-    private const ERROR   = '[ERROR]   ';
-    private const WARNING = '[WARNING] ';
-    private const NOTICE  = '[NOTICE]  ';
-    private const INFO    = '[INFO]    ';
-    private const DEBUG   = '[DEBUG]   ';
+    private const string ERROR   = '[ERROR]   ';
+    private const string WARNING = '[WARNING] ';
+    private const string NOTICE  = '[NOTICE]  ';
+    private const string INFO    = '[INFO]    ';
+    private const string DEBUG   = '[DEBUG]   ';
 
-    private const SUCCESS = '[SUCCESS] ';
+    private const string SUCCESS = '[SUCCESS] ';
 
-    private const FAILURE = '[FAILURE] ';
+    private const string FAILURE = '[FAILURE] ';
 
     /**
      * @param string|iterable<int, string> $message
