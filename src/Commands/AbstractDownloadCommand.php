@@ -80,7 +80,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         foreach ($pending as $slug => $versions) {
             $versions = $this->determineVersionsToDownload($slug, $versions, $numVersions);
             if (! $versions) {
-                $this->debug("$slug ... No new versions found");
+                // $this->debug("$slug ... No new versions found");
             }
             foreach ($versions as $version) {
                 [$version, $message] = VersionUtil::cleanVersion($version);
@@ -120,7 +120,9 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
 
     protected function onDownloadProcessStarted(Process $process): void
     {
-        $this->debug("START: " . str_replace("'", "", $process->getCommandLine()));
+        // WTF: this randomly crashes with $this->io being uninitialized.
+        //      this whole app needs to be rewritten as async anyway, so just forget about it right now.
+        // $this->debug("START: " . str_replace("'", "", $process->getCommandLine()));
     }
 
     protected function onDownloadProcessFinished(Process $process): void
