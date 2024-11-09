@@ -7,6 +7,7 @@ namespace AspirePress\AspireSync\Services\Plugins;
 use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
 use Aura\Sql\ExtendedPdoInterface;
 use Exception;
+use Generator;
 use PDOException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -492,6 +493,16 @@ class PluginMetadataService implements MetadataServiceInterface
         return (int) $result['timestamp'];
     }
 
+    public function exportAllMetadata(): Generator
+    {
+        $sql = "SELECT metadata FROM sync_plugins WHERE status = 'open'";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        while ($row = $stmt->fetch()) {
+            yield $row['metadata'];
+        }
+    }
+
     //region Private API
 
     private function insertPlugin(array $data): void
@@ -516,4 +527,5 @@ class PluginMetadataService implements MetadataServiceInterface
     }
 
     //endregion
+
 }

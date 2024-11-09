@@ -6,6 +6,7 @@ namespace AspirePress\AspireSync\Services\Themes;
 
 use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
 use Aura\Sql\ExtendedPdoInterface;
+use Generator;
 use PDOException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -270,6 +271,16 @@ class ThemeMetadataService implements MetadataServiceInterface
             return null;
         }
         return (int) $result['timestamp'];
+    }
+
+    public function exportAllMetadata(): Generator
+    {
+        $sql = "SELECT metadata FROM sync_themes WHERE status = 'open'";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        while ($row = $stmt->fetch()) {
+            yield $row['metadata'];
+        }
     }
 
     //region Private API
