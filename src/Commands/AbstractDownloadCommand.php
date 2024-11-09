@@ -29,9 +29,11 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         protected readonly ProcessManager $processManager,
     ) {
         parent::__construct();
-        $this->processManager->setNumberOfParallelProcesses(20);
-        $this->processManager->setProcessStartCallback($this->onDownloadProcessStarted(...));
-        $this->processManager->setProcessFinishCallback($this->onDownloadProcessFinished(...));
+        $this->processManager
+            ->setNumberOfParallelProcesses(20)  // we rarely reach this many so there's little point increasing it
+            ->setPollInterval(20)
+            ->setProcessStartCallback($this->onDownloadProcessStarted(...))
+            ->setProcessFinishCallback($this->onDownloadProcessFinished(...));
     }
 
     abstract protected function getCategory(): string;
@@ -78,7 +80,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         foreach ($pending as $slug => $versions) {
             $versions = $this->determineVersionsToDownload($slug, $versions, $numVersions);
             if (! $versions) {
-                $this->debug("No downloadable versions found for $slug");
+                $this->debug("$slug ... No new versions found");
             }
             foreach ($versions as $version) {
                 [$version, $message] = VersionUtil::cleanVersion($version);
