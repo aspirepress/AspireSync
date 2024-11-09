@@ -4,11 +4,11 @@
 use AspirePress\AspireSync\Commands\Plugins\PluginsDownloadCommand;
 use AspirePress\AspireSync\Commands\Plugins\PluginsDownloadSingleCommand;
 use AspirePress\AspireSync\Commands\Plugins\PluginsMetaCommand;
-use AspirePress\AspireSync\Commands\Plugins\PluginsMetaExportCommand;
+use AspirePress\AspireSync\Commands\Plugins\PluginsMetaDumpCommand;
 use AspirePress\AspireSync\Commands\Themes\ThemesDownloadCommand;
 use AspirePress\AspireSync\Commands\Themes\ThemesDownloadSingleCommand;
 use AspirePress\AspireSync\Commands\Themes\ThemesMetaCommand;
-use AspirePress\AspireSync\Commands\Themes\ThemesMetaExportCommand;
+use AspirePress\AspireSync\Commands\Themes\ThemesMetaDumpCommand;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -34,11 +34,11 @@ $APP = new Application();
 $APP->add($CONTAINER->get(PluginsDownloadCommand::class));
 $APP->add($CONTAINER->get(PluginsDownloadSingleCommand::class));
 $APP->add($CONTAINER->get(PluginsMetaCommand::class));
-$APP->add($CONTAINER->get(PluginsMetaExportCommand::class));
+$APP->add($CONTAINER->get(PluginsMetaDumpCommand::class));
 
 $APP->add($CONTAINER->get(ThemesDownloadCommand::class));
 $APP->add($CONTAINER->get(ThemesDownloadSingleCommand::class));
 $APP->add($CONTAINER->get(ThemesMetaCommand::class));
-$APP->add($CONTAINER->get(ThemesMetaExportCommand::class));
+$APP->add($CONTAINER->get(ThemesMetaDumpCommand::class));
 
 $APP->run();
