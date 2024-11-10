@@ -19,7 +19,7 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
-    $env = fn(string $name, ?string $default = null) => $_ENV[$name] ?? null ?: $default;
+    $env = fn(string $name, mixed $default = null) => $_ENV[$name] ?? null ?: $default;
 
     $downloads_dir = $env('DOWNLOADS_DIR', dirname(__DIR__) . '/data/download');
     if (! str_starts_with($downloads_dir, '/')) {
