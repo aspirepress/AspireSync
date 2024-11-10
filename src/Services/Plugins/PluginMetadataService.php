@@ -473,16 +473,6 @@ class PluginMetadataService implements MetadataServiceInterface
         return $this->pdo->fetchCol($sql);
     }
 
-    public function getStorageDir(): string
-    {
-        return '/opt/aspiresync/data/plugins';
-    }
-
-    public function getS3Path(): string
-    {
-        return '/plugins/';
-    }
-
     public function getPulledDateTimestamp(string $slug): ?int
     {
         $sql    = "select unixepoch(pulled_at) timestamp from sync_plugins where slug = :slug";
