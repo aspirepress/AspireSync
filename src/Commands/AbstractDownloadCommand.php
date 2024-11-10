@@ -88,7 +88,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
                     $this->notice("Skipping $slug: $message");
                     continue;
                 }
-                $command = ['aspiresync', "$category:download:single", $slug, $version, ...$flags];
+                $command = ['bin/aspiresync', "$category:download:single", $slug, $version, ...$flags];
                 $this->debug("QUEUE #$counter: " . implode(' ', $command));
                 $process = new Process($command);
                 $this->processManager->addProcess($process);
@@ -120,14 +120,20 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
 
     protected function onDownloadProcessStarted(Process $process): void
     {
-        // WTF: this randomly crashes with $this->io being uninitialized.
-        //      this whole app needs to be rewritten as async anyway, so just forget about it right now.
+        // WTF: this crashes with $this->io being uninitialized.  leaving it as is, pending an async rewrite
         // $this->debug("START: " . str_replace("'", "", $process->getCommandLine()));
     }
 
     protected function onDownloadProcessFinished(Process $process): void
     {
-        echo $process->getOutput();
         $process->wait();
+        $stdout = $process->getOutput();
+        $stderr = $process->getErrorOutput();
+        // same issue as the other process hooks, $this->io is uninitialized
+        // $stderr and $this->error($stderr);
+        if ($stderr) {
+            echo "ERR: $stderr\n";
+        }
+        echo $stdout;
     }
 }
