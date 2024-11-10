@@ -55,11 +55,11 @@ class PluginListService implements ListServiceInterface
     /** @return array<string, string[]> */
     private function pullWholePluginList(string $action = 'default'): array
     {
-        $result   = $this->svn->pullWholeItemsList('plugins');
-        $slugs    = $result['slugs'];
-        $revision = $result['revision'];
+        $result          = $this->svn->pullWholeItemsList('plugins');
+        $pluginsToReturn = $result['items'];
+        $revision        = $result['revision'];
         $this->revisions->setCurrentRevision($action, $revision);
-        return $slugs;
+        return $pluginsToReturn;
     }
 
     /**
