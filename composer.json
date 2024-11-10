@@ -19,6 +19,12 @@
     "symfony/var-dumper": "^7.1.7",
     "thecodingmachine/safe": "^2.5"
   },
+  "require-dev": {
+    "phpstan/phpstan": "^1.12.6",
+    "phpunit/phpunit": "^11.4.1",
+    "roave/security-advisories": "dev-latest",
+    "thecodingmachine/phpstan-safe-rule": "^1.2"
+  },
   "autoload": {
     "psr-4": {
       "AspirePress\\AspireSync\\": "./src"
@@ -31,12 +37,6 @@
       "AspirePress\\AspireSync\\Tests\\Helpers\\": "./tests/helpers"
     }
   },
-  "require-dev": {
-    "phpstan/phpstan": "^1.12.6",
-    "phpunit/phpunit": "^11.4.1",
-    "roave/security-advisories": "dev-latest",
-    "thecodingmachine/phpstan-safe-rule": "^1.2"
-  },
   "config": {
     "optimize-autoloader": true,
     "preferred-install": "dist",
@@ -44,5 +44,16 @@
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true
     }
+  },
+  "scripts": {
+    "phpstan": "phpstan --verbose --mmory-limit=2G",
+    "phpunit": "phpunit",
+    "phpcs": "phpcs --parallel=4",
+    "phpcbf": "phpcbf --parallel=4",
+    "test": "@phpunit",
+    "test:unit": "@phpunit --testsuite=unit",
+    "test:functional": "@phpunit --testsuite=functional",
+    "style:check": "@phpcs",
+    "style:fix": "@phpcbf"
   }
 }

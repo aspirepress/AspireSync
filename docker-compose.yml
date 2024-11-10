@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-      target: devbuild
+      target: dev
     networks:
       - app-net
       - aspire-net

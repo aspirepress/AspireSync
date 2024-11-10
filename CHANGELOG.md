@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* [CHANGED] Major internal refactor and reorganization of commands.
+* [CHANGED] Downloads go directly to s3 
+* [CHANGED] Use sqlite for all locally cached data.
+
 ## 1.0 Alpha 5
 
 * [ADDED] Docker Compose support.

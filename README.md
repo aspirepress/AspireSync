@@ -4,29 +4,22 @@ AspireSync is designed to enumerate and download the plugins and themes stored i
 
 ## Features
 
-* Download themes and plugins from the WordPress .org repository and upload them to local or S3 storage.
-* Store metadata and other information about every version of every plugin.
-* Download the latest version of a plugin/theme, or all versions, or a subset.
-* Handles closed and not found plugins/themes.
-* Updates only those items that are updated in SVN, so you don't have to pull the entire dataset.
-* Supports Postgres out of the box for metadata retention (SQLite coming eventually)
-* Runs downloads in parallel tasks (24 max) to allow for speedy download of assets.
+* Download themes and plugins from the WordPress .org repository to the local filesystem or S3 storage.
+* Stores metadata and other information about every version of every plugin in sqlite.
+* Can export metadata as newline-delimited json for consumption by [AspireCloud](https://github.com/aspiresync/AspireCloud). 
+* Can download all versions of plugins and themes, or just the latest version.
+* Handles closed and not found plugins/themes, preventing further download attempts for them.
+* Incremental updates, syncing only those items that have updated in subversion since the last sync.
+* Runs downloads in parallel tasks (20 max) to allow for speedy download of assets.
 
 ## Quick Start
 
-AspireSync requires a running instance of [AspireCloud](https://github.com/AspirePress/AspireCloud). Simply clone it and start it up with
-`make init`.
-
-Once you have AspireCloud started, start the AspireSync service by running
-`make init`
-
-Get a shell by typing
-`make run`. Once in the shell, type
-`aspiresync` without arguments for help.
+```shell
+make
+bin/aspiresync list
+```
 
 ## Configuration
-
-### Uploads
 
 AspireSync places download files in a location of your choosing, either in S3(-compatible) storage or local storage somewhere on disk.
 
