@@ -20,11 +20,11 @@ destroy:
 	docker compose down --remove-orphans --volumes --rmi local
 
 dev-image:
-	docker build --target devbuild -t aspiresync-dev -f $(DOCKERFILE) .
-	docker build --target devbuild -t aspiresync-dev-build -f $(DOCKERFILE) .
+	docker build --target dev -t aspiresync-dev -f $(DOCKERFILE) .
+	docker build --target dev -t aspiresync-dev-build -f $(DOCKERFILE) .
 
 prod-image:
-	docker build --platform=linux/amd64,linux/arm64 --target prodbuild -t aspirepress/aspiresync:latest -t aspirepress/aspiresync:$(TAG) -f $(DOCKERFILE) .
+	docker build --platform=linux/amd64,linux/arm64 --target prodb -t aspirepress/aspiresync:latest -t aspirepress/aspiresync:$(TAG) -f $(DOCKERFILE) .
 
 authenticate: authenticate-aws docker-login-aws
 

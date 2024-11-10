@@ -1,4 +1,4 @@
-FROM php:8.3-cli AS basebuild
+FROM php:8.3-cli AS base
 
 ENV PATH="/opt/aspiresync/bin:$PATH"
 
@@ -26,7 +26,7 @@ RUN mkdir -p /opt/aspiresync/data \
 WORKDIR /opt/aspiresync
 
 ################
-FROM basebuild AS devbuild
+FROM base AS dev
 
 RUN apt update \
     && apt install -y procps sudo \
@@ -42,7 +42,9 @@ USER aspiresync
 RUN git config --global --add safe.directory /opt/aspiresync
 
 ################
-FROM basebuild AS prodbuild
+FROM base AS prod
+
+COPY . /opt/aspiresync
 
 RUN composer install --no-dev --no-interaction --no-progress --working-dir=/opt/aspiresync
 
