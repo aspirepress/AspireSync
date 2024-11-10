@@ -1,14 +1,3 @@
-# Ignore everything by default
-*
-
-# Copy these directories
-!bin/
-!config/
-!src
-
-# Copy these files
-!.env
-!README.md
-!composer.json
-!composer.lock
-!docker/php.ini
+data/
+vendor/
+tests/
