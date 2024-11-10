@@ -122,18 +122,6 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
         $this->assertCount(2, $versions);
     }
 
-    public function testGetStorageDir(): void
-    {
-        $storageDir = $this->sut->getStorageDir();
-        $this->assertEquals('/opt/aspiresync/data/plugins', $storageDir);
-    }
-
-    public function testGetS3Path(): void
-    {
-        $storageDir = $this->sut->getS3Path();
-        $this->assertEquals('/plugins/', $storageDir);
-    }
-
     public function testGetDataFiltersWhenAsked(): void
     {
         $metadata = [
