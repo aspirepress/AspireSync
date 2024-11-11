@@ -62,10 +62,10 @@ class ThemeMetadataService implements MetadataServiceInterface
         return $return;
     }
 
-    /** @param array<string, mixed> $meta */
-    public function saveMetadata(array $meta): void
+    /** @param array<string, mixed> $metadata */
+    public function save(array $metadata): void
     {
-        isset($meta['error']) ? $this->saveErrorTheme($meta) : $this->saveOpenTheme($meta);
+        isset($metadata['error']) ? $this->saveErrorTheme($metadata) : $this->saveOpenTheme($metadata);
     }
 
     /**
@@ -203,7 +203,6 @@ class ThemeMetadataService implements MetadataServiceInterface
      */
     public function getVersionsForUnfinalizedThemes(?string $revDate, string $type = 'wp_cdn'): array
     {
-        $notFound = $this->getNotFoundThemes();
 
         try {
             $sql  = "SELECT sync_themes.id, slug, version FROM sync_theme_files LEFT JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id WHERE sync_theme_files.type = :type";
@@ -217,9 +216,7 @@ class ThemeMetadataService implements MetadataServiceInterface
             foreach ($result as $row) {
                 $theme   = $row['slug'];
                 $version = $row['version'];
-                if (! in_array($version, $notFound, true)) {
-                    $finalResult[$theme][] = $version;
-                }
+                $finalResult[$theme][] = $version;
             }
             return $finalResult;
         } catch (PDOException $e) {
@@ -254,15 +251,6 @@ class ThemeMetadataService implements MetadataServiceInterface
         return $result;
     }
 
-    /**
-     * @return array<int, string>
-     */
-    public function getNotFoundThemes(): array
-    {
-        $sql = "SELECT item_slug FROM sync_not_found_items WHERE item_type = 'theme'";
-        return $this->pdo->fetchAll($sql);
-    }
-
     public function getPulledDateTimestamp(string $slug): ?int
     {
         $sql    = "select unixepoch(pulled_at) timestamp from sync_themes where slug = :slug";
@@ -275,7 +263,7 @@ class ThemeMetadataService implements MetadataServiceInterface
 
     public function exportAllMetadata(): Generator
     {
-        $sql = "SELECT metadata FROM sync_themes WHERE status = 'open'";
+        $sql  = "SELECT metadata FROM sync_themes WHERE status = 'open'";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
         while ($row = $stmt->fetch()) {
@@ -307,4 +295,8 @@ class ThemeMetadataService implements MetadataServiceInterface
     }
 
     //endregion
+    public function has(string $slug): bool
+    {
+        return true;
+    }
 }

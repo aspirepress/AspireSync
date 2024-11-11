@@ -54,15 +54,6 @@ create table sync_theme_files
 );
 create index theme_files_hash_index on sync_theme_files (hash);
 
-create table sync_not_found_items
-(
-    id         character(36) primary key              not null,
-    item_type  varchar(255)                           not null,
-    item_slug  varchar(255)                           not null,
-    created_at timestamp(0) default current_timestamp not null,
-    updated_at timestamp(0) default current_timestamp not null
-);
-
 create table sync_revisions
 (
     action   varchar(255)                           not null,
@@ -70,12 +61,6 @@ create table sync_revisions
     added_at timestamp(0) default current_timestamp not null
 );
 create index revisions_action_index on sync_revisions (action);
-
-create table sync_sites
-(
-    id   character(36) primary key not null,
-    host varchar(255) unique       not null
-);
 
 create table sync_stats
 (

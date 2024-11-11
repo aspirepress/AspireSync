@@ -48,7 +48,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
         $this->always("Running command {$this->getName()}");
         $this->startTimer();
 
-        $slugs = StringUtil::explodeAndTrim($input->getOption('plugins') ?? '');
+        $slugs   = StringUtil::explodeAndTrim($input->getOption('plugins') ?? '');
         $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
 
         $this->debug('Getting list of plugins...');
@@ -63,6 +63,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
 
         foreach ($pending as $slug => $versions) {
             $this->fetchPluginDetails($input, $output, $slug, $versions);
+            if (str_starts_with($slug, 'a')) break; // DEBUG
         }
 
         if ($input->getOption('plugins')) {
@@ -96,7 +97,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
         $data  = $this->wpClient->getPluginMetadata($slug);
         $error = $data['error'] ?? null;
 
-        $this->meta->saveMetadata($data);
+        $this->meta->save($data);
 
         if (! empty($data['versions'])) {
             $this->info("$slug ... [" . count($data['versions']) . ' versions]');

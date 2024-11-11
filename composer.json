@@ -2,9 +2,10 @@
   "require": {
     "php": "^8.3",
     "ext-pdo": "*",
-    "ext-pdo_pgsql": "*",
     "ext-simplexml": "*",
+    "ext-sqlite3": "*",
     "aura/sql": "^5.0.2",
+    "doctrine/dbal": "^4.2",
     "guzzlehttp/guzzle": "^7.9.2",
     "laminas/laminas-coding-standard": "^2.5",
     "league/flysystem": "^3.29.1",

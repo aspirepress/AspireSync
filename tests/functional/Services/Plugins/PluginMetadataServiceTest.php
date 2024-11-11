@@ -78,8 +78,7 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
             'closed_date' => date('c'),
         ];
 
-        $result = $this->sut->saveErrorPlugin($metadata, date('c'));
-        $this->assertEmpty($result['error']);
+        $this->sut->save($metadata);
 
         $data = $this->sut->getData();
         $this->assertEmpty($data);
@@ -107,8 +106,7 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
             ],
         ];
 
-        $result = $this->sut->saveOpenPlugin($metadata, date('c'));
-        $this->assertEmpty($result['error']);
+        $this->sut->save($metadata);
 
         $data = $this->sut->getData();
         $this->assertEquals(['foo'], array_keys($data));
@@ -196,8 +194,8 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
 
         // We need a new SUT because we load existing plugins at construct time
         $sut = new PluginMetadataService(FunctionalTestHelper::getDb());
-        $this->assertEmpty($sut->checkPluginInDatabase('foo'));
-        $this->assertNotEmpty($sut->checkPluginInDatabase('bar'));
+        $this->assertEmpty($sut->has('foo'));
+        $this->assertNotEmpty($sut->has('bar'));
     }
 
     public function testUpdatePluginSelectsAndProcessesCorrectly(): void

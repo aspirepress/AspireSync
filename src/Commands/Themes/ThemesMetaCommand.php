@@ -96,7 +96,7 @@ class ThemesMetaCommand extends AbstractBaseCommand
         $data  = $this->wpClient->getThemeMetadata($slug);
         $error = $data['error'] ?? null;
 
-        $this->themesMetadataService->saveMetadata($data);
+        $this->themesMetadataService->save($data);
 
         if (! empty($data['versions'])) {
             $this->info("$slug ... [" . count($data['versions']) . ' versions]');

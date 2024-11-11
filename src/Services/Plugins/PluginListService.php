@@ -42,7 +42,7 @@ class PluginListService implements ListServiceInterface
         if ($revDate) {
             $revDate = date('Y-m-d', strtotime($revDate));
         }
-        return $this->filter($this->meta->getVersionsForUnfinalizedPlugins($revDate), $requested, null);
+        return $this->filter($this->meta->getOpenVersions($revDate), $requested, null);
     }
 
     public function preserveRevision(string $action): string
@@ -91,7 +91,7 @@ class PluginListService implements ListServiceInterface
 
         foreach ($allPlugins as $pluginName => $pluginVersions) {
             // Is this the first time we've seen the plugin?
-            if (! $this->meta->checkPluginInDatabase($pluginName)) {
+            if (! $this->meta->has($pluginName)) {
                 $pluginsToUpdate[$pluginName] = [];
             }
 

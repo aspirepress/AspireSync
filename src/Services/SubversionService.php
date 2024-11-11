@@ -56,6 +56,7 @@ class SubversionService implements SubversionServiceInterface
     public function pullWholeItemsList(string $type): array
     {
         global $APP_DIR;
+        @mkdir("$APP_DIR/data");
         $html = FileUtil::cacheFile(
             "$APP_DIR/data/raw-svn-$type-list",
             86400,
