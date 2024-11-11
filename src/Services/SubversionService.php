@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services;
 
+use AspirePress\AspireSync\Services\Interfaces\CacheServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
-use AspirePress\AspireSync\Utilities\FileUtil;
 use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
 class SubversionService implements SubversionServiceInterface
 {
-    public function __construct(private readonly GuzzleClient $guzzle)
+    public function __construct(private readonly GuzzleClient $guzzle, private readonly CacheServiceInterface $cache)
     {
     }
 
@@ -52,43 +51,22 @@ class SubversionService implements SubversionServiceInterface
         return ['revision' => $revision, 'slugs' => $slugs];
     }
 
-    /** @return array{slugs: string[], revision: int} */
-    public function pullWholeItemsList(string $type): array
+    /** @return string[] */
+    public function scrapeSlugsFromIndex(string $type): array
     {
-        global $APP_DIR;
-        @mkdir("$APP_DIR/data");
-        $html = FileUtil::cacheFile(
-            "$APP_DIR/data/raw-svn-$type-list",
-            86400,
-            fn() => $this->fetchRawSvnHtml($type)
-        );
+        $html = $this->guzzle
+            ->get("https://$type.svn.wordpress.org/")
+            ->getBody()
+            ->getContents();
 
         $matches = [];
         preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $html, $matches);
-        $items = $matches[1];
-
-        $slugs = [];
-        foreach ($items as $item) {
-            $slugs[$item] = [];
-        }
+        $slugs = $matches[1];
 
         preg_match('/Revision (\d+):/', $html, $matches);
         $revision = (int) $matches[1];
 
-        FileUtil::writeLines("$APP_DIR/data/raw-$type-list", $items);
-
         return ['slugs' => $slugs, 'revision' => $revision];
     }
 
-    private function fetchRawSvnHtml(string $type): string
-    {
-        try {
-            return $this->guzzle
-                ->get("https://$type.svn.wordpress.org/")
-                ->getBody()
-                ->getContents();
-        } catch (ClientException $e) {
-            throw new RuntimeException("Unable to download $type list: " . $e->getMessage());
-        }
-    }
 }

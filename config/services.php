@@ -21,14 +21,15 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
-    $env = fn(string $name, mixed $default = null) => $_ENV[$name] ?? null ?: $default;
+    global $APP_DIR;
+    $env = fn(string $name, mixed $default = null) => ($_ENV[$name] ?? null) ?: $default;
 
-    $downloads_dir = $env('DOWNLOADS_DIR', dirname(__DIR__) . '/data/download');
+    $downloads_dir = $env('DOWNLOADS_DIR', "$APP_DIR/data/download");
     if (! str_starts_with($downloads_dir, '/')) {
-        $downloads_dir = dirname(__DIR__) . $downloads_dir;
+        $downloads_dir = "$APP_DIR/$downloads_dir";
     }
 
-    $db_file = $env('DB_FILE', realpath(__DIR__ . '/../data/aspiresync.sqlite'));
+    $db_file = $env('DB_FILE', "$APP_DIR/data/aspiresync.sqlite");
     $db_url  = $env('DB_URL', "sqlite3:///$db_file");
 
     $parameters = $containerConfigurator->parameters();

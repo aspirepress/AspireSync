@@ -194,8 +194,8 @@ class PluginMetadataServiceTest extends AbstractFunctionalTestBase
 
         // We need a new SUT because we load existing plugins at construct time
         $sut = new PluginMetadataService(FunctionalTestHelper::getDb());
-        $this->assertEmpty($sut->has('foo'));
-        $this->assertNotEmpty($sut->has('bar'));
+        $this->assertEmpty($sut->status('foo'));
+        $this->assertNotEmpty($sut->status('bar'));
     }
 
     public function testUpdatePluginSelectsAndProcessesCorrectly(): void

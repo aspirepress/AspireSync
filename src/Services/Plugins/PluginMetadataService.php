@@ -26,16 +26,16 @@ readonly class PluginMetadataService extends AbstractMetadataService
     }
 
     /** @return array<string, string[]> */
-    public function getOpenVersions(?string $revDate, string $type = 'wp_cdn'): array
+    public function getOpenVersions(?string $revDate): array
     {
         $sql  = <<<SQL
             SELECT sync_plugins.id, slug, version, sync_plugin_files.metadata as version_meta 
             FROM sync_plugin_files 
                 JOIN sync_plugins ON sync_plugins.id = sync_plugin_files.plugin_id 
-            WHERE sync_plugin_files.type = :type AND sync_plugins.status = 'open'
+            WHERE sync_plugins.status = 'open'
         SQL;
-        $args = ['type' => $type];
-        if (! empty($revDate)) {
+        $args = [];
+        if ($revDate) {
             $sql            .= ' AND sync_plugins.pulled_at >= :revDate';
             $args['revDate'] = $revDate;
         }
@@ -50,7 +50,7 @@ readonly class PluginMetadataService extends AbstractMetadataService
         return $out;
     }
 
-    public function getDownloadUrl(string $slug, string $version, string $type = 'wp_cdn'): string
+    public function getDownloadUrl(string $slug, string $version): string
     {
         $sql = <<<'SQL'
             SELECT file_url
@@ -58,49 +58,40 @@ readonly class PluginMetadataService extends AbstractMetadataService
                 JOIN sync_plugins ON sync_plugins.id = sync_plugin_files.plugin_id 
             WHERE sync_plugins.slug = :slug 
               AND sync_plugin_files.version = :version
-              AND sync_plugin_files.type = :type
         SQL;
 
-        $result = $this->connection->fetchAssociative($sql, ['slug' => $slug, 'type' => $type, 'version' => $version]);
+        $result = $this->connection->fetchAssociative($sql, ['slug' => $slug, 'version' => $version]);
         return $result['file_url'];
     }
 
-    public function setVersionToDownloaded(
-        string $plugin,
-        string $version,
-        ?string $hash = null,
-        string $type = 'wp_cdn',
-    ): void {
+    public function setVersionToDownloaded(string $plugin, string $version): void {
         $sql = <<<'SQL'
             UPDATE sync_plugin_files 
-            SET processed = current_timestamp, 
-                hash = :hash 
+            SET processed = current_timestamp 
             WHERE version = :version 
-              AND type = :type 
               AND plugin_id = (SELECT id FROM sync_plugins WHERE slug = :plugin)
             SQL;
-        $this->connection->executeQuery($sql, ['plugin' => $plugin, 'type' => $type, 'hash' => $hash, 'version' => $version]);
+        $this->connection->executeQuery($sql, ['plugin' => $plugin, 'version' => $version]);
     }
 
     /**
      * @param string[] $versions
      * @return string[]
      */
-    public function getUnprocessedVersions(string $slug, array $versions, string $type = 'wp_cdn'): array
+    public function getUnprocessedVersions(string $slug, array $versions): array
     {
         $sql = <<<'SQL'
             SELECT version 
             FROM sync_plugin_files 
                 JOIN sync_plugins ON sync_plugins.id = sync_plugin_files.plugin_id 
-            WHERE type = :type 
-              AND sync_plugins.slug = :plugin 
+            WHERE sync_plugins.slug = :plugin 
               AND processed IS NULL 
               AND sync_plugin_files.version IN (:versions)
             SQL;
 
         $results = $this->connection->executeQuery(
             $sql,
-            ['type' => $type, 'plugin' => $slug, 'versions' => $versions],
+            ['plugin' => $slug, 'versions' => $versions],
             ['versions' => ArrayParameterType::STRING]
         );
         return $results->fetchFirstColumn();
@@ -130,13 +121,10 @@ readonly class PluginMetadataService extends AbstractMetadataService
     /**
      * @return array<int, array<string, string>>
      */
-    public function getVersionData(string $pluginId, ?string $version = null, string $type = 'wp_cdn'): array|bool
+    public function getVersionData(string $pluginId, ?string $version = null): array|bool
     {
-        $sql  = 'SELECT * FROM sync_plugin_files WHERE plugin_id = :plugin_id AND type = :type';
-        $args = [
-            'plugin_id' => $pluginId,
-            'type'      => $type,
-        ];
+        $sql  = 'SELECT * FROM sync_plugin_files WHERE plugin_id = :plugin_id';
+        $args = ['plugin_id' => $pluginId];
         if ($version) {
             $sql            .= ' AND version = :version';
             $args['version'] = $version;
@@ -174,13 +162,11 @@ readonly class PluginMetadataService extends AbstractMetadataService
         ]);
 
         $versions = $metadata['versions'] ?: [$metadata['version'] => $metadata['download_link']];
-        $cdn      = 'wp_cdn';
         foreach ($versions as $version => $url) {
             $this->connection->insert('sync_plugin_files', [
                 'id'        => Uuid::uuid7()->toString(),
                 'plugin_id' => $id,
                 'file_url'  => $url,
-                'type'      => $cdn,
                 'version'   => $version,
             ]);
         }

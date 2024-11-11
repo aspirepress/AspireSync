@@ -14,5 +14,5 @@ interface SubversionServiceInterface
     /**
      * @return array{revision: int, items: array<string, array<int, string>>}
      */
-    public function pullWholeItemsList(string $type): array;
+    public function scrapeSlugsFromIndex(string $type): array;
 }

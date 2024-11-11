@@ -24,7 +24,7 @@ class ThemeMetadataService implements MetadataServiceInterface
         $this->existing = $this->loadExistingThemes();
     }
 
-    public function getDownloadUrl(string $slug, string $version, string $type = 'wp_cdn'): string
+    public function getDownloadUrl(string $slug, string $version): string
     {
         $sql = <<<'SQL'
             SELECT file_url
@@ -32,10 +32,9 @@ class ThemeMetadataService implements MetadataServiceInterface
                 JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id 
             WHERE sync_themes.slug = :slug 
               AND sync_theme_files.version = :version
-              AND sync_theme_files.type = :type
         SQL;
 
-        $result = $this->pdo->fetchOne($sql, ['slug' => $slug, 'type' => $type, 'version' => $version]);
+        $result = $this->pdo->fetchOne($sql, ['slug' => $slug, 'version' => $version]);
         return $result['file_url'];
     }
 
@@ -43,18 +42,17 @@ class ThemeMetadataService implements MetadataServiceInterface
      * @param string[] $versions
      * @return string[]
      */
-    public function getUnprocessedVersions(string $theme, array $versions, string $type = 'wp_cdn'): array
+    public function getUnprocessedVersions(string $theme, array $versions): array
     {
         $sql     = <<<'SQL'
             SELECT version 
             FROM sync_theme_files 
                 LEFT JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id 
-            WHERE type = :type 
-              AND sync_themes.slug = :theme 
+            WHERE sync_themes.slug = :theme 
               AND processed IS NULL 
               AND sync_theme_files.version IN (:versions)
         SQL;
-        $results = $this->pdo->fetchAll($sql, ['theme' => $theme, 'type' => $type, 'versions' => $versions]);
+        $results = $this->pdo->fetchAll($sql, ['theme' => $theme, 'versions' => $versions]);
         $return  = [];
         foreach ($results as $result) {
             $return[] = $result['version'];
@@ -145,9 +143,12 @@ class ThemeMetadataService implements MetadataServiceInterface
      * @param  string[] $versions
      * @return array|string[]
      */
-    public function writeVersionsForTheme(UuidInterface $themeId, array $versions, string $cdn = 'wp_cdn'): array
+    public function writeVersionsForTheme(UuidInterface $themeId, array $versions): array
     {
-        $sql = 'INSERT INTO sync_theme_files (id, theme_id, file_url, type, version, created) VALUES (:id, :theme_id, :file_url, :type, :version, current_timestamp)';
+        $sql = <<<'SQL'
+            INSERT INTO sync_theme_files (id, theme_id, file_url, version, created) 
+            VALUES (:id, :theme_id, :file_url, :version, current_timestamp)
+        SQL;
 
         if (! $this->pdo->inTransaction()) {
             $ourTransaction = true;
@@ -160,7 +161,6 @@ class ThemeMetadataService implements MetadataServiceInterface
                     'id'       => Uuid::uuid7()->toString(),
                     'theme_id' => $themeId->toString(),
                     'file_url' => $url,
-                    'type'     => $cdn,
                     'version'  => $version,
                 ]);
             }
@@ -182,12 +182,18 @@ class ThemeMetadataService implements MetadataServiceInterface
      * @param array<int, string> $versions
      * @return array<string, string>
      */
-    public function getDownloadUrlsForVersions(string $theme, array $versions, string $type = 'wp_cdn'): array
+    public function getDownloadUrlsForVersions(string $theme, array $versions): array
     {
         try {
-            $sql = 'SELECT version, file_url FROM sync_theme_files LEFT JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id WHERE sync_themes.slug = :theme AND sync_theme_files.type = :type AND version IN (:versions)';
+            $sql = <<<'SQL'
+                SELECT version, file_url 
+                FROM sync_theme_files 
+                    LEFT JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id 
+                WHERE sync_themes.slug = :theme 
+                  AND version IN (:versions)
+            SQL;
 
-            $results = $this->pdo->fetchAll($sql, ['theme' => $theme, 'type' => $type, 'versions' => $versions]);
+            $results = $this->pdo->fetchAll($sql, ['theme' => $theme, 'versions' => $versions]);
             $return  = [];
             foreach ($results as $result) {
                 $return[$result['version']] = $result['file_url'];
@@ -201,12 +207,16 @@ class ThemeMetadataService implements MetadataServiceInterface
     /**
      * @return array<string, string[]>
      */
-    public function getVersionsForUnfinalizedThemes(?string $revDate, string $type = 'wp_cdn'): array
+    public function getVersionsForUnfinalizedThemes(?string $revDate): array
     {
 
         try {
-            $sql  = "SELECT sync_themes.id, slug, version FROM sync_theme_files LEFT JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id WHERE sync_theme_files.type = :type";
-            $args = ['type' => $type];
+            $sql  = <<<'SQL'
+                SELECT sync_themes.id, slug, version 
+                FROM sync_theme_files 
+                    LEFT JOIN sync_themes ON sync_themes.id = sync_theme_files.theme_id 
+            SQL;
+            $args = [];
             if ($revDate) {
                 $sql            .= ' AND themes.pulled_at >= :revDate';
                 $args['revDate'] = $revDate;
@@ -224,10 +234,15 @@ class ThemeMetadataService implements MetadataServiceInterface
         }
     }
 
-    public function setVersionToDownloaded(string $theme, string $version, ?string $hash = null, string $type = 'wp_cdn'): void
+    public function setVersionToDownloaded(string $theme, string $version): void
     {
-        $sql = 'UPDATE sync_theme_files SET processed = current_timestamp, hash = :hash WHERE version = :version AND type = :type AND theme_id = (SELECT id FROM sync_themes WHERE slug = :theme)';
-        $this->pdo->perform($sql, ['theme' => $theme, 'type' => $type, 'hash' => $hash, 'version' => $version]);
+        $sql = <<<'SQL'
+            UPDATE sync_theme_files 
+            SET processed = current_timestamp 
+            WHERE version = :version 
+              AND theme_id = (SELECT id FROM sync_themes WHERE slug = :theme)
+        SQL;
+        $this->pdo->perform($sql, ['theme' => $theme, 'version' => $version]);
     }
 
     /**
@@ -295,8 +310,8 @@ class ThemeMetadataService implements MetadataServiceInterface
     }
 
     //endregion
-    public function has(string $slug): bool
+    public function status(string $slug): string
     {
-        return true;
+        return 'open';
     }
 }

@@ -20,7 +20,7 @@ class SubversionServiceStub implements SubversionServiceInterface
         ];
     }
 
-    public function pullWholeItemsList(string $type): array
+    public function scrapeSlugsFromIndex(string $type): array
     {
         return [
             'revision' => 123,

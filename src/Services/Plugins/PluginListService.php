@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services\Plugins;
 
-use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
+use AspirePress\AspireSync\Services\AbstractListService;
 use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
 
-class PluginListService implements ListServiceInterface
+class PluginListService extends AbstractListService
 {
     private int $prevRevision = 0;
 
     public function __construct(
-        private SubversionServiceInterface $svn,
-        private PluginMetadataService $meta,
-        private RevisionMetadataService $revisions,
+        SubversionServiceInterface $svn,
+        PluginMetadataService $meta,
+        RevisionMetadataService $revisions,
     ) {
+        parent::__construct($svn, $meta, $revisions);
     }
 
     /**
@@ -28,7 +29,7 @@ class PluginListService implements ListServiceInterface
         $lastRevision = $this->revisions->getRevisionForAction($action);
         $updates      = $lastRevision
             ? $this->getPluginsToUpdate($filter, $lastRevision, $action)
-            : $this->pullWholePluginList($action);
+            : $this->getAllSubversionSlugs($action);
         return $this->filter($updates, $filter, $min_age);
     }
 
@@ -53,13 +54,11 @@ class PluginListService implements ListServiceInterface
     //region Private API
 
     /** @return array<string, string[]> */
-    private function pullWholePluginList(string $action = 'default'): array
+    private function getAllSubversionSlugs(string $action): array
     {
-        $result   = $this->svn->pullWholeItemsList('plugins');
-        $slugs    = $result['slugs'];
-        $revision = $result['revision'];
-        $this->revisions->setCurrentRevision($action, $revision);
-        return $slugs;
+        $result = $this->svn->scrapeSlugsFromIndex('plugins');
+        $this->revisions->setCurrentRevision($action, $result['revision']);
+        return $result['slugs'];
     }
 
     /**
@@ -81,26 +80,26 @@ class PluginListService implements ListServiceInterface
      * Takes the entire list of plugins, and adds any we have not seen before,
      * plus merges plugins that we have explicitly queued for update.
      *
-     * @param array<int|string, string|string[]> $pluginsToUpdate
-     * @param array<int, string> $explicitlyRequested
+     * @param array<int|string, string|string[]> $update
+     * @param string[] $requested
      * @return array<string, string[]>
      */
-    private function addNewAndRequested(string $action, array $pluginsToUpdate = [], ?array $explicitlyRequested = []): array
+    private function addNewAndRequested(string $action, array $update, ?array $requested): array
     {
-        $allPlugins = $this->pullWholePluginList($action);
+        $allSlugs = $this->getAllSubversionSlugs($action);
 
-        foreach ($allPlugins as $pluginName => $pluginVersions) {
+        foreach ($allSlugs as $slug => $versions) {
+            $status = $this->meta->status($slug);
             // Is this the first time we've seen the plugin?
-            if (! $this->meta->has($pluginName)) {
-                $pluginsToUpdate[$pluginName] = [];
+            if (! $status) {
+                $update[$slug] = [];
             }
-
-            if (in_array($pluginName, $explicitlyRequested, true)) {
-                $pluginsToUpdate[$pluginName] = [];
+            if (in_array($slug, $requested, true)) {
+                $update[$slug] = [];
             }
         }
 
-        return $pluginsToUpdate;
+        return $update;
     }
 
     /**

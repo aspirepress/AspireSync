@@ -5,6 +5,7 @@ use AspirePress\AspireSync\Commands\Plugins\PluginsDownloadCommand;
 use AspirePress\AspireSync\Commands\Plugins\PluginsDownloadSingleCommand;
 use AspirePress\AspireSync\Commands\Plugins\PluginsMetaCommand;
 use AspirePress\AspireSync\Commands\Plugins\PluginsMetaDumpCommand;
+use AspirePress\AspireSync\Commands\SandboxCommand;
 use AspirePress\AspireSync\Commands\Themes\ThemesDownloadCommand;
 use AspirePress\AspireSync\Commands\Themes\ThemesDownloadSingleCommand;
 use AspirePress\AspireSync\Commands\Themes\ThemesMetaCommand;
@@ -20,6 +21,7 @@ ini_set('memory_limit', '4G');
 // all-caps variable names because they're globals visible to the rest of the app
 
 $APP_DIR = dirname(__DIR__);
+@mkdir("$APP_DIR/data"); // XXX HACK
 
 require "$APP_DIR/vendor/autoload.php";
 
@@ -40,5 +42,7 @@ $APP->add($CONTAINER->get(ThemesDownloadCommand::class));
 $APP->add($CONTAINER->get(ThemesDownloadSingleCommand::class));
 $APP->add($CONTAINER->get(ThemesMetaCommand::class));
 $APP->add($CONTAINER->get(ThemesMetaDumpCommand::class));
+
+$APP->add($CONTAINER->get(SandboxCommand::class));
 
 $APP->run();

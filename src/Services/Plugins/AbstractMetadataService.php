@@ -17,10 +17,11 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     ) {
     }
 
-    public function has(string $slug): bool
+    public function status(string $slug): ?string
     {
-        $sql = "select 1 from $this->table where slug = ?";
-        return (bool)$this->connection->fetchOne($sql, [$slug]);
+        $sql = "select status from $this->table where slug = ?";
+        return $this->connection->fetchOne($sql, [$slug]) ?: null;
+
     }
 
     public function exportAllMetadata(): Generator

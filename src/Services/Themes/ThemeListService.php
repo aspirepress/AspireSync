@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services\Themes;
 
-use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
+use AspirePress\AspireSync\Services\AbstractListService;
 use AspirePress\AspireSync\Services\RevisionMetadataService;
 use AspirePress\AspireSync\Services\SubversionService;
 
-class ThemeListService implements ListServiceInterface
+class ThemeListService extends AbstractListService
 {
     private int $prevRevision = 0;
 
     public function __construct(
-        private SubversionService $svn,
-        private ThemeMetadataService $meta,
-        private RevisionMetadataService $revisions,
+        SubversionService $svn,
+        ThemeMetadataService $meta,
+        RevisionMetadataService $revisions,
     ) {
+        parent::__construct($svn, $meta, $revisions);
     }
 
     public function getItemsForAction(array $filter, string $action, ?int $min_age = null): array
@@ -64,7 +65,7 @@ class ThemeListService implements ListServiceInterface
     /** @return array<string, string[]> */
     private function pullWholeThemeList(string $action = 'default'): array
     {
-        $result   = $this->svn->pullWholeItemsList('themes');
+        $result   = $this->svn->scrapeSlugsFromIndex('themes');
         $slugs    = $result['slugs'];
         $revision = $result['revision'];
         $this->revisions->setCurrentRevision($action, $revision);

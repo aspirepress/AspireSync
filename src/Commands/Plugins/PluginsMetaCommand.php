@@ -52,6 +52,11 @@ class PluginsMetaCommand extends AbstractBaseCommand
         $this->info("Downloading metadata for " . count($pending) . " plugins");
 
         foreach ($pending as $slug => $versions) {
+            $status = $this->meta->status($slug);
+            if (in_array($status, ['closed', 'not-found'], true)) {
+                $this->info("$slug ... skipped ($status)");
+                continue;
+            }
             $this->fetchPluginDetails($input, $output, $slug, $versions);
         }
 

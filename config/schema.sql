@@ -16,15 +16,12 @@ create table sync_plugin_files
     plugin_id character(36)                          not null
         references sync_plugins (id) on delete cascade,
     file_url  varchar(255),
-    type      varchar(255)                           not null,
     version   varchar(255)                           not null,
     metadata  text,
     created   timestamp(0) default current_timestamp not null,
     processed timestamp(0),
-    hash      varchar(255),
-    unique (plugin_id, version, type) on conflict replace
+    unique (plugin_id, version)
 );
-create index plugin_files_hash_index on sync_plugin_files (hash);
 
 create table sync_themes
 (
@@ -44,15 +41,12 @@ create table sync_theme_files
     theme_id  character(36)                          not null
         references sync_themes (id) on delete cascade,
     file_url  varchar(255),
-    type      varchar(255)                           not null,
     version   varchar(255)                           not null,
     metadata  text,
     created   timestamp(0) default current_timestamp not null,
     processed timestamp(0),
-    hash      varchar(255),
-    unique (theme_id, version, type) on conflict replace
+    unique (theme_id, version)
 );
-create index theme_files_hash_index on sync_theme_files (hash);
 
 create table sync_revisions
 (
@@ -61,3 +55,10 @@ create table sync_revisions
     added_at timestamp(0) default current_timestamp not null
 );
 create index revisions_action_index on sync_revisions (action);
+
+create table sync_cache
+(
+    key     varchar(4096) primary key not null,
+    expires timestamp(0)              not null,
+    value   text
+)
