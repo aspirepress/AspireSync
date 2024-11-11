@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\DependencyInjection;
 
 use AspirePress\AspireSync\Factories\AwsS3V3AdapterFactory;
+use AspirePress\AspireSync\Factories\ConnectionFactory;
 use AspirePress\AspireSync\Factories\ExtendedPdoFactory;
 use AspirePress\AspireSync\Factories\GuzzleClientFactory;
 use Aura\Sql\ExtendedPdoInterface;
+use Doctrine\DBAL\Connection;
 use GuzzleHttp\Client as GuzzleClient;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use League\Flysystem\Filesystem;
@@ -26,8 +28,12 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         $downloads_dir = dirname(__DIR__) . $downloads_dir;
     }
 
+    $db_file = $env('DB_FILE', realpath(__DIR__ . '/../data/aspiresync.sqlite'));
+    $db_url  = $env('DB_URL', "sqlite3:///$db_file");
+
     $parameters = $containerConfigurator->parameters();
-    $parameters->set('db_file', $env('DB_FILE', realpath(__DIR__ . '/../data/aspiresync.sqlite')));
+    $parameters->set('db_file', $db_file);
+    $parameters->set('db_url', $db_url);
     $parameters->set('db_init_file', $env('DB_INIT_FILE', realpath(__DIR__ . '/../config/schema.sql')));
     $parameters->set('downloads_dir', $downloads_dir);
     $parameters->set('fstype', $env('DOWNLOADS_FILESYSTEM', 'local'));
@@ -43,13 +49,14 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->autowire()
         ->autoconfigure()
         ->public();
-        // ->bind('string $adminEmail', 'manager@example.com')
-        // ->bind(LoggerInterface::class . ' $requestLogger', service('monolog.logger.request'))
 
     $services->load('AspirePress\\AspireSync\\', '../src/');
 
     $services->set(AwsS3V3Adapter::class)->factory(service(AwsS3V3AdapterFactory::class));
+
+    $services->set(Connection::class)->factory(service(ConnectionFactory::class));
     $services->set(ExtendedPdoInterface::class)->factory(service(ExtendedPdoFactory::class));
+
     $services->set(GuzzleClient::class)->factory(service(GuzzleClientFactory::class));
 
     $services->set(LocalFilesystemAdapter::class)->args([param('downloads_dir')]);
@@ -58,7 +65,4 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->alias('fs.adapter.local', LocalFilesystemAdapter::class);
 
     $services->set(Filesystem::class)->args([expr("service('fs.adapter.' ~ parameter('fstype'))")]);
-
-    // The wiring for this class is bonkers, so it's been banished to the attic for now
-    // $services->set(UtilUploadCommand::class)->factory(service(UtilUploadCommandFactory::class));
 };
