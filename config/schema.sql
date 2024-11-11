@@ -61,11 +61,3 @@ create table sync_revisions
     added_at timestamp(0) default current_timestamp not null
 );
 create index revisions_action_index on sync_revisions (action);
-
-create table sync_stats
-(
-    id         character(36) primary key              not null,
-    command    varchar(255)                           not null,
-    stats      text                                   not null,
-    created_at timestamp(0) default current_timestamp not null
-);

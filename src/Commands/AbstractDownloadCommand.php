@@ -7,8 +7,6 @@ namespace AspirePress\AspireSync\Commands;
 use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
 use AspirePress\AspireSync\Services\ProcessManager;
-use AspirePress\AspireSync\Services\StatsMetadataService;
-use AspirePress\AspireSync\Utilities\HasStats;
 use AspirePress\AspireSync\Utilities\StringUtil;
 use AspirePress\AspireSync\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
@@ -20,12 +18,9 @@ use Symfony\Component\Process\Process;
 
 abstract class AbstractDownloadCommand extends AbstractBaseCommand
 {
-    use HasStats;
-
     public function __construct(
         protected readonly ListServiceInterface $listService,
         protected readonly MetadataServiceInterface $meta,
-        protected readonly StatsMetadataService $statsMeta,
         protected readonly ProcessManager $processManager,
     ) {
         parent::__construct();
@@ -99,8 +94,6 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         $this->processManager->waitForAllProcesses();
 
         $this->endTimer();
-        $this->always($this->getRunInfo($this->getCalculatedStats()));
-        $this->statsMeta->logStats($this->getName(), $this->stats);
         return Command::SUCCESS;
     }
 

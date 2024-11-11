@@ -8,7 +8,6 @@ use AspirePress\AspireSync\Commands\AbstractDownloadCommand;
 use AspirePress\AspireSync\Services\Plugins\PluginListService;
 use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
 use AspirePress\AspireSync\Services\ProcessManager;
-use AspirePress\AspireSync\Services\StatsMetadataService;
 
 class PluginsDownloadCommand extends AbstractDownloadCommand
 {
@@ -16,9 +15,8 @@ class PluginsDownloadCommand extends AbstractDownloadCommand
         PluginListService $listService,
         PluginMetadataService $meta,
         ProcessManager $processManager,
-        StatsMetadataService $statsMeta,
     ) {
-        parent::__construct($listService, $meta, $statsMeta, $processManager);
+        parent::__construct($listService, $meta, $processManager);
     }
 
     protected function getCategory(): string
