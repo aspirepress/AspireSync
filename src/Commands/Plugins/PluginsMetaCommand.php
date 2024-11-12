@@ -74,7 +74,13 @@ class PluginsMetaCommand extends AbstractBaseCommand
     /** @param string[] $versions */
     private function fetchPluginDetails(InputInterface $input, OutputInterface $output, string $slug, array $versions): void
     {
-        $data  = $this->wpClient->getPluginMetadata($slug);
+        try {
+            $data = $this->wpClient->getPluginMetadata($slug);
+        } catch (\Exception $e) {
+            // If Guzzle runs out of retries or some non-recoverable exception happens, just scream and move on.
+            $this->error("$slug ... ERROR: {$e->getMessage()}");
+            return;
+        }
         $error = $data['error'] ?? null;
 
         $this->meta->save($data);
