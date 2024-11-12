@@ -12,7 +12,7 @@ use function Safe\json_encode;
 class DatabaseCacheService implements CacheServiceInterface
 {
 
-    private string $table = 'sync_cache';
+    private string $table = 'cache';
 
     public function __construct(private Connection $connection)
     {

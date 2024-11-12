@@ -24,7 +24,7 @@ class ExtendedPdoFactory
         $pdo->connect();
         $pdo->exec('PRAGMA foreign_keys = ON');
         try {
-            $pdo->query("select 1 from sync_plugins limit 1");
+            $pdo->query("select 1 from sync limit 1");
         } catch (PDOException $e) {
             $pdo->exec(file_get_contents($db_init_file));
         }

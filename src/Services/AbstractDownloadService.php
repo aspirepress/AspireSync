@@ -36,7 +36,7 @@ abstract class AbstractDownloadService
         $path = "/$category/$slug.$version.zip";
 
         if ($fs->fileExists($path) && ! $force) {
-            $this->meta->setVersionToDownloaded($slug, $version);
+            $this->meta->markProcessed($slug, $version);
             return $ret('Not Modified', 304);
         }
 
@@ -48,14 +48,14 @@ abstract class AbstractDownloadService
                 return $ret('Empty response', 204); // code indicates success, but no state gets written
             }
             $fs->write($path, $contents);
-            $this->meta->setVersionToDownloaded($slug, $version);
+            $this->meta->markProcessed($slug, $version);
             return $ret($response->getReasonPhrase() ?: 'OK', $response->getStatusCode() ?: 200);
         } catch (ClientException $e) {
             $fs->delete($path);
             if (method_exists($e, 'getResponse')) {
                 $response = $e->getResponse();
                 if ($response->getStatusCode() === 404) {
-                    $this->meta->setVersionToDownloaded($slug, $version);
+                    $this->meta->markProcessed($slug, $version);
                 }
                 return $ret($response->getReasonPhrase(), $response->getStatusCode());
             } else {

@@ -25,12 +25,12 @@ class ConnectionFactory
     {
         $connection->executeStatement('PRAGMA foreign_keys = ON');
         try {
-            $connection->executeQuery("select 1 from sync_plugins limit 1");
+            $connection->executeQuery("select 1 from sync limit 1");
         } catch (TableNotFoundException) {
             $init_script = file_get_contents($db_init_file);
             // $connection->executeQuery($init_script); // silently fails!
             $connection->getNativeConnection()->exec($init_script);
-            $connection->executeQuery("select 666 from sync_plugins limit 1");
+            $connection->executeQuery("select 666 from sync limit 1");
         }
         return $connection;
     }

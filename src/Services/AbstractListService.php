@@ -8,13 +8,13 @@ use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
 
-abstract class AbstractListService implements ListServiceInterface
+readonly abstract class AbstractListService implements ListServiceInterface
 {
     public function __construct(
-        protected readonly SubversionServiceInterface $svn,
-        protected readonly MetadataServiceInterface $meta,
-        protected readonly RevisionMetadataService $revisions,
-        protected readonly string $category,
+        protected SubversionServiceInterface $svn,
+        protected MetadataServiceInterface $meta,
+        protected RevisionMetadataService $revisions,
+        protected string $category,
     ) {
     }
 
@@ -50,6 +50,17 @@ abstract class AbstractListService implements ListServiceInterface
         return $out;
     }
 
+    public function getUpdatedItems(?array $requested): array
+    {
+        $revision = $this->revisions->getRevisionDateForAction($this->category);
+        if ($revision) {
+            $revision = date('Y-m-d', strtotime($revision));
+        }
+        return $this->filter($this->meta->getOpenVersions($revision), $requested, null);
+    }
+
+    //region Protected API
+
     /**
      * Reduces the items slated for update to only those specified in the filter.
      *
@@ -75,7 +86,7 @@ abstract class AbstractListService implements ListServiceInterface
         if ($min_age) {
             $cutoff = time() - $min_age;
             foreach ($filtered as $slug => $value) {
-                $timestamp = $this->meta->getPulledDateTimestamp($slug);
+                $timestamp = $this->meta->getPulledAsTimestamp($slug);
                 if ($timestamp === null || $timestamp <= $cutoff) {
                     $out[$slug] = $value;
                 }
@@ -97,7 +108,7 @@ abstract class AbstractListService implements ListServiceInterface
         $allSlugs = $this->getAllSubversionSlugs();
 
         foreach ($allSlugs as $slug => $versions) {
-            $status = $this->meta->status($slug);
+            $status = $this->meta->getStatus($slug);
             // Is this the first time we've seen the slug?
             if (! $status) {
                 $update[$slug] = [];
@@ -116,7 +127,7 @@ abstract class AbstractListService implements ListServiceInterface
      */
     protected function getUpdatableItems(?array $requested, string $lastRevision): array
     {
-        $output = $this->svn->getUpdatedSlugs($this->category, $this->prevRevision, (int) $lastRevision);
+        $output = $this->svn->getUpdatedSlugs($this->category, 0, (int) $lastRevision); // FIXME second arg should be prevRevision
 
         $revision = $output['revision'];
         $slugs    = $output['slugs'];
@@ -125,4 +136,6 @@ abstract class AbstractListService implements ListServiceInterface
 
         return $this->addNewAndRequested($slugs, $requested);
     }
+
+    //endregion
 }

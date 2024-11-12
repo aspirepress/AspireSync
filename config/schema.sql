@@ -1,62 +1,44 @@
-create table sync_plugins
+create table sync
 (
-    id              character(36) primary key              not null,
-    slug            varchar(255) unique                    not null,
-    name            varchar(255)                           not null,
-    status          varchar(255) default 'open'            not null,
-    current_version varchar(255),
-    updated         timestamp(0) default current_timestamp not null,
-    pulled_at       timestamp(0) default current_timestamp not null,
-    metadata        text
+    id       character(36) primary key              not null,
+    type     varchar(255)                           not null,
+    slug     varchar(255)                           not null,
+    name     varchar(255)                           not null,
+    status   varchar(255) default 'open'            not null,
+    version  varchar(255),
+    origin   varchar(255)                           not null,
+    updated  timestamp(0) default current_timestamp not null,
+    pulled   timestamp(0) default current_timestamp not null,
+    metadata text,
+    unique (slug, type, origin)
 );
+create index idx_sync_slug on sync (slug);
+create index idx_sync_type on sync (type);
+create index idx_sync_origin on sync (origin);
+create index idx_sync_updated on sync (updated);
+create index idx_sync_pulled on sync (pulled);
 
-create table sync_plugin_files
-(
-    id        character(36) primary key              not null,
-    plugin_id character(36)                          not null
-        references sync_plugins (id) on delete cascade,
-    file_url  varchar(255),
-    version   varchar(255)                           not null,
-    metadata  text,
-    created   timestamp(0) default current_timestamp not null,
-    processed timestamp(0),
-    unique (plugin_id, version)
-);
-
-create table sync_themes
-(
-    id              character(36) primary key              not null,
-    slug            varchar(255)                           not null,
-    name            varchar(255)                           not null,
-    status          varchar(255) default 'open'            not null,
-    current_version varchar(255),
-    updated         timestamp(0) default current_timestamp not null,
-    pulled_at       timestamp(0) default current_timestamp not null,
-    metadata        text
-);
-
-create table sync_theme_files
+create table sync_assets
 (
     id        character(36) primary key              not null,
-    theme_id  character(36)                          not null
-        references sync_themes (id) on delete cascade,
-    file_url  varchar(255),
+    sync_id   character(36)                          not null references sync (id) on delete cascade,
     version   varchar(255)                           not null,
-    metadata  text,
+    url       varchar(255),
     created   timestamp(0) default current_timestamp not null,
     processed timestamp(0),
-    unique (theme_id, version)
+    metadata  text,
+    unique (sync_id, version)
 );
 
-create table sync_revisions
+create table revisions
 (
     action   varchar(255)                           not null,
     revision varchar(255)                           not null,
     added_at timestamp(0) default current_timestamp not null
 );
-create index revisions_action_index on sync_revisions (action);
+create index idx_revisions_action on revisions (action);
 
-create table sync_cache
+create table cache
 (
     key     varchar(4096) primary key not null,
     expires timestamp(0)              not null,

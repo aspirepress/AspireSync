@@ -31,7 +31,7 @@ class RevisionMetadataService
             throw new RuntimeException('You did not specify a revision for action ' . $action);
         }
         $revision = $this->currentRevision[$action]['revision'];
-        $sql      = 'INSERT INTO sync_revisions (action, revision, added_at) VALUES (:action, :revision, current_timestamp)';
+        $sql      = 'INSERT INTO revisions (action, revision, added_at) VALUES (:action, :revision, current_timestamp)';
         $this->pdo->perform($sql, ['action' => $action, 'revision' => $revision]);
         return (string) $revision;
     }
@@ -58,7 +58,7 @@ class RevisionMetadataService
     {
         $sql = <<<SQL
             SELECT action, revision, added_at
-            FROM (SELECT *, row_number() OVER (PARTITION by action ORDER BY added_at DESC) AS rownum FROM sync_revisions) revs
+            FROM (SELECT *, row_number() OVER (PARTITION by action ORDER BY added_at DESC) AS rownum FROM revisions) revs
             WHERE revs.rownum = 1;
             SQL;
         foreach ($this->pdo->fetchAll($sql) as $revision) {

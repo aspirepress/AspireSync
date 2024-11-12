@@ -21,5 +21,10 @@ interface MetadataServiceInterface
     /** @param array<string, mixed> $metadata */
     public function save(array $metadata): void;
 
-    public function status(string $slug): ?string;
+    public function getStatus(string $slug): ?string;
+
+    public function getPulledAsTimestamp(string $slug): ?int;
+
+    /** @return array<string, string[]> */
+    public function getOpenVersions(string $revDate = '1900-01-01'): array;
 }
