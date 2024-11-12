@@ -6,9 +6,7 @@ namespace App\DependencyInjection;
 
 use AspirePress\AspireSync\Factories\AwsS3V3AdapterFactory;
 use AspirePress\AspireSync\Factories\ConnectionFactory;
-use AspirePress\AspireSync\Factories\ExtendedPdoFactory;
 use AspirePress\AspireSync\Factories\GuzzleClientFactory;
-use Aura\Sql\ExtendedPdoInterface;
 use Doctrine\DBAL\Connection;
 use GuzzleHttp\Client as GuzzleClient;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
@@ -56,7 +54,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->set(AwsS3V3Adapter::class)->factory(service(AwsS3V3AdapterFactory::class));
 
     $services->set(Connection::class)->factory(service(ConnectionFactory::class));
-    $services->set(ExtendedPdoInterface::class)->factory(service(ExtendedPdoFactory::class));
 
     $services->set(GuzzleClient::class)->factory(service(GuzzleClientFactory::class));
 
