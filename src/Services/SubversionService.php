@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Services;
 
 use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
+use AspirePress\AspireSync\Utilities\RegexUtil;
 use GuzzleHttp\Client as GuzzleClient;
 use RuntimeException;
 use Symfony\Component\Process\Process;
@@ -41,7 +42,7 @@ class SubversionService implements SubversionServiceInterface
         foreach ($entries as $entry) {
             $revision = (int) $entry->attributes()['revision'];
             $path     = (string) $entry->paths->path[0];
-            preg_match('#/([A-z\-_]+)/#', $path, $matches);
+            $matches  = RegexUtil::match('#/([A-z\-_]+)/#', $path);
             if ($matches) {
                 $item         = trim($matches[1]);
                 $slugs[$item] = [];
@@ -58,14 +59,13 @@ class SubversionService implements SubversionServiceInterface
             ->getBody()
             ->getContents();
 
-        $matches = [];
-        preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $html, $matches);
-        $slugs = $matches[1];
+        [, $slugs] = RegexUtil::matchAll('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $html);
 
-        preg_match('/Revision (\d+):/', $html, $matches);
-        $revision = (int) $matches[1];
+        [, $revision] = RegexUtil::match('/Revision (\d+):/', $html);
 
-        return ['slugs' => $slugs, 'revision' => $revision];
+        $slugs = array_map(urldecode(...), $slugs);
+        // $slugs = array_map(fn ($slug) => (string) urldecode($slug), $slugs);
+
+        return ['slugs' => $slugs, 'revision' => (int)$revision];
     }
-
 }
