@@ -20,19 +20,24 @@ readonly class PluginMetadataService extends AbstractMetadataService
     /** @param array<string, mixed> $metadata */
     public function save(array $metadata): void
     {
-        $this->connection->transactional(function () use ($metadata) {
-            isset($metadata['error']) ? $this->saveErrorPlugin($metadata) : $this->saveOpenPlugin($metadata);
-        });
+        // status is something we add, and is the normalized error e.g. not-found
+        // TODO: move status into aspiresync_meta and explicitly set it everywhere
+        $status = $metadata['status'] ?? 'open';
+        $method = match ($status) {
+            'open'  => $this->saveOpenPlugin(...),
+            default => $this->saveErrorPlugin(...),
+        };
+        $this->connection->transactional(fn () => $method($metadata));
     }
 
     /** @return array<string, string[]> */
     public function getOpenVersions(?string $revDate): array
     {
         $sql  = <<<SQL
-            SELECT sync_plugins.id, slug, version, sync_plugin_files.metadata as version_meta 
-            FROM sync_plugin_files 
-                JOIN sync_plugins ON sync_plugins.id = sync_plugin_files.plugin_id 
-            WHERE sync_plugins.status = 'open'
+            SELECT sp.slug, spf.version 
+            FROM sync_plugin_files spf
+                JOIN sync_plugins sp ON sp.id = spf.plugin_id 
+            WHERE sp.status = 'open'
         SQL;
         $args = [];
         if ($revDate) {
@@ -41,11 +46,10 @@ readonly class PluginMetadataService extends AbstractMetadataService
         }
 
         $result = $this->connection->fetchAllAssociative($sql, $args);
-        $out    = [];
+
+        $out = [];
         foreach ($result as $row) {
-            $plugin         = $row['slug'];
-            $version        = $row['version'];
-            $out[$plugin][] = $version;
+            $out[$row['slug']][] = $row['version'];
         }
         return $out;
     }
@@ -64,14 +68,15 @@ readonly class PluginMetadataService extends AbstractMetadataService
         return $result['file_url'];
     }
 
-    public function setVersionToDownloaded(string $plugin, string $version): void {
+    public function setVersionToDownloaded(string $slug, string $version): void
+    {
         $sql = <<<'SQL'
             UPDATE sync_plugin_files 
             SET processed = current_timestamp 
             WHERE version = :version 
-              AND plugin_id = (SELECT id FROM sync_plugins WHERE slug = :plugin)
+              AND plugin_id = (SELECT id FROM sync_plugins WHERE slug = :slug)
             SQL;
-        $this->connection->executeQuery($sql, ['plugin' => $plugin, 'version' => $version]);
+        $this->connection->executeQuery($sql, ['slug' => $slug, 'version' => $version]);
     }
 
     /**
@@ -95,42 +100,6 @@ readonly class PluginMetadataService extends AbstractMetadataService
             ['versions' => ArrayParameterType::STRING]
         );
         return $results->fetchFirstColumn();
-    }
-
-    /**
-     * @param array<int, string> $filterBy
-     * @return string[]
-     */
-    public function getData(array $filterBy = []): array
-    {
-        if (! empty($filterBy)) {
-            $sql     = "SELECT id, slug FROM sync_plugins WHERE status = 'open' AND slug IN (:plugins)";
-            $plugins = $this->connection->fetchAllAssociative($sql, ['plugins' => $filterBy]);
-        } else {
-            $sql     = "SELECT id, slug FROM sync_plugins WHERE status = 'open'";
-            $plugins = $this->connection->fetchAllAssociative($sql);
-        }
-        $result = [];
-        foreach ($plugins as $plugin) {
-            $result[$plugin['slug']] = $plugin['id'];
-        }
-
-        return $result;
-    }
-
-    /**
-     * @return array<int, array<string, string>>
-     */
-    public function getVersionData(string $pluginId, ?string $version = null): array|bool
-    {
-        $sql  = 'SELECT * FROM sync_plugin_files WHERE plugin_id = :plugin_id';
-        $args = ['plugin_id' => $pluginId];
-        if ($version) {
-            $sql            .= ' AND version = :version';
-            $args['version'] = $version;
-        }
-
-        return $this->connection->fetchAllAssociative($sql, $args);
     }
 
     public function getPulledDateTimestamp(string $slug): ?int
@@ -175,19 +144,15 @@ readonly class PluginMetadataService extends AbstractMetadataService
     /** @param array<string, mixed> $metadata */
     private function saveErrorPlugin(array $metadata): void
     {
-        if (! empty($metadata['closed_date'])) {
-            $updated = date('c', strtotime($metadata['closed_date']));
-        } else {
-            $updated = date('c');
-        }
         $this->insertPlugin([
-            'id'        => Uuid::uuid7()->toString(),
-            'name'      => substr($metadata['name'], 0, 255),
-            'slug'      => $metadata['slug'],
-            'updated'   => $updated,
-            'pulled_at' => date('c'),
-            'status'    => $metadata['status'] ?? 'error',
-            'metadata'  => $metadata,
+            'id'              => Uuid::uuid7()->toString(),
+            'slug'            => $metadata['slug'],
+            'name'            => mb_substr($metadata['name'], 0, 255),
+            'current_version' => null,
+            'updated'         => $metadata['closed_date'] ?? date('c'),
+            'pulled_at'       => date('c'),
+            'status'          => $metadata['status'] ?? 'error',
+            'metadata'        => $metadata,
         ]);
     }
 
