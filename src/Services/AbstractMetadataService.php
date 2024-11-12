@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\Plugins;
+namespace AspirePress\AspireSync\Services;
 
 use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
 use Doctrine\DBAL\Connection;

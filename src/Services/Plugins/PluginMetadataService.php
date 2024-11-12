@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services\Plugins;
 
+use AspirePress\AspireSync\Services\AbstractMetadataService;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Ramsey\Uuid\Uuid;
-
 use function Safe\json_encode;
 
 readonly class PluginMetadataService extends AbstractMetadataService
