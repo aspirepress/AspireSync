@@ -24,8 +24,9 @@ class PluginListService extends AbstractListService
      * @param string[] $filter
      * @return array<string, string[]>
      */
-    public function getItemsForAction(array $filter, string $action, ?int $min_age = null): array
+    public function getItemsForAction(array $filter, ?int $min_age = null): array
     {
+        $action = 'plugins:meta';
         $lastRevision = $this->revisions->getRevisionForAction($action);
         $updates      = $lastRevision
             ? $this->getPluginsToUpdate($filter, $lastRevision, $action)

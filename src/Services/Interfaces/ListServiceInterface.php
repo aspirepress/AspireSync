@@ -7,13 +7,13 @@ namespace AspirePress\AspireSync\Services\Interfaces;
 interface ListServiceInterface
 {
     /**
-     * @param  array<int, string>  $filter
+     * @param  string[] $filter
      * @return array<string, string[]>
      */
-    public function getItemsForAction(array $filter, string $action, ?int $min_age = null): array;
+    public function getItemsForAction(array $filter, ?int $min_age = null): array;
 
     /**
-     * @param  array<int, string>  $requested
+     * @param  string[] $requested
      * @return array<string, array<string>>
      */
     public function getUpdatedItems(?array $requested): array;

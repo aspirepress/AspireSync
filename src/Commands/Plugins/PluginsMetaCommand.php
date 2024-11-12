@@ -42,7 +42,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
         $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
 
         $this->debug('Getting list of plugins...');
-        $pending = $this->listService->getItemsForAction($slugs, $this->getName(), $min_age);
+        $pending = $this->listService->getItemsForAction($slugs, $min_age);
 
         if (count($pending) === 0) {
             $this->success('No plugin metadata to download. exiting.');
