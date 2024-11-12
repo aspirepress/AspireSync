@@ -30,22 +30,17 @@ readonly class PluginMetadataService extends AbstractMetadataService
         $this->connection->transactional(fn () => $method($metadata));
     }
 
-    /** @return array<string, string[]> */
-    public function getOpenVersions(?string $revDate): array
+    /** @return array<string, string[]> [slug => [versions]] */
+    public function getOpenVersions(string $revDate = '1900-01-01'): array
     {
         $sql  = <<<SQL
             SELECT sp.slug, spf.version 
             FROM sync_plugin_files spf
                 JOIN sync_plugins sp ON sp.id = spf.plugin_id 
             WHERE sp.status = 'open'
+              AND sp.pulled_at >= :revDate
         SQL;
-        $args = [];
-        if ($revDate) {
-            $sql            .= ' AND sync_plugins.pulled_at >= :revDate';
-            $args['revDate'] = $revDate;
-        }
-
-        $result = $this->connection->fetchAllAssociative($sql, $args);
+        $result = $this->connection->fetchAllAssociative($sql, ['revDate' => $revDate]);
 
         $out = [];
         foreach ($result as $row) {

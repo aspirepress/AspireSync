@@ -42,7 +42,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
         $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
 
         $this->debug('Getting list of plugins...');
-        $pending = $this->listService->getItemsForAction($slugs, $min_age);
+        $pending = $this->listService->getItems($slugs, $min_age);
 
         if (count($pending) === 0) {
             $this->success('No plugin metadata to download. exiting.');
@@ -63,7 +63,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
         if ($input->getOption('plugins')) {
             $this->debug("Not saving revision when --plugins was specified");
         } else {
-            $revision = $this->listService->preserveRevision($this->getName());
+            $revision = $this->listService->preserveRevision();
             $this->debug("Updated current revision to $revision");
         }
         $this->endTimer();
