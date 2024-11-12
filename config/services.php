@@ -29,7 +29,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         $downloads_dir = "$APP_DIR/$downloads_dir";
     }
 
-    $db_file = $env('DB_FILE', "$APP_DIR/data/aspiresync.sqlite");
+    $db_file = $env('DB_FILE', "$APP_DIR/aspiresync.sqlite");
     $db_url  = $env('DB_URL', "sqlite3:///$db_file");
 
     $parameters = $containerConfigurator->parameters();

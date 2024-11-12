@@ -1,5 +1,5 @@
 /data/
-
 vendor/
 .env
 .phpcs-cache
+*.sqlite

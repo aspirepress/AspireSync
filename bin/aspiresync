@@ -21,7 +21,6 @@ ini_set('memory_limit', '4G');
 // all-caps variable names because they're globals visible to the rest of the app
 
 $APP_DIR = dirname(__DIR__);
-@mkdir("$APP_DIR/data"); // XXX HACK
 
 require "$APP_DIR/vendor/autoload.php";
 
