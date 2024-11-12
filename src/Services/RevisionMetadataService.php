@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services;
 
-use Aura\Sql\ExtendedPdoInterface;
+use Doctrine\DBAL\Connection;
 use RuntimeException;
 
 class RevisionMetadataService
@@ -15,7 +15,7 @@ class RevisionMetadataService
     /** @var array<string, string[]> */
     private array $currentRevision = [];
 
-    public function __construct(private ExtendedPdoInterface $pdo)
+    public function __construct(private Connection $connection)
     {
         $this->loadLatestRevisions();
     }
@@ -31,8 +31,7 @@ class RevisionMetadataService
             throw new RuntimeException('You did not specify a revision for action ' . $action);
         }
         $revision = $this->currentRevision[$action]['revision'];
-        $sql      = 'INSERT INTO revisions (action, revision, added_at) VALUES (:action, :revision, current_timestamp)';
-        $this->pdo->perform($sql, ['action' => $action, 'revision' => $revision]);
+        $this->connection->insert('revisions', ['action' => $action, 'revision' => $revision]);
         return (string) $revision;
     }
 
@@ -46,14 +45,6 @@ class RevisionMetadataService
         return $this->revisionData[$action]['added'] ?? null;
     }
 
-    /**
-     * @return array<string, array{revision:string, added:string}>
-     */
-    public function getRevisionData(): array
-    {
-        return $this->revisionData;
-    }
-
     private function loadLatestRevisions(): void
     {
         $sql = <<<SQL
@@ -61,7 +52,7 @@ class RevisionMetadataService
             FROM (SELECT *, row_number() OVER (PARTITION by action ORDER BY added_at DESC) AS rownum FROM revisions) revs
             WHERE revs.rownum = 1;
             SQL;
-        foreach ($this->pdo->fetchAll($sql) as $revision) {
+        foreach ($this->connection->fetchAllAssociative($sql) as $revision) {
             $this->revisionData[$revision['action']] = [
                 'revision' => $revision['revision'],
                 'added'    => $revision['added_at'],
