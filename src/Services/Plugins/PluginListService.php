@@ -58,7 +58,13 @@ class PluginListService extends AbstractListService
     {
         $result = $this->svn->scrapeSlugsFromIndex('plugins');
         $this->revisions->setCurrentRevision($action, $result['revision']);
-        return $result['slugs'];
+
+        // transform to [slug => [versions]] format
+        $out = [];
+        foreach ($result['slugs'] as $slug) {
+            $out[$slug] = [];
+        }
+        return $out;
     }
 
     /**
