@@ -16,7 +16,7 @@ interface ListServiceInterface
      * @param  array<int, string>  $requested
      * @return array<string, array<string>>
      */
-    public function getUpdatedListOfItems(?array $requested): array;
+    public function getUpdatedItems(?array $requested): array;
 
     public function preserveRevision(string $action): string;
 }

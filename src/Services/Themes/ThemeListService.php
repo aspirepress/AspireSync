@@ -29,7 +29,7 @@ class ThemeListService extends AbstractListService
         return $this->filter($updates, $filter, $min_age);
     }
 
-    public function getUpdatedListOfItems(?array $requested, string $action = 'meta:themes:download'): array
+    public function getUpdatedItems(?array $requested, string $action = 'meta:themes:download'): array
     {
         $revision = $this->revisions->getRevisionDateForAction($action);
         if ($revision) {

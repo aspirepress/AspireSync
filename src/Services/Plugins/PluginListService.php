@@ -37,7 +37,7 @@ class PluginListService extends AbstractListService
      * @param array<int, string> $requested
      * @return array<string, string[]>
      */
-    public function getUpdatedListOfItems(?array $requested, string $action = 'meta:plugins:download'): array
+    public function getUpdatedItems(?array $requested, string $action = 'meta:plugins:download'): array
     {
         $revDate = $this->revisions->getRevisionDateForAction($action);
         if ($revDate) {
