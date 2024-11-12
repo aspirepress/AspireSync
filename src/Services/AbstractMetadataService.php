@@ -44,10 +44,12 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 
         $this->insertSync([
             'id'       => $id,
-            'slug'     => $metadata['slug'],
+            'type'     => $this->resource->value,
+            'slug'     => mb_substr($metadata['slug'], 0, 255),
             'name'     => mb_substr($metadata['name'], 0, 255),
-            'version'  => $metadata['version'],
             'status'   => 'open',
+            'version'  => $metadata['version'],
+            'origin'   => $this->origin,
             'updated'  => date('c', strtotime($metadata['last_updated'])),
             'pulled'   => date('c'),
             'metadata' => $metadata,
@@ -85,17 +87,17 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     public function getStatus(string $slug): ?string
     {
         $sql = "select status from sync where slug = :slug and type = :type and origin = :origin";
-        return $this->connection->fetchOne($sql, ['slug' => $slug, ...$this->stdArgs()]);
+        return $this->connection->fetchOne($sql, ['slug' => $slug, ...$this->stdArgs()]) ?: null;
     }
 
     public function getPulledAsTimestamp(string $slug): ?int
     {
         $sql = "select unixepoch(pulled) from sync where slug = :slug and type = :type and origin = :origin";
         $pulled = $this->connection->fetchOne($sql, ['slug' => $slug, ...$this->stdArgs()]);
-        return (int)$pulled;
+        return (int)$pulled ?: null;
     }
 
-    public function getDownloadUrl(string $slug, string $version): string
+    public function getDownloadUrl(string $slug, string $version): ?string
     {
         $sql = <<<'SQL'
             SELECT url
@@ -106,9 +108,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
               AND sync.origin = :origin
               AND sync_assets.version = :version
         SQL;
-
         $result = $this->connection->fetchAssociative($sql, ['slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
-        return $result['url'];
+        return $result['url'] ?? null;
     }
 
     /** @return array<string, string[]> [slug => [versions]] */
@@ -223,6 +224,4 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         $conn->delete('sync', ['slug' => $args['slug'], ...$this->stdArgs()]);
         $conn->insert('sync', $args);
     }
-
-
 }

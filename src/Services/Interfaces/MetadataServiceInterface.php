@@ -14,7 +14,7 @@ interface MetadataServiceInterface
      */
     public function getUnprocessedVersions(string $slug, array $versions): array;
 
-    public function getDownloadUrl(string $slug, string $version): string;
+    public function getDownloadUrl(string $slug, string $version): ?string;
 
     public function exportAllMetadata(): Generator;
 
