@@ -20,8 +20,9 @@ class ThemeListService extends AbstractListService
         parent::__construct($svn, $meta, $revisions);
     }
 
-    public function getItemsForAction(array $filter, string $action, ?int $min_age = null): array
+    public function getItemsForAction(array $filter, ?int $min_age = null): array
     {
+        $action = 'themes:meta';
         $lastRevision = $this->revisions->getRevisionForAction($action);
         $updates      = $lastRevision
             ? $this->getThemesToUpdate($filter, $lastRevision, $action)

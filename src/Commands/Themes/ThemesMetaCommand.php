@@ -42,7 +42,7 @@ class ThemesMetaCommand extends AbstractBaseCommand
         $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
 
         $this->debug('Getting list of themes...');
-        $themesToUpdate = $this->themeListService->getItemsForAction($themes, $this->getName(), $min_age);
+        $themesToUpdate = $this->themeListService->getItemsForAction($themes, $min_age);
         $this->info(count($themesToUpdate) . ' themes to download metadata for...');
 
         if (count($themesToUpdate) === 0) {
