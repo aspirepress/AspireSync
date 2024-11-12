@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services;
 
-use AspirePress\AspireSync\Services\Interfaces\CacheServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
 use GuzzleHttp\Client as GuzzleClient;
 use RuntimeException;
@@ -12,7 +11,7 @@ use Symfony\Component\Process\Process;
 
 class SubversionService implements SubversionServiceInterface
 {
-    public function __construct(private readonly GuzzleClient $guzzle, private readonly CacheServiceInterface $cache)
+    public function __construct(private readonly GuzzleClient $guzzle)
     {
     }
 
