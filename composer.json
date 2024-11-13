@@ -34,7 +34,7 @@
     "psr-4": {
       "AspirePress\\AspireSync\\Tests\\Unit\\": "./tests/unit",
       "AspirePress\\AspireSync\\Tests\\Functional\\": "./tests/functional",
-      "AspirePress\\AspireSync\\Tests\\Helpers\\": "./tests/helpers"
+      "AspirePress\\AspireSync\\Tests\\Stubs\\": "./tests/stubs"
     }
   },
   "config": {

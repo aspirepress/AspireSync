@@ -6,6 +6,7 @@ namespace AspirePress\AspireSync\Services;
 
 use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
+use AspirePress\AspireSync\Services\Interfaces\RevisionMetadataServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
 
 readonly abstract class AbstractListService implements ListServiceInterface
@@ -13,7 +14,7 @@ readonly abstract class AbstractListService implements ListServiceInterface
     public function __construct(
         protected SubversionServiceInterface $svn,
         protected MetadataServiceInterface $meta,
-        protected RevisionMetadataService $revisions,
+        protected RevisionMetadataServiceInterface $revisions,
         protected string $category,
     ) {
     }
@@ -86,7 +87,7 @@ readonly abstract class AbstractListService implements ListServiceInterface
         if ($min_age) {
             $cutoff = time() - $min_age;
             foreach ($filtered as $slug => $value) {
-                $slug = (string) $slug; // LOLPHP: php will turn any numeric string key into an int
+                $slug      = (string) $slug; // LOLPHP: php will turn any numeric string key into an int
                 $timestamp = $this->meta->getPulledAsTimestamp($slug);
                 if ($timestamp === null || $timestamp <= $cutoff) {
                     $out[$slug] = $value;

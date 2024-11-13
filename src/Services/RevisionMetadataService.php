@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services;
 
+use AspirePress\AspireSync\Services\Interfaces\RevisionMetadataServiceInterface;
 use Doctrine\DBAL\Connection;
 use RuntimeException;
 
-class RevisionMetadataService
+class RevisionMetadataService implements RevisionMetadataServiceInterface
 {
     /** @var array<string, array{revision:string, added:string}> */
     private array $revisionData = [];
