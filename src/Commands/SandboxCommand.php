@@ -11,6 +11,7 @@ use AspirePress\AspireSync\Services\Plugins\PluginListService;
 use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
 use AspirePress\AspireSync\Services\SubversionService;
 use AspirePress\AspireSync\Utilities\StringUtil;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -19,11 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class SandboxCommand extends AbstractBaseCommand
 {
     public function __construct(
-        private SubversionService $svn,
-        private PluginListService $listService,
-        private PluginMetadataService $meta,
-        private WpEndpointClientInterface $wpClient,
-        private CacheServiceInterface $cache,
+        private LoggerInterface $log,
     ) {
         parent::__construct();
     }
@@ -37,9 +34,7 @@ class SandboxCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $items =  $this->cache->remember("sandbox-key", 3600, fn () => $this->svn->scrapeSlugsFromIndex('plugins'));
-        dd(array_keys($items));
-
+        $this->log->info("Brillant!");
         return Command::SUCCESS;
     }
 }

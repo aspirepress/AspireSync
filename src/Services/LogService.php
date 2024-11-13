@@ -2,11 +2,6 @@
 
 declare(strict_types=1);
 
-// An "opinionated" PSR-3 logger class that logs in json format to a file, and does (almost) nothing else.
-// The lack of features and configurability is because it's expected that the log file/stream will
-// be processed by something like OpenTelemetry or fluentbit, making complex setups like monolog moot.
-
-// Based on the MIT-licensed https://raw.githubusercontent.com/katzgrau/KLogger by Kenny Katzgrau
 
 namespace AspirePress\AspireSync\Services;
 
@@ -16,7 +11,14 @@ use Psr\Log\LogLevel;
 use RuntimeException;
 use Stringable;
 
-class Logger extends AbstractLogger
+/**
+ * An "opinionated" PSR-3 logger class that logs in json format to a file, and does (almost) nothing else.
+ * The lack of features and configurability is because it's expected that the log file/stream will
+ * be processed by something like OpenTelemetry or fluentbit, making complex setups like monolog moot.
+ *
+ * Based on the MIT-licensed https://raw.githubusercontent.com/katzgrau/KLogger by Kenny Katzgrau
+ */
+class LogService extends AbstractLogger
 {
     // TODO: nuke and/or hardwire almost all of this
     protected array $options = [
@@ -54,7 +56,7 @@ class Logger extends AbstractLogger
 
     private int $defaultPermissions = 0777; // modified by umask one hopes.  XXX still no reason to make it +x tho.
 
-    public function __construct(string $logDirectory, string $logLevelThreshold = LogLevel::DEBUG, array $options = [])
+    public function __construct(string $logDirectory = 'php://stdout', string $logLevelThreshold = LogLevel::DEBUG, array $options = [])
     {
         $this->logLevelThreshold = $logLevelThreshold;
         $this->options           = array_merge($this->options, $options);

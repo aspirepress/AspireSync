@@ -7,11 +7,13 @@ namespace App\DependencyInjection;
 use AspirePress\AspireSync\Factories\AwsS3V3AdapterFactory;
 use AspirePress\AspireSync\Factories\ConnectionFactory;
 use AspirePress\AspireSync\Factories\GuzzleClientFactory;
+use AspirePress\AspireSync\Factories\LoggerFactory;
 use Doctrine\DBAL\Connection;
 use GuzzleHttp\Client as GuzzleClient;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\expr;
@@ -36,6 +38,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('db_init_file', $env('DB_INIT_FILE', realpath(__DIR__ . '/../config/schema.sql')));
     $parameters->set('downloads_dir', $downloads_dir);
     $parameters->set('fstype', $env('DOWNLOADS_FILESYSTEM', 'local'));
+    $parameters->set('log_file', $env('LOG_FILE', 'php://stdout'));
+    $parameters->set('log_level', $env('LOG_LEVEL', 'debug'));
     $parameters->set('s3_bucket', $env('S3_BUCKET', null));
     $parameters->set('s3_key', $env('S3_KEY', null));
     $parameters->set('s3_secret', $env('S3_SECRET', null));
@@ -57,10 +61,13 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
     $services->set(GuzzleClient::class)->factory(service(GuzzleClientFactory::class));
 
+    $services->set(LoggerInterface::class)->factory(service(LoggerFactory::class));
+
     $services->set(LocalFilesystemAdapter::class)->args([param('downloads_dir')]);
 
     $services->alias('fs.adapter.s3', AwsS3V3Adapter::class);
     $services->alias('fs.adapter.local', LocalFilesystemAdapter::class);
 
     $services->set(Filesystem::class)->args([expr("service('fs.adapter.' ~ parameter('fstype'))")]);
+
 };
