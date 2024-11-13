@@ -10,8 +10,8 @@ use DateTimeImmutable;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Generator;
-
 use Ramsey\Uuid\Uuid;
+
 use function Safe\json_decode;
 use function Safe\json_encode;
 
@@ -92,14 +92,14 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 
     public function getPulledAsTimestamp(string $slug): ?int
     {
-        $sql = "select unixepoch(pulled) from sync where slug = :slug and type = :type and origin = :origin";
+        $sql    = "select unixepoch(pulled) from sync where slug = :slug and type = :type and origin = :origin";
         $pulled = $this->connection->fetchOne($sql, ['slug' => $slug, ...$this->stdArgs()]);
-        return (int)$pulled ?: null;
+        return (int) $pulled ?: null;
     }
 
     public function getDownloadUrl(string $slug, string $version): ?string
     {
-        $sql = <<<'SQL'
+        $sql    = <<<'SQL'
             SELECT url
             FROM sync_assets 
                 JOIN sync ON sync.id = sync_assets.sync_id 
@@ -178,9 +178,9 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         return $results->fetchFirstColumn();
     }
 
-
     /** @return array{type: string, origin: string} */
-    protected function stdArgs(): array {
+    protected function stdArgs(): array
+    {
         return ['type' => $this->resource->value, 'origin' => $this->origin];
     }
 
@@ -208,19 +208,16 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     /** @param array<string, mixed> $metadata */
     protected function insertSync(array $args): void
     {
-        $now              = date('c');
         $args['metadata'] = json_encode([
             ...$args['metadata'],
             'aspirepress_meta' => [
-                'status'    => $args['status'],
-                'seen'      => $now,
-                'added'     => $now,
-                'updated'   => $now,
-                'processed' => null,
-                'finalized' => null,
+                'type'    => $this->resource->value,
+                'origin'  => $this->origin,
+                'status'  => $args['status'],
+                'created' => date('c'),
             ],
         ]);
-        $conn = $this->connection;
+        $conn             = $this->connection;
         $conn->delete('sync', ['slug' => $args['slug'], ...$this->stdArgs()]);
         $conn->insert('sync', $args);
     }
