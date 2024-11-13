@@ -28,7 +28,6 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     public function save(array $metadata): void
     {
         // status is something we add, and is the normalized error e.g. not-found
-        // TODO: move status into aspiresync_meta and explicitly set it everywhere
         $status = $metadata['status'] ?? 'open';
         $method = match ($status) {
             'open'  => $this->saveOpen(...),
@@ -208,16 +207,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     /** @param array<string, mixed> $metadata */
     protected function insertSync(array $args): void
     {
-        $args['metadata'] = json_encode([
-            ...$args['metadata'],
-            'aspirepress_meta' => [
-                'type'    => $this->resource->value,
-                'origin'  => $this->origin,
-                'status'  => $args['status'],
-                'created' => date('c'),
-            ],
-        ]);
-        $conn             = $this->connection;
+        $args['metadata'] = json_encode($args['metadata']);
+        $conn = $this->connection;
         $conn->delete('sync', ['slug' => $args['slug'], ...$this->stdArgs()]);
         $conn->insert('sync', $args);
     }
