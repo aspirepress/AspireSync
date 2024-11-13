@@ -86,6 +86,7 @@ readonly abstract class AbstractListService implements ListServiceInterface
         if ($min_age) {
             $cutoff = time() - $min_age;
             foreach ($filtered as $slug => $value) {
+                $slug = (string) $slug; // LOLPHP: php will turn any numeric string key into an int
                 $timestamp = $this->meta->getPulledAsTimestamp($slug);
                 if ($timestamp === null || $timestamp <= $cutoff) {
                     $out[$slug] = $value;
