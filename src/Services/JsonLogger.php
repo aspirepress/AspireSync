@@ -73,7 +73,7 @@ class JsonLogger extends AbstractLogger
         $fh   = fopen($file, $mode);
         if (! $fh) {
             $errorMessage = error_get_last()['message'] ?? '(no error information available)';
-            throw new RuntimeException('Unable to open $file: ' . $errorMessage);
+            throw new RuntimeException("Unable to open $file: $errorMessage");
         }
         $this->fileHandle = $fh;
     }
@@ -88,10 +88,10 @@ class JsonLogger extends AbstractLogger
 
     protected function writeToLogFile(string|Stringable $message): void
     {
-        $this->fileHandle or throw new RuntimeException('Cannot write to $this->filename: file is closed.');
+        $this->fileHandle or throw new RuntimeException("Cannot write to $this->logFile: file is closed.");
         if (! fwrite($this->fileHandle, $message)) {
             $errorMessage = error_get_last()['message'] ?? '(no error information available)';
-            throw new RuntimeException('Cannot write to $this->filename: ' . $errorMessage);
+            throw new RuntimeException("Cannot write to $this->logFile: $errorMessage");
         }
         fflush($this->fileHandle);
     }
