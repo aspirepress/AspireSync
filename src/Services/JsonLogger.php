@@ -11,22 +11,21 @@ use RuntimeException;
 use Stringable;
 
 /**
- * An "opinionated" PSR-3 logger class that logs in json format to a file, and does (almost) nothing else.
- * The lack of features and configurability is because it's expected that the log file/stream will
- * be processed by something like OpenTelemetry or fluentbit, making complex setups like monolog moot.
+ * An "opinionated" PSR-3 logger class that logs in json format to a file, and that's it.
+ * It's expected that something like Fluentd/Grafana/OpenTelemetry will process the log further.
  *
- * Based on the MIT-licensed https://raw.githubusercontent.com/katzgrau/KLogger by Kenny Katzgrau
+ * Derived from https://raw.githubusercontent.com/katzgrau/KLogger by Kenny Katzgrau.
  */
 class JsonLogger extends AbstractLogger
 {
     public string $dateFormat = 'Y-m-d\TH:i:s.up';  // ISO8601 with microseconds
 
-    protected string $filename;
+    protected string $logFile;
 
     /** @var resource */
     protected $fileHandle;
 
-    protected const LEVELS = [
+    public const LEVELS = [
         LogLevel::EMERGENCY => 0,
         LogLevel::ALERT     => 1,
         LogLevel::CRITICAL  => 2,
@@ -44,7 +43,9 @@ class JsonLogger extends AbstractLogger
             return;
         }
         $timestamp = (new DateTime())->format($this->dateFormat);
-        $json      = json_encode(compact('timestamp', 'level', 'message', 'context'), JSON_THROW_ON_ERROR);
+        $record = compact('timestamp', 'level', 'message');
+        $context and $record['context'] = $context;
+        $json      = json_encode($record, JSON_THROW_ON_ERROR);
         $this->writeToLogFile($json . PHP_EOL);
     }
 
@@ -56,7 +57,7 @@ class JsonLogger extends AbstractLogger
     public function setLogFile(string $path): void
     {
         $this->closeLogFile();
-        $this->filename = $path;
+        $this->logFile = $path;
         $this->openLogFile();
     }
 
@@ -67,7 +68,7 @@ class JsonLogger extends AbstractLogger
 
     protected function openLogFile(): void
     {
-        $file = $this->filename;
+        $file = $this->logFile;
         $mode = str_starts_with($file, 'php://') ? 'w+' : 'a';
         $fh   = fopen($file, $mode);
         if (! $fh) {
@@ -79,7 +80,7 @@ class JsonLogger extends AbstractLogger
 
     protected function closeLogFile(): void
     {
-        if (! $this->fileHandle || str_starts_with($this->filename, 'php://')) {
+        if (! $this->fileHandle || str_starts_with($this->logFile, 'php://')) {
             return;
         }
         fclose($this->fileHandle);
