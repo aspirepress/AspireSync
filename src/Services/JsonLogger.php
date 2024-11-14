@@ -75,7 +75,7 @@ class JsonLogger extends AbstractLogger
         }
         $level = strtolower($level);
         // an unrecognized level string does turn into 'debug'. we can't safely guess otherwise.
-        return $keys[self::LEVELS[$level] ?? 'debug'] ?? 'debug';
+        return $keys[static::LEVELS[$level] ?? 'debug'] ?? 'debug';
     }
 
     public function __destruct()
