@@ -22,6 +22,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         protected readonly ListServiceInterface $listService,
         protected readonly MetadataServiceInterface $meta,
         protected readonly ProcessManager $processManager,
+        protected readonly string $category,
     ) {
         parent::__construct();
         $this->processManager
@@ -31,11 +32,9 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
             ->setProcessFinishCallback($this->onDownloadProcessFinished(...));
     }
 
-    abstract protected function getCategory(): string;
-
     protected function configure(): void
     {
-        $category = $this->getCategory();
+        $category = $this->category;
         $this->setName("$category:download")
             ->setDescription("Grabs $category (with number of specified versions or explicitly specified $category) from the origin repo")
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
@@ -46,7 +45,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $category = $this->getCategory();
+        $category = $this->category;
 
         $this->always("Running command {$this->getName()}");
         $this->startTimer();

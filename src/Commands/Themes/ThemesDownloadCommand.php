@@ -16,11 +16,6 @@ class ThemesDownloadCommand extends AbstractDownloadCommand
         ThemeMetadataService $meta,
         ProcessManager $processManager,
     ) {
-        parent::__construct($listService, $meta, $processManager);
-    }
-
-    protected function getCategory(): string
-    {
-        return 'themes';
+        parent::__construct($listService, $meta, $processManager, category: 'themes');
     }
 }

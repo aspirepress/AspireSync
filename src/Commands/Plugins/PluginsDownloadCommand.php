@@ -16,11 +16,6 @@ class PluginsDownloadCommand extends AbstractDownloadCommand
         PluginMetadataService $meta,
         ProcessManager $processManager,
     ) {
-        parent::__construct($listService, $meta, $processManager);
-    }
-
-    protected function getCategory(): string
-    {
-        return 'plugins';
+        parent::__construct($listService, $meta, $processManager, category: 'plugins');
     }
 }
