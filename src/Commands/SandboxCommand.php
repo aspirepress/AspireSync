@@ -19,9 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class SandboxCommand extends AbstractBaseCommand
 {
-    public function __construct(
-        private LoggerInterface $log,
-    ) {
+    public function __construct() {
         parent::__construct();
     }
 
@@ -35,7 +33,7 @@ class SandboxCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->log->info("Brillant!", ['foo' => 123, 'bar' => ['baz' => 'xyzzy']]);
-        $this->log->info("Look ma, no context!");
+        $this->error("Boom!");
         return Command::SUCCESS;
     }
 }

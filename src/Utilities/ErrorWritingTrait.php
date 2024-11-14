@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Utilities;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * @property LoggerInterface $log
+ */
 trait ErrorWritingTrait
 {
     protected const int ERROR   = 1;
@@ -20,13 +24,14 @@ trait ErrorWritingTrait
 
     protected const int ALWAYS_WRITE = 8;
 
-    protected OutputInterface $io;
+    protected OutputInterface $io;  // must be set in consuming class's ->initialize() method
 
     /**
      * @param string|iterable<int, string> $message
      */
     protected function writeMessage(string|iterable $message, int $level = self::ALWAYS_WRITE): void
     {
+        $this->log?->log($level, $message, ['command' => $this->getDebugContext()]);
         switch ($level) {
             case self::ERROR:
                 $this->io->writeln("<fg=black;bg=red>" . OutputManagementUtil::error($message) . "</>");

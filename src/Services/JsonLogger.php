@@ -38,7 +38,7 @@ class JsonLogger extends AbstractLogger
 
     public function log(mixed $level, string|Stringable $message, array $context = []): void
     {
-        $level = strtolower($level);
+        $level = static::normalizeLevel($level);
         if (static::LEVELS[$this->threshold] < static::LEVELS[$level]) {
             return;
         }
@@ -59,6 +59,23 @@ class JsonLogger extends AbstractLogger
         $this->closeLogFile();
         $this->logFile = $path;
         $this->openLogFile();
+    }
+
+    public static function normalizeLevel(string|int $level): string
+    {
+        static $keys;
+        $keys ??= array_keys(static::LEVELS);
+
+        if (is_int($level)) {
+            // clamp level range so -1 = emergency, 999 = debug
+            $level = min($level, static::LEVELS['debug']);
+            $level = max($level, static::LEVELS['emergency']);
+            $level = $keys[$level]; // convert to string
+
+        }
+        $level = strtolower($level);
+        // an unrecognized level string does turn into 'debug'. we can't safely guess otherwise.
+        return $keys[self::LEVELS[$level] ?? 'debug'] ?? 'debug';
     }
 
     public function __destruct()
