@@ -9,11 +9,15 @@ use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
 
+use Psr\Log\LoggerInterface;
 use function Safe\json_decode;
 
 class WPEndpointClient implements WpEndpointClientInterface
 {
-    public function __construct(private readonly GuzzleClient $guzzle)
+    public function __construct(
+        private readonly GuzzleClient $guzzle,
+        private readonly LoggerInterface $logger,
+    )
     {
     }
 
@@ -61,12 +65,15 @@ class WPEndpointClient implements WpEndpointClientInterface
 
         try {
             $response = $this->guzzle->get($url, ['query' => $queryParams]);
+            $this->logger->debug('FETCHED', ['type' => 'plugin', 'slug' => $slug, 'status' => $response->getStatusCode()]);
             return json_decode($response->getBody()->getContents(), true);
         } catch (ClientException $e) {
             try {
                 $body = json_decode($e->getResponse()->getBody()->getContents(), true);
+                $this->logger->debug('ERROR IN FETCH', ['type' => 'plugin', 'slug' => $slug, 'status' => $e->getResponse()->getStatusCode(), 'message' => $e->getMessage()]);
             } catch (Exception $e) {
                 $body = ['error' => $e->getMessage()];
+                $this->logger->debug('OTHER ERROR IN FETCH', ['type' => 'plugin', 'slug' => $slug, 'message' => $e->getMessage()]);
             }
             $body['error'] ??= $e->getMessage();
             $status          = match ($body['error']) {
@@ -108,12 +115,15 @@ class WPEndpointClient implements WpEndpointClientInterface
         ];
         try {
             $response = $this->guzzle->get($url, ['query' => $queryParams]);
+            $this->logger->debug('FETCHED', ['type' => 'theme', 'slug' => $slug, 'status' => $response->getStatusCode()]);
             return json_decode($response->getBody()->getContents(), true);
         } catch (ClientException $e) {
             try {
                 $body = json_decode($e->getResponse()->getBody()->getContents(), true);
+                $this->logger->debug('ERROR IN FETCH', ['type' => 'theme', 'slug' => $slug, 'status' => $e->getResponse()->getStatusCode(), 'message' => $e->getMessage()]);
             } catch (Exception $e) {
                 $body = ['error' => $e->getMessage()];
+                $this->logger->debug('OTHER ERROR IN FETCH', ['type' => 'theme', 'slug' => $slug, 'message' => $e->getMessage()]);
             }
             $body['error'] ??= $e->getMessage();
             $status          = match ($body['error']) {

@@ -56,7 +56,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         $this->debug("Getting list of $category...");
 
         if ($input->getOption('download-all')) {
-            $pending = $this->listService->getUpdatedItems($listing, 'default');
+            $pending = $this->listService->getItems($listing);
         } else {
             $pending = $this->listService->getUpdatedItems($listing);
         }
@@ -70,12 +70,12 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         $flags                                  = [];
         $input->getOption('force') and $flags[] = '--force';
 
+        $this->log->debug("starting downloads", ['category' => $category, 'pending_count' => count($pending)]);
         $counter = 1;
         foreach ($pending as $slug => $versions) {
             $versions = $this->determineVersionsToDownload($slug, $versions, $numVersions);
-            if (! $versions) {
-                // $this->debug("$slug ... No new versions found");
-            }
+            $vcount   = count($versions);
+            $this->log->debug("version count for $slug: $vcount", ['slug' => $slug, 'versions' => $versions]);
             foreach ($versions as $version) {
                 [$version, $message] = VersionUtil::cleanVersion($version);
                 if (! $version) {
@@ -83,7 +83,12 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
                     continue;
                 }
                 $command = ['bin/aspiresync', "$category:download:single", $slug, $version, ...$flags];
-                $this->debug("QUEUE #$counter: " . implode(' ', $command));
+                $this->log->debug("Queueing download", [
+                    'command_line' => implode(' ', $command),
+                    'slug'         => $slug,
+                    'version'      => $version,
+                    'queue_count'  => $counter,
+                ]);
                 $process = new Process($command);
                 $this->processManager->addProcess($process);
                 $counter++;
