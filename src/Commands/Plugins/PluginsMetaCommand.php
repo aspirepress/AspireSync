@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Commands\Plugins;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
+use AspirePress\AspireSync\Resource;
 use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 use AspirePress\AspireSync\Services\Plugins\PluginListService;
 use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
@@ -23,6 +24,8 @@ class PluginsMetaCommand extends AbstractBaseCommand
     ) {
         parent::__construct();
     }
+
+    protected Resource $resource = Resource::Plugin;
 
     protected function configure(): void
     {
@@ -75,7 +78,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
     private function fetchPluginDetails(InputInterface $input, OutputInterface $output, string $slug, array $versions): void
     {
         try {
-            $data = $this->wpClient->getPluginMetadata($slug);
+            $data = $this->wpClient->fetchMetadata($this->resource, $slug);
         } catch (\Exception $e) {
             // If Guzzle runs out of retries or some non-recoverable exception happens, just scream and move on.
             $this->error("$slug ... ERROR: {$e->getMessage()}");
