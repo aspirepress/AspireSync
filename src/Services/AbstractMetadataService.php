@@ -145,10 +145,13 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 
     public function exportAllMetadata(): Generator
     {
-        $sql  = "select metadata from sync where status in ('open', 'closed') and type = :type and origin = :origin";
+        $sql  = "select * from sync where status in ('open', 'closed') and type = :type and origin = :origin";
         $rows = $this->connection->executeQuery($sql, $this->stdArgs());
         while ($row = $rows->fetchAssociative()) {
-            yield $row['metadata'];
+            $metadata = json_decode($row['metadata'], true);
+            unset($row['metadata']);
+            $metadata['aspiresync_meta'] = $row;
+            yield json_encode($metadata);
         }
     }
 
