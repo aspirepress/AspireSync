@@ -31,9 +31,12 @@ class PluginsMetaCommand extends AbstractBaseCommand
     {
         $this->setName('plugins:meta')
             ->setDescription('Fetches the meta data of the plugins')
-            ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all plugin meta-data; otherwise, we only update what has changed')
-            ->addOption('skip-newer-than-secs', null, InputOption::VALUE_REQUIRED, 'Skip downloading metadata pulled more recently than N seconds')
-            ->addOption('plugins', null, InputOption::VALUE_OPTIONAL, 'List of plugins (separated by commas) to explicitly update');
+            ->addOption('update-all', 'u', InputOption::VALUE_NONE,
+                'Update all plugin meta-data; otherwise, we only update what has changed')
+            ->addOption('skip-newer-than-secs', null, InputOption::VALUE_REQUIRED,
+                'Skip downloading metadata pulled more recently than N seconds')
+            ->addOption('plugins', null, InputOption::VALUE_OPTIONAL,
+                'List of plugins (separated by commas) to explicitly update');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -41,8 +44,8 @@ class PluginsMetaCommand extends AbstractBaseCommand
         $this->always("Running command {$this->getName()}");
         $this->startTimer();
 
-        $slugs   = StringUtil::explodeAndTrim($input->getOption('plugins') ?? '');
-        $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
+        $slugs = StringUtil::explodeAndTrim($input->getOption('plugins') ?? '');
+        $min_age = (int)$input->getOption('skip-newer-than-secs') ?: null;
 
         $this->debug('Getting list of plugins...');
         $pending = $this->listService->getItems($slugs, $min_age);
@@ -60,7 +63,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
                 $this->info("$slug ... skipped ($status)");
                 continue;
             }
-            $this->fetchPluginDetails($input, $output, $slug, $versions);
+            $this->fetch($slug);
         }
 
         if ($input->getOption('plugins')) {
@@ -74,35 +77,34 @@ class PluginsMetaCommand extends AbstractBaseCommand
         return Command::SUCCESS;
     }
 
-    /** @param string[] $versions */
-    private function fetchPluginDetails(InputInterface $input, OutputInterface $output, string $slug, array $versions): void
+    private function fetch(string $slug): void
     {
         try {
-            $data = $this->wpClient->fetchMetadata($this->resource, $slug);
+            $metadata = $this->wpClient->fetchMetadata($this->resource, $slug);
         } catch (\Exception $e) {
             // If Guzzle runs out of retries or some non-recoverable exception happens, just scream and move on.
             $this->error("$slug ... ERROR: {$e->getMessage()}");
             return;
         }
-        $error = $data['error'] ?? null;
+        $error = $metadata['error'] ?? null;
 
-        $this->meta->save($data);
+        $this->meta->save($metadata);
 
-        if (! empty($data['versions'])) {
-            $this->info("$slug ... [" . count($data['versions']) . ' versions]');
-        } elseif (isset($data['version'])) {
+        if (!empty($metadata['versions'])) {
+            $this->info("$slug ... [" . count($metadata['versions']) . ' versions]');
+        } elseif (isset($metadata['version'])) {
             $this->info("$slug ... [1 version]");
-        } elseif (isset($data['skipped'])) {
-            $this->info((string) $data['skipped']);
+        } elseif (isset($metadata['skipped'])) {
+            $this->info((string)$metadata['skipped']);
         } elseif ($error) {
             if ($error === 'closed') {
                 $this->info("$slug ... [closed]");
             } else {
                 $this->error(message: "$slug ... ERROR: $error");
             }
-            if ('429' === (string) $error) {
+            if ('429' === (string)$error) {
                 $this->progressiveBackoff();
-                $this->fetchPluginDetails($input, $output, $slug, $versions);
+                $this->fetch($slug);
                 return;
             }
         } else {
@@ -112,3 +114,4 @@ class PluginsMetaCommand extends AbstractBaseCommand
         $this->iterateProgressiveBackoffLevel(self::ITERATE_DOWN);
     }
 }
+

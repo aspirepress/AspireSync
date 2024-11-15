@@ -54,7 +54,7 @@ class ThemesMetaCommand extends AbstractBaseCommand
         }
 
         foreach ($themesToUpdate as $theme => $versions) {
-            $this->fetch($input, $output, (string) $theme, $versions);
+            $this->fetch((string) $theme);
         }
 
         if ($input->getOption('themes')) {
@@ -68,8 +68,7 @@ class ThemesMetaCommand extends AbstractBaseCommand
         return Command::SUCCESS;
     }
 
-    /** @param string[] $versions */
-    private function fetch(InputInterface $input, OutputInterface $output, string $slug, array $versions): void
+    private function fetch(string $slug): void
     {
         $metadata  = $this->wpClient->fetchMetadata($this->resource, $slug);
         $error = $metadata['error'] ?? null;
@@ -90,7 +89,7 @@ class ThemesMetaCommand extends AbstractBaseCommand
             }
             if ('429' === (string) $error) {
                 $this->progressiveBackoff();
-                $this->fetch($input, $output, $slug, $versions);
+                $this->fetch($slug);
                 return;
             }
         } else {
