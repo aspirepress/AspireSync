@@ -37,7 +37,11 @@ readonly abstract class AbstractListService implements ListServiceInterface
         return $this->revisions->preserveRevision($this->category);
     }
 
-    /** @return array<string, string[]> */
+    /**
+     * @return array<string|int, string[]>
+     *
+     * LOLPHP: should always return array<string, string[]> but numeric keys like '1976' get forcibly cast to int when read.
+     */
     protected function getAllSubversionSlugs(): array
     {
         $result = $this->svn->scrapeSlugsFromIndex($this->category);
@@ -110,6 +114,7 @@ readonly abstract class AbstractListService implements ListServiceInterface
         $allSlugs = $this->getAllSubversionSlugs();
 
         foreach ($allSlugs as $slug => $versions) {
+            $slug   = (string) $slug;
             $status = $this->meta->getStatus($slug);
             // Is this the first time we've seen the slug?
             if (! $status) {
