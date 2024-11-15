@@ -10,7 +10,9 @@ use DateTimeImmutable;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Generator;
+use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
+use Symfony\Contracts\Service\Attribute\Required;
 
 use function Safe\json_decode;
 use function Safe\json_encode;
@@ -23,6 +25,9 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         protected string $origin = 'wp_org',
     ) {
     }
+
+    #[Required]
+    public LoggerInterface $log;
 
     /** @param array<string, mixed> $metadata */
     public function save(array $metadata): void
@@ -63,12 +68,16 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
                 'url'     => $url,
             ]);
         }
+        $this->log->debug(
+            "Saved {$this->resource->value} with open status",
+            ['id' => $id, 'slug' => $metadata['slug'], 'status' => 'open', 'version_count' => count($versions)]
+        );
     }
 
     /** @param array<string, mixed> $metadata */
     protected function saveError(array $metadata): void
     {
-        $this->insertSync([
+        $row = [
             'id'       => Uuid::uuid7()->toString(),
             'type'     => $this->resource->value,
             'slug'     => mb_substr($metadata['slug'], 0, 255),
@@ -79,7 +88,12 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'updated'  => $metadata['closed_date'] ?? date('c'),
             'pulled'   => date('c'),
             'metadata' => $metadata,
-        ]);
+        ];
+        $this->insertSync($row);
+        $this->log->debug(
+            "Saved {$this->resource->value} with {$row['status']} status",
+            ['id' => $row['id'], 'slug' => $row['slug'], 'status' => $row['status']]
+        );
     }
 
     // These getters are more efficient than using ->fetch()
@@ -141,6 +155,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
               AND sync_id = (SELECT id FROM sync WHERE slug = :slug AND type = :type AND origin = :origin)
             SQL;
         $this->connection->executeQuery($sql, ['slug' => $slug, 'version' => $version, $this->stdArgs()]);
+        $this->log->debug("Marked {$this->resource->value} $slug $version as processed", ['slug' => $slug, 'version' => $version]);
     }
 
     public function exportAllMetadata(): Generator
@@ -211,7 +226,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     protected function insertSync(array $args): void
     {
         $args['metadata'] = json_encode($args['metadata']);
-        $conn = $this->connection;
+        $conn             = $this->connection;
         $conn->delete('sync', ['slug' => $args['slug'], ...$this->stdArgs()]);
         $conn->insert('sync', $args);
     }
