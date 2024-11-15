@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Services;
 
 use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
-use AspirePress\AspireSync\Utilities\FileUtil;
+use AspirePress\AspireSync\Utilities\RegexUtil;
 use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
@@ -43,7 +42,7 @@ class SubversionService implements SubversionServiceInterface
         foreach ($entries as $entry) {
             $revision = (int) $entry->attributes()['revision'];
             $path     = (string) $entry->paths->path[0];
-            preg_match('#/([A-z\-_]+)/#', $path, $matches);
+            $matches  = RegexUtil::match('#/([A-z\-_]+)/#', $path);
             if ($matches) {
                 $item         = trim($matches[1]);
                 $slugs[$item] = [];
@@ -52,42 +51,21 @@ class SubversionService implements SubversionServiceInterface
         return ['revision' => $revision, 'slugs' => $slugs];
     }
 
-    /** @return array{slugs: string[], revision: int} */
-    public function pullWholeItemsList(string $type): array
+    /** @return string[] */
+    public function scrapeSlugsFromIndex(string $type): array
     {
-        global $APP_DIR;
-        $html = FileUtil::cacheFile(
-            "$APP_DIR/data/raw-svn-$type-list",
-            86400,
-            fn() => $this->fetchRawSvnHtml($type)
-        );
+        $html = $this->guzzle
+            ->get("https://$type.svn.wordpress.org/")
+            ->getBody()
+            ->getContents();
 
-        $matches = [];
-        preg_match_all('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $html, $matches);
-        $items = $matches[1];
+        [, $slugs] = RegexUtil::matchAll('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $html);
 
-        $slugs = [];
-        foreach ($items as $item) {
-            $slugs[$item] = [];
-        }
+        [, $revision] = RegexUtil::match('/Revision (\d+):/', $html);
 
-        preg_match('/Revision (\d+):/', $html, $matches);
-        $revision = (int) $matches[1];
+        $slugs = array_map(urldecode(...), $slugs);
+        // $slugs = array_map(fn ($slug) => (string) urldecode($slug), $slugs);
 
-        FileUtil::writeLines("$APP_DIR/data/raw-$type-list", $items);
-
-        return ['slugs' => $slugs, 'revision' => $revision];
-    }
-
-    private function fetchRawSvnHtml(string $type): string
-    {
-        try {
-            return $this->guzzle
-                ->get("https://$type.svn.wordpress.org/")
-                ->getBody()
-                ->getContents();
-        } catch (ClientException $e) {
-            throw new RuntimeException("Unable to download $type list: " . $e->getMessage());
-        }
+        return ['slugs' => $slugs, 'revision' => (int)$revision];
     }
 }

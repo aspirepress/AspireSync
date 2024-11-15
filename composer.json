@@ -2,9 +2,9 @@
   "require": {
     "php": "^8.3",
     "ext-pdo": "*",
-    "ext-pdo_pgsql": "*",
     "ext-simplexml": "*",
-    "aura/sql": "^5.0.2",
+    "ext-sqlite3": "*",
+    "doctrine/dbal": "^4.2",
     "guzzlehttp/guzzle": "^7.9.2",
     "laminas/laminas-coding-standard": "^2.5",
     "league/flysystem": "^3.29.1",
@@ -34,7 +34,7 @@
     "psr-4": {
       "AspirePress\\AspireSync\\Tests\\Unit\\": "./tests/unit",
       "AspirePress\\AspireSync\\Tests\\Functional\\": "./tests/functional",
-      "AspirePress\\AspireSync\\Tests\\Helpers\\": "./tests/helpers"
+      "AspirePress\\AspireSync\\Tests\\Stubs\\": "./tests/stubs"
     }
   },
   "config": {

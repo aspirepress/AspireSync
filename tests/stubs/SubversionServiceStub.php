@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Tests\Helpers;
+namespace AspirePress\AspireSync\Tests\Stubs;
 
 use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
 
@@ -12,23 +12,15 @@ class SubversionServiceStub implements SubversionServiceInterface
     {
         return [
             'revision' => 123,
-            'items'    => [
-                'foo' => [],
-                'bar' => [],
-                'baz' => [],
-            ],
+            'slugs'    => ['foo', 'bar', 'baz'],
         ];
     }
 
-    public function pullWholeItemsList(string $type): array
+    public function scrapeSlugsFromIndex(string $type): array
     {
         return [
             'revision' => 123,
-            'items'    => [
-                'foo' => [],
-                'bar' => [],
-                'baz' => [],
-            ],
+            'slugs'    => ['foo', 'bar', 'baz'],
         ];
     }
 }

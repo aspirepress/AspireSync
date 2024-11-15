@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Tests\Helpers;
+namespace AspirePress\AspireSync\Tests\Stubs;
 
 use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 

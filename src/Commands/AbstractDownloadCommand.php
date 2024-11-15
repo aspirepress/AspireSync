@@ -7,8 +7,6 @@ namespace AspirePress\AspireSync\Commands;
 use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
 use AspirePress\AspireSync\Services\ProcessManager;
-use AspirePress\AspireSync\Services\StatsMetadataService;
-use AspirePress\AspireSync\Utilities\HasStats;
 use AspirePress\AspireSync\Utilities\StringUtil;
 use AspirePress\AspireSync\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
@@ -20,13 +18,11 @@ use Symfony\Component\Process\Process;
 
 abstract class AbstractDownloadCommand extends AbstractBaseCommand
 {
-    use HasStats;
-
     public function __construct(
         protected readonly ListServiceInterface $listService,
         protected readonly MetadataServiceInterface $meta,
-        protected readonly StatsMetadataService $statsMeta,
         protected readonly ProcessManager $processManager,
+        protected readonly string $category,
     ) {
         parent::__construct();
         $this->processManager
@@ -36,11 +32,9 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
             ->setProcessFinishCallback($this->onDownloadProcessFinished(...));
     }
 
-    abstract protected function getCategory(): string;
-
     protected function configure(): void
     {
-        $category = $this->getCategory();
+        $category = $this->category;
         $this->setName("$category:download")
             ->setDescription("Grabs $category (with number of specified versions or explicitly specified $category) from the origin repo")
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
@@ -51,7 +45,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $category = $this->getCategory();
+        $category = $this->category;
 
         $this->always("Running command {$this->getName()}");
         $this->startTimer();
@@ -62,9 +56,9 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         $this->debug("Getting list of $category...");
 
         if ($input->getOption('download-all')) {
-            $pending = $this->listService->getUpdatedListOfItems($listing, 'default');
+            $pending = $this->listService->getItems($listing);
         } else {
-            $pending = $this->listService->getUpdatedListOfItems($listing);
+            $pending = $this->listService->getUpdatedItems($listing);
         }
 
         $this->debug(count($pending) . " $category to download...");
@@ -76,12 +70,12 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         $flags                                  = [];
         $input->getOption('force') and $flags[] = '--force';
 
+        $this->log->debug("starting downloads", ['category' => $category, 'pending_count' => count($pending)]);
         $counter = 1;
         foreach ($pending as $slug => $versions) {
             $versions = $this->determineVersionsToDownload($slug, $versions, $numVersions);
-            if (! $versions) {
-                // $this->debug("$slug ... No new versions found");
-            }
+            $vcount   = count($versions);
+            $this->log->debug("version count for $slug: $vcount", ['slug' => $slug, 'versions' => $versions]);
             foreach ($versions as $version) {
                 [$version, $message] = VersionUtil::cleanVersion($version);
                 if (! $version) {
@@ -89,7 +83,12 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
                     continue;
                 }
                 $command = ['bin/aspiresync', "$category:download:single", $slug, $version, ...$flags];
-                $this->debug("QUEUE #$counter: " . implode(' ', $command));
+                $this->log->debug("Queueing download", [
+                    'command_line' => implode(' ', $command),
+                    'slug'         => $slug,
+                    'version'      => $version,
+                    'queue_count'  => $counter,
+                ]);
                 $process = new Process($command);
                 $this->processManager->addProcess($process);
                 $counter++;
@@ -99,8 +98,6 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         $this->processManager->waitForAllProcesses();
 
         $this->endTimer();
-        $this->always($this->getRunInfo($this->getCalculatedStats()));
-        $this->statsMeta->logStats($this->getName(), $this->stats);
         return Command::SUCCESS;
     }
 

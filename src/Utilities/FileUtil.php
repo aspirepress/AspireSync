@@ -40,6 +40,9 @@ abstract class FileUtil
 
     public static function write(string $path, string $content): void
     {
+        $dir = dirname($path);
+        is_dir($dir) or throw new RuntimeException("No such directory: $dir");
+
         $tmpname = tempnam(dirname($path), "tmp_XXXXXXXX");
         $result  = file_put_contents($tmpname, $content);
         if ($result === false) {

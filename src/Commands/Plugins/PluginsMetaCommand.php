@@ -8,7 +8,6 @@ use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
 use AspirePress\AspireSync\Services\Plugins\PluginListService;
 use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
-use AspirePress\AspireSync\Services\StatsMetadataService;
 use AspirePress\AspireSync\Utilities\StringUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,18 +16,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PluginsMetaCommand extends AbstractBaseCommand
 {
-    /** @var array<string, int> */
-    private array $stats = [
-        'plugins'      => 0,
-        'versions'     => 0,
-        'errors'       => 0,
-        'rate_limited' => 0,
-    ];
-
     public function __construct(
         private PluginListService $listService,
         private PluginMetadataService $meta,
-        private StatsMetadataService $statsMeta,
         private WpEndpointClientInterface $wpClient,
     ) {
         parent::__construct();
@@ -48,11 +38,11 @@ class PluginsMetaCommand extends AbstractBaseCommand
         $this->always("Running command {$this->getName()}");
         $this->startTimer();
 
-        $slugs = StringUtil::explodeAndTrim($input->getOption('plugins') ?? '');
+        $slugs   = StringUtil::explodeAndTrim($input->getOption('plugins') ?? '');
         $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
 
         $this->debug('Getting list of plugins...');
-        $pending = $this->listService->getItemsForAction($slugs, $this->getName(), $min_age);
+        $pending = $this->listService->getItems($slugs, $min_age);
 
         if (count($pending) === 0) {
             $this->success('No plugin metadata to download. exiting.');
@@ -62,48 +52,43 @@ class PluginsMetaCommand extends AbstractBaseCommand
         $this->info("Downloading metadata for " . count($pending) . " plugins");
 
         foreach ($pending as $slug => $versions) {
+            $status = $this->meta->getStatus($slug);
+            if (in_array($status, ['closed', 'not-found'], true)) {
+                $this->info("$slug ... skipped ($status)");
+                continue;
+            }
             $this->fetchPluginDetails($input, $output, $slug, $versions);
         }
 
         if ($input->getOption('plugins')) {
             $this->debug("Not saving revision when --plugins was specified");
         } else {
-            $revision = $this->listService->preserveRevision($this->getName());
+            $revision = $this->listService->preserveRevision();
             $this->debug("Updated current revision to $revision");
         }
         $this->endTimer();
 
-        $this->always($this->getRunInfo($this->calculateStats()));
-        $this->statsMeta->logStats($this->getName(), $this->stats);
         return Command::SUCCESS;
-    }
-
-    /** @return string[] */
-    private function calculateStats(): array
-    {
-        return [
-            'Stats:',
-            'Total Plugins Found:    ' . $this->stats['plugins'],
-            'Total Versions Found:   ' . $this->stats['versions'],
-            'Total Failed Downloads: ' . $this->stats['errors'],
-        ];
     }
 
     /** @param string[] $versions */
     private function fetchPluginDetails(InputInterface $input, OutputInterface $output, string $slug, array $versions): void
     {
-        $this->stats['plugins']++;
-        $data  = $this->wpClient->getPluginMetadata($slug);
+        try {
+            $data = $this->wpClient->getPluginMetadata($slug);
+        } catch (\Exception $e) {
+            // If Guzzle runs out of retries or some non-recoverable exception happens, just scream and move on.
+            $this->error("$slug ... ERROR: {$e->getMessage()}");
+            return;
+        }
         $error = $data['error'] ?? null;
 
-        $this->meta->saveMetadata($data);
+        $this->meta->save($data);
 
         if (! empty($data['versions'])) {
             $this->info("$slug ... [" . count($data['versions']) . ' versions]');
-            $this->stats['versions'] += count($data['versions']);
         } elseif (isset($data['version'])) {
             $this->info("$slug ... [1 version]");
-            $this->stats['versions'] += 1;
         } elseif (isset($data['skipped'])) {
             $this->info((string) $data['skipped']);
         } elseif ($error) {
@@ -113,12 +98,10 @@ class PluginsMetaCommand extends AbstractBaseCommand
                 $this->error(message: "$slug ... ERROR: $error");
             }
             if ('429' === (string) $error) {
-                $this->stats['rate_limited']++;
                 $this->progressiveBackoff();
                 $this->fetchPluginDetails($input, $output, $slug, $versions);
                 return;
             }
-            $this->stats['errors']++;
         } else {
             $this->info("$slug ... No versions found");
         }
