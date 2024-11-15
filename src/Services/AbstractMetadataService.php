@@ -21,13 +21,11 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 {
     public function __construct(
         protected Connection $connection,
+        protected LoggerInterface $log,
         protected Resource $resource,
         protected string $origin = 'wp_org',
     ) {
     }
-
-    #[Required]
-    public LoggerInterface $log;
 
     /** @param array<string, mixed> $metadata */
     public function save(array $metadata): void
