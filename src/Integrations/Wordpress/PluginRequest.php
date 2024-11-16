@@ -6,10 +6,6 @@ namespace AspirePress\AspireSync\Integrations\Wordpress;
 
 class PluginRequest extends AbstractWordpressApiRequest
 {
-    public function __construct(public readonly string $slug)
-    {
-    }
-
     public function resolveEndpoint(): string
     {
         return '/plugins/info/1.2';

@@ -6,10 +6,6 @@ namespace AspirePress\AspireSync\Integrations\Wordpress;
 
 class ThemeRequest extends AbstractWordpressApiRequest
 {
-    public function __construct(public readonly string $slug)
-    {
-    }
-
     public function resolveEndpoint(): string
     {
         return '/themes/info/1.2';
