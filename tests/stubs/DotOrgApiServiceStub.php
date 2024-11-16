@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Tests\Stubs;
 
-use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
+use AspirePress\AspireSync\Services\Interfaces\DotOrgApiClientInterface;
 
-class WpEndpointServiceStub implements WpEndpointClientInterface
+class DotOrgApiServiceStub implements DotOrgApiClientInterface
 {
     public function getPluginMetadata(string $slug): array
     {

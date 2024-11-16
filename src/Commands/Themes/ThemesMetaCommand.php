@@ -6,7 +6,7 @@ namespace AspirePress\AspireSync\Commands\Themes;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Resource;
-use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
+use AspirePress\AspireSync\Services\Interfaces\DotOrgApiClientInterface;
 use AspirePress\AspireSync\Services\Themes\ThemeListService;
 use AspirePress\AspireSync\Services\Themes\ThemeMetadataService;
 use AspirePress\AspireSync\Utilities\StringUtil;
@@ -20,7 +20,7 @@ class ThemesMetaCommand extends AbstractBaseCommand
     public function __construct(
         private readonly ThemeListService $listService,
         private readonly ThemeMetadataService $meta,
-        private readonly WpEndpointClientInterface $wpClient,
+        private readonly DotOrgApiClientInterface $wpClient,
     ) {
         parent::__construct();
     }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Services;
 
 use AspirePress\AspireSync\Resource;
-use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
+use AspirePress\AspireSync\Services\Interfaces\DotOrgApiClientInterface;
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
@@ -13,7 +13,7 @@ use GuzzleHttp\Exception\ClientException;
 use Psr\Log\LoggerInterface;
 use function Safe\json_decode;
 
-class WPEndpointClient implements WpEndpointClientInterface
+class DotOrgApiClient implements DotOrgApiClientInterface
 {
     public function __construct(
         private readonly GuzzleClient $guzzle,

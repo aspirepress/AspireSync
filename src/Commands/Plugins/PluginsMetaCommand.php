@@ -6,7 +6,7 @@ namespace AspirePress\AspireSync\Commands\Plugins;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Resource;
-use AspirePress\AspireSync\Services\Interfaces\WpEndpointClientInterface;
+use AspirePress\AspireSync\Services\Interfaces\DotOrgApiClientInterface;
 use AspirePress\AspireSync\Services\Plugins\PluginListService;
 use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
 use AspirePress\AspireSync\Utilities\StringUtil;
@@ -20,7 +20,7 @@ class PluginsMetaCommand extends AbstractBaseCommand
     public function __construct(
         private PluginListService $listService,
         private PluginMetadataService $meta,
-        private WpEndpointClientInterface $wpClient,
+        private DotOrgApiClientInterface $wpClient,
     ) {
         parent::__construct();
     }

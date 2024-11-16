@@ -6,7 +6,7 @@ namespace AspirePress\AspireSync\Services\Interfaces;
 
 use AspirePress\AspireSync\Resource;
 
-interface WpEndpointClientInterface
+interface DotOrgApiClientInterface
 {
     public function fetchMetadata(Resource $resource, string $slug): array;
 }
