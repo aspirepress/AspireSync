@@ -11,12 +11,15 @@ use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
 use AspirePress\AspireSync\Utilities\StringUtil;
 use Exception;
+use Generator;
+use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Request;
-
+use Saloon\Http\Response;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+
 use function Safe\json_decode;
 
 abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
@@ -30,17 +33,19 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
         parent::__construct();
     }
 
-    abstract protected function makeRequest($slug): Request;
+    abstract protected function makeRequest(string $slug): Request;
 
     protected function configure(): void
     {
-        $type = $this->resource->value;
-        $category = $type . 's';
+        $category = $this->resource->value . 's';
         $this->setName("meta:sync:$category")
             ->setDescription("Fetches meta data of all new and changed $category")
-            ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all metadata; otherwise, we only update what has changed')
-            ->addOption('skip-newer-than-secs', null, InputOption::VALUE_REQUIRED, 'Skip downloading metadata pulled more recently than N seconds')
-            ->addOption($category, null, InputOption::VALUE_OPTIONAL, "List of $category (separated by commas) to explicitly update");
+            ->addOption('update-all', 'u', InputOption::VALUE_NONE,
+                'Update all metadata; otherwise, we only update what has changed')
+            ->addOption('skip-newer-than-secs', null, InputOption::VALUE_REQUIRED,
+                'Skip downloading metadata pulled more recently than N seconds')
+            ->addOption($category, null, InputOption::VALUE_OPTIONAL,
+                "List of $category (separated by commas) to explicitly update");
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -49,8 +54,8 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
         $this->writeMessage("Running command {$this->getName()}");
         $this->startTimer();
 
-        $items  = StringUtil::explodeAndTrim($input->getOption($category) ?? '');
-        $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
+        $items = StringUtil::explodeAndTrim($input->getOption($category) ?? '');
+        $min_age = (int)$input->getOption('skip-newer-than-secs') ?: null;
 
         $this->debug("Getting list of $category...");
         $toUpdate = $this->listService->getItems($items, $min_age);
@@ -61,9 +66,15 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
             return Command::SUCCESS;
         }
 
-        foreach ($toUpdate as $slug => $versions) {
-            $this->fetch((string) $slug);
-        }
+        $pool = $this->api->pool(
+            requests: $this->generateRequests(array_keys($toUpdate)),
+            concurrency: 6,
+            responseHandler: $this->onResponse(...),
+            exceptionHandler: $this->onError(...)
+        );
+
+        $promise = $pool->send();
+        $promise->wait();
 
         if ($input->getOption($category)) {
             $this->debug("Not saving revision when --$category was specified");
@@ -76,27 +87,32 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
         return Command::SUCCESS;
     }
 
-    protected function fetch(string $slug): void
-    {
-        try {
-            $this->log->debug("FETCH", ['slug' => $slug]);
-            $request  = $this->makeRequest($slug);
-            $reply    = $this->api->send($request);
-            $response = $reply->getPsrResponse();
+    protected function generateRequests(array $slugs): Generator {
+        foreach ($slugs as $slug) {
+            yield $this->makeRequest((string)$slug);
+        }
+    }
 
-            $code   = $response->getStatusCode();
+    protected function onResponse(Response $saloonResponse): void
+    {
+        $response = $saloonResponse->getPsrResponse();
+        $request = $saloonResponse->getRequest();
+        $slug = $request->slug ?? throw new Exception('Missing slug in request');
+
+        try {
+            $code = $response->getStatusCode();
             $reason = $response->getReasonPhrase();
             $code !== 200 and $this->debug("$slug ... $code $reason");
 
             $metadata = json_decode($response->getBody()->getContents(), assoc: true);
-            $status   = match ($code) {
+            $status = match ($code) {
                 200 => 'open',
                 404 => 'not-found',
                 default => 'error',
             };
             $metadata = [
-                'slug'   => $slug,
-                'name'   => $slug,
+                'slug' => $slug,
+                'name' => $slug,
                 'status' => $status,
                 ...$metadata,
             ];
@@ -104,16 +120,17 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
             $this->error("$slug ... ERROR: {$e->getMessage()}");
             return;
         }
+
         $error = $metadata['error'] ?? null;
 
         $this->meta->save($metadata);
 
-        if (! empty($metadata['versions'])) {
+        if (!empty($metadata['versions'])) {
             $this->info("$slug ... [" . count($metadata['versions']) . ' versions]');
         } elseif (isset($metadata['version'])) {
             $this->info("$slug ... [1 version]");
         } elseif (isset($metadata['skipped'])) {
-            $this->info((string) $metadata['skipped']);
+            $this->info((string)$metadata['skipped']);
         } elseif ($error) {
             if ($error === 'closed') {
                 $this->info("$slug ... [closed]");
@@ -122,15 +139,26 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
             } else {
                 $this->error(message: "$slug ... ERROR: $error");
             }
-            if ('429' === (string) $error) {
-                $this->progressiveBackoff();
-                $this->fetch($slug);
-                return;
-            }
         } else {
             $this->info("$slug ... No versions found");
         }
+    }
 
-        $this->iterateProgressiveBackoffLevel(self::ITERATE_DOWN);
+    protected function onError(RequestException $exception): void
+    {
+        $saloonResponse = $exception->getResponse();
+        $response = $saloonResponse->getPsrResponse();
+        $request = $saloonResponse->getRequest();
+        $slug = $request->slug ?? throw new Exception('Missing slug in request');
+        $code = $response->getStatusCode();
+
+        if ($code === 404) {
+            $metadata = json_decode($response->getBody()->getContents(), assoc: true);
+            $this->meta->save(['slug' => $slug, 'name' => $slug, 'status' => 'not-found', ...$metadata]);
+            $this->info("$slug ... [not found]");
+            return;
+        }
+
+        $this->error("ERROR: {$exception->getMessage()}");
     }
 }
