@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands\Themes;
+namespace AspirePress\AspireSync\Commands\Download;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\Themes\ThemeDownloadService;
@@ -13,7 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ThemesDownloadSingleCommand extends AbstractBaseCommand
+class DownloadThemesSingleCommand extends AbstractBaseCommand
 {
     public function __construct(private ThemeDownloadService $downloadService)
     {
@@ -22,7 +22,7 @@ class ThemesDownloadSingleCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('themes:download:single')
+        $this->setName('download:themes:single')
             ->setDescription('Download an individual theme version')
             ->addArgument('theme', InputArgument::REQUIRED, 'Theme name')
             ->addArgument('version', InputArgument::REQUIRED, 'Theme version')

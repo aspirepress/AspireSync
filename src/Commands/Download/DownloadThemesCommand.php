@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands\Themes;
+namespace AspirePress\AspireSync\Commands\Download;
 
-use AspirePress\AspireSync\Commands\AbstractDownloadCommand;
+use AspirePress\AspireSync\Commands\Download\AbstractDownloadCommand;
 use AspirePress\AspireSync\Services\ProcessManager;
 use AspirePress\AspireSync\Services\Themes\ThemeListService;
 use AspirePress\AspireSync\Services\Themes\ThemeMetadataService;
 
-class ThemesDownloadCommand extends AbstractDownloadCommand
+class DownloadThemesCommand extends AbstractDownloadCommand
 {
     public function __construct(
         ThemeListService $listService,

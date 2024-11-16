@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands;
+namespace AspirePress\AspireSync\Commands\Download;
 
+use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
 use AspirePress\AspireSync\Services\ProcessManager;
@@ -35,7 +36,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
     protected function configure(): void
     {
         $category = $this->category;
-        $this->setName("$category:download")
+        $this->setName("download:$category")
             ->setDescription("Grabs $category (with number of specified versions or explicitly specified $category) from the origin repo")
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
             ->addOption($category, null, InputOption::VALUE_OPTIONAL, "List of $category to request")

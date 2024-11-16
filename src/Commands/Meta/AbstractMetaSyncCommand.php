@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands;
+namespace AspirePress\AspireSync\Commands\Meta;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
@@ -14,7 +14,7 @@ use Saloon\Http\Request;
 
 use function Safe\json_decode;
 
-abstract class AbstractMetaCommand extends AbstractBaseCommand
+abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
 {
     public function __construct(
         protected readonly ListServiceInterface $listService,

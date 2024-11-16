@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands\Themes;
+namespace AspirePress\AspireSync\Commands\Meta;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
-use AspirePress\AspireSync\Services\Themes\ThemeMetadataService;
+use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ThemesMetaDumpCommand extends AbstractBaseCommand
+class MetaDumpPluginsCommand extends AbstractBaseCommand
 {
     public function __construct(
-        private ThemeMetadataService $meta,
+        private PluginMetadataService $meta,
     ) {
         parent::__construct();
     }
 
     protected function configure(): void
     {
-        $this->setName('themes:meta:dump')
-            ->setDescription('Dumps metadata of all themes in jsonl format');
+        $this->setName('meta:dump:plugins')
+            ->setDescription('Dumps metadata of all plugins in jsonl format');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

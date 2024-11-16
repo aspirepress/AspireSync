@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands\Plugins;
+namespace AspirePress\AspireSync\Commands\Meta;
 
-use AspirePress\AspireSync\Commands\AbstractMetaCommand;
+use AspirePress\AspireSync\Commands\Meta\AbstractMetaSyncCommand;
 use AspirePress\AspireSync\Integrations\Wordpress\PluginRequest;
 use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
 use AspirePress\AspireSync\Resource;
@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class PluginsMetaCommand extends AbstractMetaCommand
+class MetaSyncPluginsCommand extends AbstractMetaSyncCommand
 {
     public function __construct(
         PluginListService $listService,
@@ -31,7 +31,7 @@ class PluginsMetaCommand extends AbstractMetaCommand
 
     protected function configure(): void
     {
-        $this->setName('plugins:meta')
+        $this->setName('meta:sync:plugins')
             ->setDescription('Fetches the meta data of the plugins')
             ->addOption(
                 'update-all',

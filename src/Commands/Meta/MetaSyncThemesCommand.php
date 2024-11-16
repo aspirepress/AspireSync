@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands\Themes;
+namespace AspirePress\AspireSync\Commands\Meta;
 
-use AspirePress\AspireSync\Commands\AbstractMetaCommand;
+use AspirePress\AspireSync\Commands\Meta\AbstractMetaSyncCommand;
 use AspirePress\AspireSync\Integrations\Wordpress\ThemeRequest;
 use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
 use AspirePress\AspireSync\Resource;
@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ThemesMetaCommand extends AbstractMetaCommand
+class MetaSyncThemesCommand extends AbstractMetaSyncCommand
 {
     public function __construct(
         ThemeListService $listService,
@@ -36,7 +36,7 @@ class ThemesMetaCommand extends AbstractMetaCommand
 
     protected function configure(): void
     {
-        $this->setName('themes:meta')
+        $this->setName('meta:sync:themes')
             ->setDescription('Fetches the meta data of the themes')
             ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all theme meta-data; otherwise, we only update what has changed')
             ->addOption('skip-newer-than-secs', null, InputOption::VALUE_REQUIRED, 'Skip downloading metadata pulled more recently than N seconds')

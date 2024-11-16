@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands\Plugins;
+namespace AspirePress\AspireSync\Commands\Download;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Services\Plugins\PluginDownloadService;
@@ -13,7 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class PluginsDownloadSingleCommand extends AbstractBaseCommand
+class DownloadPluginsSingleCommand extends AbstractBaseCommand
 {
     public function __construct(private PluginDownloadService $downloadService)
     {
@@ -22,7 +22,7 @@ class PluginsDownloadSingleCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('plugins:download:single')
+        $this->setName('download:plugins:single')
             ->setDescription('Download an individual plugin version')
             ->addArgument('plugin', InputArgument::REQUIRED, 'Plugin name')
             ->addArgument('version', InputArgument::REQUIRED, 'Plugin version')
