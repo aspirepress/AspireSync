@@ -16,6 +16,7 @@
     "symfony/dependency-injection": "^7.1.6",
     "symfony/dotenv": "^7.1.6",
     "symfony/expression-language": "^7.1.6",
+    "symfony/finder": "^7.1",
     "symfony/process": "^7.1.7",
     "symfony/var-dumper": "^7.1.7",
     "thecodingmachine/safe": "^2.5"

@@ -4,28 +4,35 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Commands\Themes;
 
-use AspirePress\AspireSync\Commands\AbstractBaseCommand;
+use AspirePress\AspireSync\Commands\AbstractMetaCommand;
+use AspirePress\AspireSync\Integrations\Wordpress\ThemeRequest;
+use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
 use AspirePress\AspireSync\Resource;
-use AspirePress\AspireSync\Services\Interfaces\DotOrgApiClientInterface;
 use AspirePress\AspireSync\Services\Themes\ThemeListService;
 use AspirePress\AspireSync\Services\Themes\ThemeMetadataService;
 use AspirePress\AspireSync\Utilities\StringUtil;
+use Saloon\Http\Request;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ThemesMetaCommand extends AbstractBaseCommand
+class ThemesMetaCommand extends AbstractMetaCommand
 {
     public function __construct(
-        private readonly ThemeListService $listService,
-        private readonly ThemeMetadataService $meta,
-        private readonly DotOrgApiClientInterface $wpClient,
+        ThemeListService $listService,
+        ThemeMetadataService $meta,
+        WordpressApiConnector $api,
     ) {
-        parent::__construct();
+        parent::__construct($listService, $meta, $api);
     }
 
     protected Resource $resource = Resource::Theme;
+
+    protected function makeRequest($slug): Request
+    {
+        return new ThemeRequest($slug);
+    }
 
     protected function configure(): void
     {
@@ -66,36 +73,5 @@ class ThemesMetaCommand extends AbstractBaseCommand
         $this->endTimer();
 
         return Command::SUCCESS;
-    }
-
-    private function fetch(string $slug): void
-    {
-        $metadata  = $this->wpClient->fetchMetadata($this->resource, $slug);
-        $error = $metadata['error'] ?? null;
-
-        $this->meta->save($metadata);
-
-        if (! empty($metadata['versions'])) {
-            $this->info("$slug ... [" . count($metadata['versions']) . ' versions]');
-        } elseif (isset($metadata['version'])) {
-            $this->info("$slug ... [1 version]");
-        } elseif (isset($metadata['skipped'])) {
-            $this->notice((string) $metadata['skipped']);
-        } elseif ($error) {
-            if ($error === 'Theme not found') {
-                $this->info("$slug ... [not found]");
-            } else {
-                $this->error(message: "$slug ... ERROR: $error");
-            }
-            if ('429' === (string) $error) {
-                $this->progressiveBackoff();
-                $this->fetch($slug);
-                return;
-            }
-        } else {
-            $this->info("$slug ... No versions found");
-        }
-
-        $this->iterateProgressiveBackoffLevel(self::ITERATE_DOWN);
     }
 }

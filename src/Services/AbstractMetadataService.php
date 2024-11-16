@@ -42,6 +42,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     /** @param array<string, mixed> $metadata */
     protected function saveOpen(array $metadata): void
     {
+
         $id = Uuid::uuid7()->toString();
 
         $this->insertSync([

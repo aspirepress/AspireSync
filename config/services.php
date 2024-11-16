@@ -53,7 +53,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->autoconfigure()
         ->public();
 
-    $services->load('AspirePress\\AspireSync\\', '../src/');
+    $services->load('AspirePress\\AspireSync\\', '../src/')
+        ->exclude('../src/Integrations/**/*Request.php');
 
     $services->set(AwsS3V3Adapter::class)->factory(service(AwsS3V3AdapterFactory::class));
 
