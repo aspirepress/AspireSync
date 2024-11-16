@@ -24,6 +24,8 @@ use function Safe\json_decode;
 
 abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
 {
+    public const MAX_CONCURRENT_REQUESTS = 10;
+
     public function __construct(
         protected readonly ListServiceInterface $listService,
         protected readonly MetadataServiceInterface $meta,
@@ -62,13 +64,13 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
         $this->info(count($toUpdate) . " $category to download metadata for...");
 
         if (count($toUpdate) === 0) {
-            $this->error('No metadata to download; exiting.');
+            $this->info('No metadata to download; exiting.');
             return Command::SUCCESS;
         }
 
         $pool = $this->api->pool(
             requests: $this->generateRequests(array_keys($toUpdate)),
-            concurrency: 6,
+            concurrency: static::MAX_CONCURRENT_REQUESTS,
             responseHandler: $this->onResponse(...),
             exceptionHandler: $this->onError(...)
         );
