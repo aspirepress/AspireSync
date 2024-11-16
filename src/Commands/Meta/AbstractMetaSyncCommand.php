@@ -9,10 +9,14 @@ use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
 use AspirePress\AspireSync\Resource;
 use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
+use AspirePress\AspireSync\Utilities\StringUtil;
 use Exception;
 use Saloon\Http\Request;
 
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 use function Safe\json_decode;
 
 abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
@@ -38,6 +42,39 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
             ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all metadata; otherwise, we only update what has changed')
             ->addOption('skip-newer-than-secs', null, InputOption::VALUE_REQUIRED, 'Skip downloading metadata pulled more recently than N seconds')
             ->addOption($category, null, InputOption::VALUE_OPTIONAL, "List of $category (separated by commas) to explicitly update");
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $category = $this->resource->value . 's';
+        $this->writeMessage("Running command {$this->getName()}");
+        $this->startTimer();
+
+        $items  = StringUtil::explodeAndTrim($input->getOption($category) ?? '');
+        $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
+
+        $this->debug("Getting list of $category...");
+        $toUpdate = $this->listService->getItems($items, $min_age);
+        $this->info(count($toUpdate) . " $category to download metadata for...");
+
+        if (count($toUpdate) === 0) {
+            $this->error('No metadata to download; exiting.');
+            return Command::SUCCESS;
+        }
+
+        foreach ($toUpdate as $slug => $versions) {
+            $this->fetch((string) $slug);
+        }
+
+        if ($input->getOption($category)) {
+            $this->debug("Not saving revision when --$category was specified");
+        } else {
+            $revision = $this->listService->preserveRevision();
+            $this->debug("Updated current revision to $revision");
+        }
+        $this->endTimer();
+
+        return Command::SUCCESS;
     }
 
     protected function fetch(string $slug): void
