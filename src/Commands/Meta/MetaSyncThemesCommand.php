@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Commands\Meta;
 
-use AspirePress\AspireSync\Commands\Meta\AbstractMetaSyncCommand;
 use AspirePress\AspireSync\Integrations\Wordpress\ThemeRequest;
 use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
 use AspirePress\AspireSync\Resource;
@@ -14,7 +13,6 @@ use AspirePress\AspireSync\Utilities\StringUtil;
 use Saloon\Http\Request;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class MetaSyncThemesCommand extends AbstractMetaSyncCommand
@@ -32,15 +30,6 @@ class MetaSyncThemesCommand extends AbstractMetaSyncCommand
     protected function makeRequest($slug): Request
     {
         return new ThemeRequest($slug);
-    }
-
-    protected function configure(): void
-    {
-        $this->setName('meta:sync:themes')
-            ->setDescription('Fetches the meta data of the themes')
-            ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all theme meta-data; otherwise, we only update what has changed')
-            ->addOption('skip-newer-than-secs', null, InputOption::VALUE_REQUIRED, 'Skip downloading metadata pulled more recently than N seconds')
-            ->addOption('themes', null, InputOption::VALUE_OPTIONAL, 'List of themes (separated by commas) to explicitly update');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

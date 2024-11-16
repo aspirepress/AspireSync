@@ -12,6 +12,7 @@ use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
 use Exception;
 use Saloon\Http\Request;
 
+use Symfony\Component\Console\Input\InputOption;
 use function Safe\json_decode;
 
 abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
@@ -27,6 +28,17 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
     protected Resource $resource;
 
     abstract protected function makeRequest($slug): Request;
+
+    protected function configure(): void
+    {
+        $type = $this->resource->value;
+        $category = $type . 's';
+        $this->setName("meta:sync:$category")
+            ->setDescription("Fetches meta data of all new and changed $category")
+            ->addOption('update-all', 'u', InputOption::VALUE_NONE, 'Update all metadata; otherwise, we only update what has changed')
+            ->addOption('skip-newer-than-secs', null, InputOption::VALUE_REQUIRED, 'Skip downloading metadata pulled more recently than N seconds')
+            ->addOption($category, null, InputOption::VALUE_OPTIONAL, "List of $category (separated by commas) to explicitly update");
+    }
 
     protected function fetch(string $slug): void
     {

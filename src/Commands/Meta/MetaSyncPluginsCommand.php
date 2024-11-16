@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Commands\Meta;
 
-use AspirePress\AspireSync\Commands\Meta\AbstractMetaSyncCommand;
 use AspirePress\AspireSync\Integrations\Wordpress\PluginRequest;
 use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
 use AspirePress\AspireSync\Resource;
@@ -14,7 +13,6 @@ use AspirePress\AspireSync\Utilities\StringUtil;
 use Saloon\Http\Request;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class MetaSyncPluginsCommand extends AbstractMetaSyncCommand
@@ -28,30 +26,6 @@ class MetaSyncPluginsCommand extends AbstractMetaSyncCommand
     }
 
     protected Resource $resource = Resource::Plugin;
-
-    protected function configure(): void
-    {
-        $this->setName('meta:sync:plugins')
-            ->setDescription('Fetches the meta data of the plugins')
-            ->addOption(
-                'update-all',
-                'u',
-                InputOption::VALUE_NONE,
-                'Update all plugin meta-data; otherwise, we only update what has changed'
-            )
-            ->addOption(
-                'skip-newer-than-secs',
-                null,
-                InputOption::VALUE_REQUIRED,
-                'Skip downloading metadata pulled more recently than N seconds'
-            )
-            ->addOption(
-                'plugins',
-                null,
-                InputOption::VALUE_OPTIONAL,
-                'List of plugins (separated by commas) to explicitly update'
-            );
-    }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
