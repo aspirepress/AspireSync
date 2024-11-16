@@ -18,10 +18,8 @@ class MetaSyncThemesCommand extends AbstractMetaSyncCommand
         ThemeMetadataService $meta,
         WordpressApiConnector $api,
     ) {
-        parent::__construct($listService, $meta, $api);
+        parent::__construct($listService, $meta, $api, Resource::Theme);
     }
-
-    protected Resource $resource = Resource::Theme;
 
     protected function makeRequest($slug): Request
     {

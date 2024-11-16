@@ -18,10 +18,8 @@ class MetaSyncPluginsCommand extends AbstractMetaSyncCommand
         PluginMetadataService $meta,
         WordpressApiConnector $api,
     ) {
-        parent::__construct($listService, $meta, $api);
+        parent::__construct($listService, $meta, $api, Resource::Plugin);
     }
-
-    protected Resource $resource = Resource::Plugin;
 
     protected function makeRequest($slug): Request
     {

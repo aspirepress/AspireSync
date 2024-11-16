@@ -25,11 +25,10 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
         protected readonly ListServiceInterface $listService,
         protected readonly MetadataServiceInterface $meta,
         protected readonly WordpressApiConnector $api,
+        protected readonly Resource $resource,
     ) {
         parent::__construct();
     }
-
-    protected Resource $resource;
 
     abstract protected function makeRequest($slug): Request;
 
