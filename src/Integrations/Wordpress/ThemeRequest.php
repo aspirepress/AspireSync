@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Integrations\Wordpress;
 
-class ThemeRequest extends AbstractWordPressApiRequest
+class ThemeRequest extends AbstractWordpressApiRequest
 {
     public function __construct(public readonly string $slug)
     {

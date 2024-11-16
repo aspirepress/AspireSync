@@ -7,7 +7,7 @@ namespace AspirePress\AspireSync\Integrations\Wordpress;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 
-abstract class AbstractWordPressApiRequest extends Request
+abstract class AbstractWordpressApiRequest extends Request
 {
     protected Method $method = Method::GET;
 }
