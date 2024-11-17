@@ -46,6 +46,6 @@ abstract class AbstractBaseCommand extends Command
 
     protected function getDebugContext(): array
     {
-        return ['name' => $this->getName(), 'startTime' => $this->startTime, 'endTime' => $this->endTime];
+        return ['name' => $this->getName(), 'startTime' => $this->startTime, 'elapsed' => $this->getElapsedTime()];
     }
 }
