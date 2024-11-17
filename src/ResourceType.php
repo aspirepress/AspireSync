@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync;
 
-enum Resource: string
+enum ResourceType: string
 {
     case Plugin = 'plugin';
     case Theme = 'theme';

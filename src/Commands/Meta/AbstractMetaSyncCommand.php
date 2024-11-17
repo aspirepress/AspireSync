@@ -6,7 +6,7 @@ namespace AspirePress\AspireSync\Commands\Meta;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
 use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
-use AspirePress\AspireSync\Resource;
+use AspirePress\AspireSync\ResourceType;
 use AspirePress\AspireSync\Services\List\ListServiceInterface;
 use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
 use AspirePress\AspireSync\Utilities\StringUtil;
@@ -30,7 +30,7 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
         protected readonly ListServiceInterface $listService,
         protected readonly MetadataServiceInterface $meta,
         protected readonly WordpressApiConnector $api,
-        protected readonly Resource $resource,
+        protected readonly ResourceType $resource,
     ) {
         parent::__construct();
     }

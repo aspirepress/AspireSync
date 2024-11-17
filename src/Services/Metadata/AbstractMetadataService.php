@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services\Metadata;
 
-use AspirePress\AspireSync\Resource;
+use AspirePress\AspireSync\ResourceType;
 use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
 use DateTimeImmutable;
 use Doctrine\DBAL\ArrayParameterType;
@@ -22,7 +22,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     public function __construct(
         protected Connection $connection,
         protected LoggerInterface $log,
-        protected Resource $resource,
+        protected ResourceType $resource,
         protected string $origin = 'wp_org',
     ) {
     }

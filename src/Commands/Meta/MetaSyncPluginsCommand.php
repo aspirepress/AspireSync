@@ -6,7 +6,7 @@ namespace AspirePress\AspireSync\Commands\Meta;
 
 use AspirePress\AspireSync\Integrations\Wordpress\PluginRequest;
 use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
-use AspirePress\AspireSync\Resource;
+use AspirePress\AspireSync\ResourceType;
 use AspirePress\AspireSync\Services\List\PluginListService;
 use AspirePress\AspireSync\Services\Metadata\PluginMetadataService;
 use Saloon\Http\Request;
@@ -18,7 +18,7 @@ class MetaSyncPluginsCommand extends AbstractMetaSyncCommand
         PluginMetadataService $meta,
         WordpressApiConnector $api,
     ) {
-        parent::__construct($listService, $meta, $api, Resource::Plugin);
+        parent::__construct($listService, $meta, $api, ResourceType::Plugin);
     }
 
     protected function makeRequest($slug): Request
