@@ -10,6 +10,7 @@
     "league/flysystem": "^3.29.1",
     "league/flysystem-aws-s3-v3": "^3.29",
     "ramsey/uuid": "^4.7.6",
+    "saloonphp/rate-limit-plugin": "^2.0",
     "saloonphp/saloon": "^3.10",
     "symfony/config": "^7.1.7",
     "symfony/console": "^7.1.7",

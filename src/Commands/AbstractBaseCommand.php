@@ -21,11 +21,6 @@ abstract class AbstractBaseCommand extends Command
     #[Required]
     public LoggerInterface $log;
 
-    protected const int ITERATE_UP   = 1;
-    protected const int ITERATE_DOWN = 2;
-
-    private int $progressiveBackoffLevel = 1;
-
     private ?float $startTime = null;
     private ?float $endTime = null;
 
@@ -42,52 +37,6 @@ abstract class AbstractBaseCommand extends Command
     protected function getElapsedTime(): float
     {
         return $this->endTime - $this->startTime;
-    }
-
-    /**
-     * @param string[] $info
-     * @return string[]
-     */
-    protected function getRunInfo(array $info = []): array
-    {
-        $output   = [];
-        $time     = round($this->getElapsedTime(), 4);
-        $output[] = "Time elapsed: $time seconds";
-
-        return array_merge($output, $info);
-    }
-
-    protected function progressiveBackoff(): void
-    {
-        $sleep = $this->progressiveBackoffLevel * 2;
-
-        if ($sleep >= 120) {
-            throw new RuntimeException('Progressive backoff exceeded maximum sleep time of 120 seconds...');
-        }
-
-        $this->info('Backing Off; Sleeping for ' . $sleep . ' seconds...');
-        sleep($sleep);
-        $this->iterateProgressiveBackoffLevel(self::ITERATE_UP);
-    }
-
-    protected function iterateProgressiveBackoffLevel(int $level): void
-    {
-        switch ($level) {
-            case self::ITERATE_UP:
-                $this->progressiveBackoffLevel++;
-                break;
-
-            case self::ITERATE_DOWN:
-                $this->progressiveBackoffLevel--;
-                break;
-
-            default:
-                throw new InvalidArgumentException('Invalid progress level');
-        }
-
-        if ($this->progressiveBackoffLevel <= 0) {
-            $this->progressiveBackoffLevel = 1;
-        }
     }
 
     protected function initialize(InputInterface $input, OutputInterface $output): void
