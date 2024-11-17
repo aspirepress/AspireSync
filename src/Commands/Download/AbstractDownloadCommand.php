@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Commands\Download;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
+use AspirePress\AspireSync\ResourceType;
 use AspirePress\AspireSync\Services\Download\DownloadServiceInterface;
 use AspirePress\AspireSync\Services\List\ListServiceInterface;
 use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
@@ -23,14 +24,14 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         protected readonly ListServiceInterface $listService,
         protected readonly MetadataServiceInterface $meta,
         protected readonly DownloadServiceInterface $downloadService,
-        protected readonly string $category,
+        protected readonly ResourceType $resourceType,
     ) {
         parent::__construct();
     }
 
     protected function configure(): void
     {
-        $category = $this->category;
+        $category = $this->resourceType->plural();
         $this->setName("download:$category")
             ->setDescription("Grabs $category (with number of specified versions or explicitly specified $category) from the origin repo")
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
@@ -41,7 +42,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $category = $this->category;
+        $category = $this->resourceType->plural();
 
         $this->always("Running command {$this->getName()}");
         $this->startTimer();
