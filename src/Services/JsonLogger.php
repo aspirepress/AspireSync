@@ -45,7 +45,7 @@ class JsonLogger extends AbstractLogger
         $timestamp = (new DateTime())->format($this->dateFormat);
         $record = compact('timestamp', 'level', 'message');
         $context and $record['context'] = $context;
-        $json      = json_encode($record, JSON_THROW_ON_ERROR);
+        $json      = json_encode($record, JSON_THROW_ON_ERROR|JSON_UNESCAPED_SLASHES);
         $this->writeToLogFile($json . PHP_EOL);
     }
 
