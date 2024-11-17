@@ -74,8 +74,8 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
     {
         foreach ($pending as $slug => $versions) {
             $versions = $this->determineVersionsToDownload($slug, $versions, $numVersions);
-            $vcount   = count($versions);
-            $this->log->debug("version count for $slug: $vcount", ['slug' => $slug, 'versions' => $versions]);
+            // $vcount   = count($versions);
+            // $this->log->debug("version count for $slug: $vcount", ['slug' => $slug, 'versions' => $versions]);
             foreach ($versions as $version) {
                 [$version, $message] = VersionUtil::cleanVersion($version);
                 if (! $version) {

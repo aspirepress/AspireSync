@@ -154,7 +154,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
               AND sync_id = (SELECT id FROM sync WHERE slug = :slug AND type = :type AND origin = :origin)
             SQL;
         $this->connection->executeQuery($sql, ['slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
-        $this->log->debug("Marked {$this->resource->value} $slug $version as processed", ['slug' => $slug, 'version' => $version]);
+        // Most things that call this already log in some other way
+        // $this->log->debug("Processed $slug", ['type' => $this->resource->value, 'slug' => $slug, 'version' => $version]);
     }
 
     public function exportAllMetadata(): Generator
