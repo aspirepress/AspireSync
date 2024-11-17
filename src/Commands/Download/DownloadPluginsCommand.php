@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Commands\Download;
 
-use AspirePress\AspireSync\Services\Plugins\PluginListService;
-use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
+use AspirePress\AspireSync\Services\List\PluginListService;
+use AspirePress\AspireSync\Services\Metadata\PluginMetadataService;
 use AspirePress\AspireSync\Services\ProcessManager;
 
 class DownloadPluginsCommand extends AbstractDownloadCommand

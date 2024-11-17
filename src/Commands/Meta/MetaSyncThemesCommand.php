@@ -7,8 +7,8 @@ namespace AspirePress\AspireSync\Commands\Meta;
 use AspirePress\AspireSync\Integrations\Wordpress\ThemeRequest;
 use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
 use AspirePress\AspireSync\Resource;
-use AspirePress\AspireSync\Services\Themes\ThemeListService;
-use AspirePress\AspireSync\Services\Themes\ThemeMetadataService;
+use AspirePress\AspireSync\Services\List\ThemeListService;
+use AspirePress\AspireSync\Services\Metadata\ThemeMetadataService;
 use Saloon\Http\Request;
 
 class MetaSyncThemesCommand extends AbstractMetaSyncCommand

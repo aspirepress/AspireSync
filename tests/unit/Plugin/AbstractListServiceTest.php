@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Tests\Unit\Plugin;
 
-use AspirePress\AspireSync\Services\AbstractListService;
+use AspirePress\AspireSync\Services\List\AbstractListService;
 use AspirePress\AspireSync\Tests\Stubs\MetadataServiceStub;
 use AspirePress\AspireSync\Tests\Stubs\RevisionMetadataServiceStub;
 use AspirePress\AspireSync\Tests\Stubs\SubversionServiceStub;

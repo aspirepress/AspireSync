@@ -6,8 +6,8 @@ namespace AspirePress\AspireSync\Commands\Download;
 
 use AspirePress\AspireSync\Commands\Download\AbstractDownloadCommand;
 use AspirePress\AspireSync\Services\ProcessManager;
-use AspirePress\AspireSync\Services\Themes\ThemeListService;
-use AspirePress\AspireSync\Services\Themes\ThemeMetadataService;
+use AspirePress\AspireSync\Services\List\ThemeListService;
+use AspirePress\AspireSync\Services\Metadata\ThemeMetadataService;
 
 class DownloadThemesCommand extends AbstractDownloadCommand
 {

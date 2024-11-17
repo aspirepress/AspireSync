@@ -7,8 +7,8 @@ namespace AspirePress\AspireSync\Commands\Meta;
 use AspirePress\AspireSync\Integrations\Wordpress\PluginRequest;
 use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
 use AspirePress\AspireSync\Resource;
-use AspirePress\AspireSync\Services\Plugins\PluginListService;
-use AspirePress\AspireSync\Services\Plugins\PluginMetadataService;
+use AspirePress\AspireSync\Services\List\PluginListService;
+use AspirePress\AspireSync\Services\Metadata\PluginMetadataService;
 use Saloon\Http\Request;
 
 class MetaSyncPluginsCommand extends AbstractMetaSyncCommand

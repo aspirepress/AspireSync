@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services;
+namespace AspirePress\AspireSync\Services\Metadata;
 
 use AspirePress\AspireSync\Resource;
 use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;

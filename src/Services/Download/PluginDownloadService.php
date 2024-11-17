@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\Themes;
+namespace AspirePress\AspireSync\Services\Download;
 
-use AspirePress\AspireSync\Services\AbstractDownloadService;
+use AspirePress\AspireSync\Services\Download\AbstractDownloadService;
 use AspirePress\AspireSync\Services\Interfaces\DownloadServiceInterface;
+use AspirePress\AspireSync\Services\Metadata\PluginMetadataService;
 use GuzzleHttp\Client as GuzzleClient;
 use League\Flysystem\Filesystem;
 
-class ThemeDownloadService extends AbstractDownloadService implements DownloadServiceInterface
+class PluginDownloadService extends AbstractDownloadService implements DownloadServiceInterface
 {
     public function __construct(
-        ThemeMetadataService $meta,
+        PluginMetadataService $meta,
         GuzzleClient $guzzle,
         Filesystem $filesystem,
     ) {
@@ -21,6 +22,6 @@ class ThemeDownloadService extends AbstractDownloadService implements DownloadSe
 
     protected function getCategory(): string
     {
-        return 'themes';
+        return 'plugins';
     }
 }
