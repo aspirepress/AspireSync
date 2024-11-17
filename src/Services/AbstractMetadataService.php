@@ -153,7 +153,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             WHERE version = :version
               AND sync_id = (SELECT id FROM sync WHERE slug = :slug AND type = :type AND origin = :origin)
             SQL;
-        $this->connection->executeQuery($sql, ['slug' => $slug, 'version' => $version, $this->stdArgs()]);
+        $this->connection->executeQuery($sql, ['slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
         $this->log->debug("Marked {$this->resource->value} $slug $version as processed", ['slug' => $slug, 'version' => $version]);
     }
 

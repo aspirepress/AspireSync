@@ -27,4 +27,6 @@ interface MetadataServiceInterface
 
     /** @return array<string, string[]> */
     public function getOpenVersions(string $revDate = '1900-01-01'): array;
+
+    public function markProcessed(string $slug, string $version): void;
 }
