@@ -83,7 +83,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
                     $this->notice("Skipping $slug: $message");
                     continue;
                 }
-                $command = ['bin/aspiresync', "$category:download:single", $slug, $version, ...$flags];
+                $command = ['bin/aspiresync', "download:$category:single", $slug, $version, ...$flags];
                 $this->log->debug("Queueing download", [
                     'command_line' => implode(' ', $command),
                     'slug'         => $slug,
