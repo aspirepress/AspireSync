@@ -75,11 +75,16 @@ abstract class AbstractDownloadService implements DownloadServiceInterface
         $response       = $saloonResponse->getPsrResponse();
         $request        = $saloonResponse->getRequest();
         $slug           = $request->slug ?? throw new Exception('Missing slug in request');
+        $version        = $request->version ?? throw new Exception('Missing version in request');
         $code           = $response->getStatusCode();
         $reason         = $response->getReasonPhrase();
         $message        = $exception->getMessage();
 
         $this->log->error("Download error", compact('slug', 'code', 'reason', 'message'));
+
+        if ($code === 404) {
+            $this->meta->markProcessed($slug, $version);
+        }
     }
 
     private function generateRequests(iterable $slugsAndVersions, bool $force): Generator
