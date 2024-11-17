@@ -4,66 +4,105 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services\Download;
 
+use AspirePress\AspireSync\Integrations\Wordpress\DownloadRequest;
+use AspirePress\AspireSync\Integrations\Wordpress\WordpressDownloadConnector;
 use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
+use AspirePress\AspireSync\Utilities\ArrayUtil;
 use Exception;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\ClientException;
+use Generator;
 use League\Flysystem\Filesystem;
+use Psr\Log\LoggerInterface;
+use Saloon\Exceptions\Request\RequestException;
+use Saloon\Http\Response;
 
-abstract class AbstractDownloadService
+abstract class AbstractDownloadService implements DownloadServiceInterface
 {
+    public const MAX_CONCURRENT_REQUESTS = 10;
+
     public function __construct(
         protected readonly MetadataServiceInterface $meta,
-        protected readonly GuzzleClient $guzzle,
+        protected readonly WordpressDownloadConnector $connector,
         protected readonly Filesystem $filesystem,
+        protected readonly LoggerInterface $log,
     ) {
     }
 
     abstract protected function getCategory(): string;
 
-    /** @return array{status:int|null, message:string, url:string|null} */
-    public function download(string $slug, string $version, bool $force = false): array
+    private function getFileListings(): array
+    {
+        return ArrayUtil::fromEntries(
+            $this->filesystem->listContents('/' . $this->getCategory())
+                ->map(fn($entry) => ['/' . $entry->path(), $entry->lastModified()]),
+        );
+    }
+
+    public function downloadBatch(iterable $slugsAndVersions, bool $force = false): void
+    {
+        $pool    = $this->connector->pool(
+            requests: $this->generateRequests($slugsAndVersions, $force),
+            concurrency: static::MAX_CONCURRENT_REQUESTS,
+            responseHandler: $this->onResponse(...),
+            exceptionHandler: $this->onError(...),
+        );
+        $promise = $pool->send();
+        $promise->wait();
+    }
+
+    private function onResponse(Response $saloonResponse): void
+    {
+        $response   = $saloonResponse->getPsrResponse();
+        $request    = $saloonResponse->getRequest();
+        $remotePath = $request->remotePath ?? throw new Exception('Missing remotePath in request');
+        $localPath  = $request->localPath ?? throw new Exception('Missing localPath in request');
+        $slug       = $request->slug ?? throw new Exception('Missing slug in request');
+        $version    = $request->version ?? throw new Exception('Missing version in request');
+
+        $this->meta->markProcessed($slug, $version);
+
+        $contents = $response->getBody()->getContents();
+        if (! $contents) {
+            $this->log->warning("Empty response", compact('remotePath', 'localPath'));
+            return;
+        }
+        $this->log->info("Downloaded", compact('slug', 'version', 'localPath'));
+        $this->filesystem->write($localPath, $contents);
+    }
+
+    protected function onError(RequestException $exception): void
+    {
+        $saloonResponse = $exception->getResponse();
+        $response       = $saloonResponse->getPsrResponse();
+        $request        = $saloonResponse->getRequest();
+        $slug           = $request->slug ?? throw new Exception('Missing slug in request');
+        $code           = $response->getStatusCode();
+        $reason         = $response->getReasonPhrase();
+        $message        = $exception->getMessage();
+
+        $this->log->error("Download error", compact('slug', 'code', 'reason', 'message'));
+    }
+
+    private function generateRequests(iterable $slugsAndVersions, bool $force): Generator
     {
         $category = $this->getCategory();
-        $url      = $this->meta->getDownloadUrl($slug, $version);
-        if (! $url) {
-            return ['message' => 'No download URL found for $slug $version', 'status' => null, 'url' => null];
-        }
+        $files    = $force ? [] : $this->getFileListings();
 
-        $ret = fn(string $message, int $status = 200) => ['message' => $message, 'status' => $status, 'url' => $url];
-
-        $fs   = $this->filesystem;
-        $path = "/$category/$slug.$version.zip";
-
-        if ($fs->fileExists($path) && ! $force) {
-            $this->meta->markProcessed($slug, $version);
-            return $ret('Not Modified', 304);
-        }
-
-        try {
-            $options  = ['headers' => ['User-Agent' => 'AspireSync/0.5'], 'allow_redirects' => true];
-            $response = $this->guzzle->request('GET', $url, $options);
-            $contents = $response->getBody()->getContents();
-            if (! $contents) {
-                return $ret('Empty response', 204); // code indicates success, but no state gets written
+        foreach ($slugsAndVersions as [$slug, $version]) {
+            $url = $this->meta->getDownloadUrl($slug, $version);
+            if (! $url) {
+                $this->log->warning("No download URL", compact('slug', 'version'));
             }
-            $fs->write($path, $contents);
-            $this->meta->markProcessed($slug, $version);
-            return $ret($response->getReasonPhrase() ?: 'OK', $response->getStatusCode() ?: 200);
-        } catch (ClientException $e) {
-            $fs->delete($path);
-            if (method_exists($e, 'getResponse')) {
-                $response = $e->getResponse();
-                if ($response->getStatusCode() === 404) {
-                    $this->meta->markProcessed($slug, $version);
-                }
-                return $ret($response->getReasonPhrase(), $response->getStatusCode());
-            } else {
-                return $ret($e->getMessage(), (int) $e->getCode());
+
+            $localPath = "/$category/$slug.$version.zip";
+
+            if (array_key_exists($localPath, $files)) {
+                // XXX YUCK side effects
+                $this->log->debug("File already downloaded", compact('localPath', 'slug', 'version'));
+                $this->meta->markProcessed($slug, $version);
+                continue;
             }
-        } catch (Exception $e) {
-            $fs->delete($path);
-            return $ret($e->getMessage(), (int) $e->getCode());
+            $remotePath = preg_replace('#^https?://.*?/#', '/', $url);
+            yield new DownloadRequest($remotePath, $localPath, $slug, $version);
         }
     }
 }

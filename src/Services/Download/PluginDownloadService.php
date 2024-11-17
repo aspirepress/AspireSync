@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services\Download;
 
-use AspirePress\AspireSync\Services\Download\AbstractDownloadService;
-use AspirePress\AspireSync\Services\Download\DownloadServiceInterface;
+use AspirePress\AspireSync\Integrations\Wordpress\WordpressDownloadConnector;
 use AspirePress\AspireSync\Services\Metadata\PluginMetadataService;
-use GuzzleHttp\Client as GuzzleClient;
 use League\Flysystem\Filesystem;
+use Psr\Log\LoggerInterface;
 
-class PluginDownloadService extends AbstractDownloadService implements DownloadServiceInterface
+class PluginDownloadService extends AbstractDownloadService
 {
     public function __construct(
         PluginMetadataService $meta,
-        GuzzleClient $guzzle,
+        WordpressDownloadConnector $connector,
         Filesystem $filesystem,
+        LoggerInterface $log,
     ) {
-        parent::__construct($meta, $guzzle, $filesystem);
+        parent::__construct($meta, $connector, $filesystem, $log);
     }
 
     protected function getCategory(): string

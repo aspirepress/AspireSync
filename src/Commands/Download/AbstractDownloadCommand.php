@@ -5,32 +5,27 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Commands\Download;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
+use AspirePress\AspireSync\Services\Download\DownloadServiceInterface;
 use AspirePress\AspireSync\Services\List\ListServiceInterface;
 use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
-use AspirePress\AspireSync\Services\ProcessManager;
 use AspirePress\AspireSync\Utilities\StringUtil;
 use AspirePress\AspireSync\Utilities\VersionUtil;
+use Generator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
 
 abstract class AbstractDownloadCommand extends AbstractBaseCommand
 {
     public function __construct(
         protected readonly ListServiceInterface $listService,
         protected readonly MetadataServiceInterface $meta,
-        protected readonly ProcessManager $processManager,
+        protected readonly DownloadServiceInterface $downloadService,
         protected readonly string $category,
     ) {
         parent::__construct();
-        $this->processManager
-            ->setNumberOfParallelProcesses(20)  // we rarely reach this many so there's little point increasing it
-            ->setPollInterval(20)
-            ->setProcessStartCallback($this->onDownloadProcessStarted(...))
-            ->setProcessFinishCallback($this->onDownloadProcessFinished(...));
     }
 
     protected function configure(): void
@@ -50,6 +45,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
 
         $this->always("Running command {$this->getName()}");
         $this->startTimer();
+        $force                = $input->getOption('force');
         $numVersions          = $input->getArgument('num-versions');
         $listing              = $input->getOption($category);
         $listing and $listing = StringUtil::explodeAndTrim($listing);
@@ -64,15 +60,18 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
 
         $this->debug(count($pending) . " $category to download...");
         if (count($pending) === 0) {
-            $this->success("No $category to download...exiting...");
+            $this->info("No $category to download; exiting.");
             return Command::SUCCESS;
         }
 
-        $flags                                  = [];
-        $input->getOption('force') and $flags[] = '--force';
+        $this->downloadService->downloadBatch($this->generateSlugsAndVersions($pending, $numVersions), $force);
 
-        $this->log->debug("starting downloads", ['category' => $category, 'pending_count' => count($pending)]);
-        $counter = 1;
+        $this->endTimer();
+        return Command::SUCCESS;
+    }
+
+    protected function generateSlugsAndVersions(array $pending, string $numVersions): Generator
+    {
         foreach ($pending as $slug => $versions) {
             $versions = $this->determineVersionsToDownload($slug, $versions, $numVersions);
             $vcount   = count($versions);
@@ -83,23 +82,9 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
                     $this->notice("Skipping $slug: $message");
                     continue;
                 }
-                $command = ['bin/aspiresync', "download:$category:single", $slug, $version, ...$flags];
-                $this->log->debug("Queueing download", [
-                    'command_line' => implode(' ', $command),
-                    'slug'         => $slug,
-                    'version'      => $version,
-                    'queue_count'  => $counter,
-                ]);
-                $process = new Process($command);
-                $this->processManager->addProcess($process);
-                $counter++;
+                yield [$slug, $version];
             }
         }
-
-        $this->processManager->waitForAllProcesses();
-
-        $this->endTimer();
-        return Command::SUCCESS;
     }
 
     /**
@@ -114,24 +99,5 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
             default => VersionUtil::limitVersions(VersionUtil::sortVersions($versions), (int) $numToDownload),
         };
         return $this->meta->getUnprocessedVersions($slug, $download);
-    }
-
-    protected function onDownloadProcessStarted(Process $process): void
-    {
-        // WTF: this crashes with $this->io being uninitialized.  leaving it as is, pending an async rewrite
-        // $this->debug("START: " . str_replace("'", "", $process->getCommandLine()));
-    }
-
-    protected function onDownloadProcessFinished(Process $process): void
-    {
-        $process->wait();
-        $stdout = $process->getOutput();
-        $stderr = $process->getErrorOutput();
-        // same issue as the other process hooks, $this->io is uninitialized
-        // $stderr and $this->error($stderr);
-        if ($stderr) {
-            echo "ERR: $stderr\n";
-        }
-        echo $stdout;
     }
 }

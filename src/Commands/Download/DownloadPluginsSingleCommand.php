@@ -41,9 +41,7 @@ class DownloadPluginsSingleCommand extends AbstractBaseCommand
             return Command::FAILURE;
         }
 
-        $response = $this->downloadService->download($slug, $version, $force);
-        // TODO: fire a PluginDownloaded event with response
-        $this->always("{$response['url']} {$response['status']} {$response['message']}");
+        $this->downloadService->downloadBatch([[$slug, $version]], $force);
 
         return Command::SUCCESS;
     }
