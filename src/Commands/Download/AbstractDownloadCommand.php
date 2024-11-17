@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Commands\Download;
 
 use AspirePress\AspireSync\Commands\AbstractBaseCommand;
-use AspirePress\AspireSync\Services\Interfaces\ListServiceInterface;
-use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
+use AspirePress\AspireSync\Services\List\ListServiceInterface;
+use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
 use AspirePress\AspireSync\Services\ProcessManager;
 use AspirePress\AspireSync\Utilities\StringUtil;
 use AspirePress\AspireSync\Utilities\VersionUtil;

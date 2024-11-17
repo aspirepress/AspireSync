@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Services\Metadata;
 
 use AspirePress\AspireSync\Resource;
-use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
+use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
 use DateTimeImmutable;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;

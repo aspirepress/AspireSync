@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services\Download;
 
-use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
+use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
