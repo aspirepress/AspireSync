@@ -14,7 +14,7 @@ use Saloon\Traits\Plugins\HasTimeout;
 class WordpressDownloadConnector extends Connector
 {
     use HasTimeout;
-    use HasRateLimits;
+    // use HasRateLimits;   // too buggy with async requests to be at all usable
 
     protected int $connectTimeout = 10;
     protected int $requestTimeout = 300;
@@ -33,18 +33,5 @@ class WordpressDownloadConnector extends Connector
 
     protected function defaultConfig(): array {
         return ['allow_redirects' => true];
-    }
-
-    protected function resolveLimits(): array
-    {
-        // limit is quite high, we're mostly just interested in the transparent handling of 429 responses
-        return [
-            Limit::allow(20)->everySeconds(1)->sleep(),
-        ];
-    }
-
-    protected function resolveRateLimitStore(): RateLimitStore
-    {
-        return new MemoryStore;
     }
 }
