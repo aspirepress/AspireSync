@@ -76,12 +76,15 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     /** @param array<string, mixed> $metadata */
     protected function saveError(array $metadata): void
     {
+        $closed = $metadata['closed'] ?? false;
+        $status = $closed ? 'closed' : $metadata['status'] ?? 'error';
+
         $row = [
             'id'       => Uuid::uuid7()->toString(),
             'type'     => $this->resource->value,
             'slug'     => mb_substr($metadata['slug'], 0, 255),
             'name'     => mb_substr($metadata['name'], 0, 255),
-            'status'   => $metadata['status'] ?? 'error',
+            'status'   => $status,
             'version'  => null,
             'origin'   => $this->origin,
             'updated'  => $metadata['closed_date'] ?? date('c'),
