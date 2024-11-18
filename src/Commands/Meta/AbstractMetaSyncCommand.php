@@ -42,12 +42,24 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
         $category = $this->resource->value . 's';
         $this->setName("meta:sync:$category")
             ->setDescription("Fetches meta data of all new and changed $category")
-            ->addOption('update-all', 'u', InputOption::VALUE_NONE,
-                'Update all metadata; otherwise, we only update what has changed')
-            ->addOption('skip-newer-than-secs', null, InputOption::VALUE_REQUIRED,
-                'Skip downloading metadata pulled more recently than N seconds')
-            ->addOption($category, null, InputOption::VALUE_OPTIONAL,
-                "List of $category (separated by commas) to explicitly update");
+            ->addOption(
+                'update-all',
+                'u',
+                InputOption::VALUE_NONE,
+                'Update all metadata; otherwise, we only update what has changed'
+            )
+            ->addOption(
+                'skip-newer-than-secs',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Skip downloading metadata pulled more recently than N seconds'
+            )
+            ->addOption(
+                $category,
+                null,
+                InputOption::VALUE_OPTIONAL,
+                "List of $category (separated by commas) to explicitly update"
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -56,8 +68,8 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
         $this->writeMessage("Running command {$this->getName()}");
         $this->startTimer();
 
-        $items = StringUtil::explodeAndTrim($input->getOption($category) ?? '');
-        $min_age = (int)$input->getOption('skip-newer-than-secs') ?: null;
+        $items   = StringUtil::explodeAndTrim($input->getOption($category) ?? '');
+        $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
 
         $this->debug("Getting list of $category...");
         $toUpdate = $this->listService->getItems($items, $min_age);
@@ -89,33 +101,25 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
         return Command::SUCCESS;
     }
 
-    protected function generateRequests(array $slugs): Generator {
+    protected function generateRequests(array $slugs): Generator
+    {
         foreach ($slugs as $slug) {
-            yield $this->makeRequest((string)$slug);
+            yield $this->makeRequest((string) $slug);
         }
     }
 
     protected function onResponse(Response $saloonResponse): void
     {
         $response = $saloonResponse->getPsrResponse();
-        $request = $saloonResponse->getRequest();
-        $slug = $request->slug ?? throw new Exception('Missing slug in request');
+        $request  = $saloonResponse->getRequest();
+        $slug     = $request->slug ?? throw new Exception('Missing slug in request');
 
         try {
-            $code = $response->getStatusCode();
-            $reason = $response->getReasonPhrase();
-            $code !== 200 and $this->debug("$slug ... $code $reason");
-
             $metadata = json_decode($response->getBody()->getContents(), assoc: true);
-            $status = match ($code) {
-                200 => 'open',
-                404 => 'not-found',
-                default => 'error',
-            };
             $metadata = [
-                'slug' => $slug,
-                'name' => $slug,
-                'status' => $status,
+                'slug'   => $slug,
+                'name'   => $slug,
+                'status' => 'open',
                 ...$metadata,
             ];
         } catch (Exception $e) {
@@ -123,44 +127,46 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
             return;
         }
 
-        $error = $metadata['error'] ?? null;
-
-        $this->meta->save($metadata);
-
-        if (!empty($metadata['versions'])) {
+        if (! empty($metadata['versions'])) {
             $this->info("$slug ... [" . count($metadata['versions']) . ' versions]');
         } elseif (isset($metadata['version'])) {
             $this->info("$slug ... [1 version]");
         } elseif (isset($metadata['skipped'])) {
-            $this->info((string)$metadata['skipped']);
-        } elseif ($error) {
-            if ($error === 'closed') {
-                $this->info("$slug ... [closed]");
-            } elseif ($code === 404) {
-                $this->info("$slug ... [not found]");
-            } else {
-                $this->error(message: "$slug ... ERROR: $error");
-            }
+            $this->info((string) $metadata['skipped']);
         } else {
             $this->info("$slug ... No versions found");
         }
+
+        $this->meta->save($metadata);
     }
 
-    protected function onError(RequestException $exception): void
+    protected function onError(Exception $exception): void
     {
-        $saloonResponse = $exception->getResponse();
-        $response = $saloonResponse->getPsrResponse();
-        $request = $saloonResponse->getRequest();
-        $slug = $request->slug ?? throw new Exception('Missing slug in request');
-        $code = $response->getStatusCode();
-
-        if ($code === 404) {
-            $metadata = json_decode($response->getBody()->getContents(), assoc: true);
-            $this->meta->save(['slug' => $slug, 'name' => $slug, 'status' => 'not-found', ...$metadata]);
-            $this->info("$slug ... [not found]");
+        if (!($exception instanceof RequestException)) {
+            $this->error($exception->getMessage());
             return;
         }
+        $saloonResponse = $exception->getResponse();
+        $response       = $saloonResponse->getPsrResponse();
+        $request        = $saloonResponse->getRequest();
+        $slug           = $request->slug ?? throw new Exception('Missing slug in request');
+        $code           = $response->getStatusCode();
+        $reason         = $response->getReasonPhrase();
 
-        $this->error("ERROR: {$exception->getMessage()}");
+        $metadata = json_decode($response->getBody()->getContents(), assoc: true);
+        $error    = $metadata['error'] ?? null;
+
+        $status = match ($code) {
+            404 => $error === 'closed' ? 'closed' : 'not-found',
+            default => 'error',
+        };
+
+        if ($status === 'closed') {
+            $this->info("$slug ... [closed]");
+        } else {
+            $this->error("$slug ... $code $reason");
+        }
+
+        $this->meta->save(['slug' => $slug, 'name' => $slug, 'status' => $status, ...$metadata]);
     }
 }
