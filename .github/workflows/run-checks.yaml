@@ -1,0 +1,34 @@
+name: Commit Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Install Composer dependencies
+        run: composer install
+
+      - name: Create .env file
+        run: cp .env.dist .env
+
+      - name: Create App Key
+        run: php artisan key:generate
+
+      - name: Run tests
+        run: |
+          composer run style:check
+          composer run phpstan
+          composer run test
