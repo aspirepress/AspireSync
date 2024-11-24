@@ -3,3 +3,5 @@ vendor/
 .env
 .phpcs-cache
 *.sqlite
+*.sqlite-journal
+

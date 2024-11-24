@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Tests\Stubs;
 
-use AspirePress\AspireSync\Services\Interfaces\MetadataServiceInterface;
+use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
 use Generator;
 
 class MetadataServiceStub implements MetadataServiceInterface
