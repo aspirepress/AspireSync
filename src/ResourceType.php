@@ -7,7 +7,7 @@ namespace AspirePress\AspireSync;
 enum ResourceType: string
 {
     case Plugin = 'plugin';
-    case Theme = 'theme';
+    case Theme  = 'theme';
 
     public function plural(): string
     {

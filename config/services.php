@@ -22,7 +22,7 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
     global $APP_DIR;
-    $env = fn(string $name, mixed $default = null) => ($_ENV[$name] ?? null) ?: $default;
+    $env = fn(string $name, mixed $default = null) => $_ENV[$name] ?? null ?: $default;
 
     $downloads_dir = $env('DOWNLOADS_DIR', "$APP_DIR/data/download");
     if (! str_starts_with($downloads_dir, '/')) {
@@ -70,5 +70,4 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->alias('fs.adapter.local', LocalFilesystemAdapter::class);
 
     $services->set(Filesystem::class)->args([expr("service('fs.adapter.' ~ parameter('fstype'))")]);
-
 };

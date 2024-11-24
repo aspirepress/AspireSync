@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Integrations\Wordpress;
 
 use Saloon\Http\Connector;
-use Saloon\RateLimitPlugin\Contracts\RateLimitStore;
-use Saloon\RateLimitPlugin\Limit;
-use Saloon\RateLimitPlugin\Stores\MemoryStore;
-use Saloon\RateLimitPlugin\Traits\HasRateLimits;
 use Saloon\Traits\Plugins\HasTimeout;
 
 class WordpressApiConnector extends Connector
 {
     use HasTimeout;
+
     // use HasRateLimits;   // too buggy with async requests to be at all usable
 
     protected int $connectTimeout = 10;

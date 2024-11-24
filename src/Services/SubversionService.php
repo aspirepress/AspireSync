@@ -66,6 +66,6 @@ class SubversionService implements SubversionServiceInterface
         $slugs = array_map(urldecode(...), $slugs);
         // $slugs = array_map(fn ($slug) => (string) urldecode($slug), $slugs);
 
-        return ['slugs' => $slugs, 'revision' => (int)$revision];
+        return ['slugs' => $slugs, 'revision' => (int) $revision];
     }
 }

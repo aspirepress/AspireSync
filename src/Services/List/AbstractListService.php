@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Services\List;
 
-use AspirePress\AspireSync\Services\List\ListServiceInterface;
-use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\RevisionMetadataServiceInterface;
 use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
+use AspirePress\AspireSync\Services\List\ListServiceInterface;
+use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
 
 readonly abstract class AbstractListService implements ListServiceInterface
 {

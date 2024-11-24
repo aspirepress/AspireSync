@@ -43,4 +43,9 @@ class MetadataServiceStub implements MetadataServiceInterface
     {
         return [];
     }
+
+    public function markProcessed(string $slug, string $version): void
+    {
+        // nothingness
+    }
 }

@@ -46,6 +46,5 @@ class FileMetadataParserTest extends TestCase
         $this->assertEquals('', $metadata['UpdateURI']);
         $this->assertEquals('', $metadata['RequiresPlugins']);
         $this->assertEquals('', $metadata['_sitewide']);
-
     }
 }

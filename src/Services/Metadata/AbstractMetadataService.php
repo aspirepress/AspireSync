@@ -12,7 +12,6 @@ use Doctrine\DBAL\Connection;
 use Generator;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
-use Symfony\Contracts\Service\Attribute\Required;
 
 use function Safe\json_decode;
 use function Safe\json_encode;
@@ -42,7 +41,6 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     /** @param array<string, mixed> $metadata */
     protected function saveOpen(array $metadata): void
     {
-
         $id = Uuid::uuid7()->toString();
 
         $this->insertSync([

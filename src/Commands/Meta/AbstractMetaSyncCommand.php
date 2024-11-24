@@ -142,7 +142,7 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
 
     protected function onError(Exception $exception): void
     {
-        if (!($exception instanceof RequestException)) {
+        if (! $exception instanceof RequestException) {
             $this->error($exception->getMessage());
             return;
         }
