@@ -24,9 +24,6 @@ jobs:
       - name: Create .env file
         run: cp .env.dist .env
 
-      - name: Create App Key
-        run: php artisan key:generate
-
       - name: Run tests
         run: |
           composer run style:check
