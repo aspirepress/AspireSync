@@ -45,6 +45,7 @@ class RegexUtil
     /**
      * Here for consistency: no difference from \Safe\preg_grep
      *
+     * @param string[] $array
      * @return string[]
      */
     public static function grep(string $pattern, array $array, int $flags = 0): array

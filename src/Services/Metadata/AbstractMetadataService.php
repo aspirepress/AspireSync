@@ -223,7 +223,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         ];
     }
 
-    /** @param array<string, mixed> $metadata */
+    /** @param array{slug: string, metadata: mixed} $args */
     protected function insertSync(array $args): void
     {
         $args['metadata'] = json_encode($args['metadata']);

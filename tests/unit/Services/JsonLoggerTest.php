@@ -9,13 +9,6 @@ use PHPUnit\Framework\TestCase;
 
 class JsonLoggerTest extends TestCase
 {
-    private JsonLogger $sut;
-
-    protected function setUp(): void
-    {
-        $this->sut = new JsonLogger();
-    }
-
     public function test_normalize_level(): void
     {
         $this->assertEquals('debug', JsonLogger::normalizeLevel('debug'));

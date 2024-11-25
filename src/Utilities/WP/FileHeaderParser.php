@@ -8,6 +8,7 @@ use AspirePress\AspireSync\Utilities\RegexUtil;
 
 class FileHeaderParser
 {
+    /** @return array<string, string> */
     public static function readPluginHeader(string $content): array
     {
         // https://developer.wordpress.org/plugins/plugin-basics/header-requirements/
@@ -36,6 +37,7 @@ class FileHeaderParser
         return self::readHeaders($content, $headers);
     }
 
+    /** @return array<string, string> */
     public static function readThemeHeader(string $content): array
     {
         // https://developer.wordpress.org/themes/basics/main-stylesheet-style-css/#explanations
@@ -65,6 +67,10 @@ class FileHeaderParser
         return self::readHeaders($content, $headers);
     }
 
+    /**
+     * @param array<string, string> $headers
+     * @return array<string, string>
+     */
     public static function readHeaders(string $content, array $headers): array
     {
         $parsed = [];

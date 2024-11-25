@@ -42,6 +42,7 @@ abstract class AbstractBaseCommand extends Command
         $this->io = new SymfonyStyle($input, $output);
     }
 
+    /** @return array{name: string|null, startTime: float|null, elapsed: float|null} */
     protected function getDebugContext(): array
     {
         return ['name' => $this->getName(), 'startTime' => $this->startTime, 'elapsed' => $this->getElapsedTime()];

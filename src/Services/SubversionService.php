@@ -16,7 +16,7 @@ class SubversionService implements SubversionServiceInterface
     {
     }
 
-    /** @return array{revision: string, slugs: string[]} */
+    /** @return array{slugs: array<string, string[]>, revision: int} */
     public function getUpdatedSlugs(string $type, int $prevRevision, int $lastRevision): array
     {
         if ($prevRevision === $lastRevision) {
@@ -51,7 +51,7 @@ class SubversionService implements SubversionServiceInterface
         return ['revision' => $revision, 'slugs' => $slugs];
     }
 
-    /** @return string[] */
+    /** @return array{slugs: string[], revision: int} */
     public function scrapeSlugsFromIndex(string $type): array
     {
         $html = $this->guzzle

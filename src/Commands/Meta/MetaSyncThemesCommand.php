@@ -21,7 +21,7 @@ class MetaSyncThemesCommand extends AbstractMetaSyncCommand
         parent::__construct($listService, $meta, $api, ResourceType::Theme);
     }
 
-    protected function makeRequest($slug): Request
+    protected function makeRequest(string $slug): Request
     {
         return new ThemeRequest($slug);
     }

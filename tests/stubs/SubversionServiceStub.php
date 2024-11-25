@@ -12,7 +12,7 @@ class SubversionServiceStub implements SubversionServiceInterface
     {
         return [
             'revision' => 123,
-            'slugs'    => ['foo', 'bar', 'baz'],
+            'slugs'    => ['foo' => [], 'bar' => [], 'baz' => []],
         ];
     }
 

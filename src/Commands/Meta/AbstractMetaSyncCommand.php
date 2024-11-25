@@ -101,9 +101,14 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
         return Command::SUCCESS;
     }
 
+    /**
+     * @param string[] $slugs
+     * @return Generator<Request>
+     */
     protected function generateRequests(array $slugs): Generator
     {
         foreach ($slugs as $slug) {
+
             yield $this->makeRequest((string) $slug);
         }
     }

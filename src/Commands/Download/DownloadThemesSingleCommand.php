@@ -41,9 +41,7 @@ class DownloadThemesSingleCommand extends AbstractBaseCommand
             return Command::FAILURE;
         }
 
-        $response = $this->downloadService->downloadOne($slug, $version, $force);
-        // TODO: fire a ThemeDownloaded event with response
-        $this->always("{$response['url']} {$response['status']} {$response['message']}");
+        $this->downloadService->downloadBatch([[$slug, $version]], $force);
 
         return Command::SUCCESS;
     }

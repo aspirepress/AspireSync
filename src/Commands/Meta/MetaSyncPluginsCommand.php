@@ -21,7 +21,7 @@ class MetaSyncPluginsCommand extends AbstractMetaSyncCommand
         parent::__construct($listService, $meta, $api, ResourceType::Plugin);
     }
 
-    protected function makeRequest($slug): Request
+    protected function makeRequest(string $slug): Request
     {
         return new PluginRequest($slug);
     }

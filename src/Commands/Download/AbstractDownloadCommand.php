@@ -71,6 +71,11 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         return Command::SUCCESS;
     }
 
+
+    /**
+     * @param array<string, string[]> $pending Array with slugs as keys and versions as values.
+     * @return Generator<array{string, string}> yields [$slug, $version]
+     */
     protected function generateSlugsAndVersions(array $pending, string $numVersions): Generator
     {
         foreach ($pending as $slug => $versions) {

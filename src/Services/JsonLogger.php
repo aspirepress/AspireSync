@@ -22,7 +22,7 @@ class JsonLogger extends AbstractLogger
 
     protected string $logFile;
 
-    /** @var resource */
+    /** @var resource|null */
     protected $fileHandle;
 
     public const LEVELS = [
