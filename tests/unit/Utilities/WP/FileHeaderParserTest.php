@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class FileHeaderParserTest extends TestCase
 {
-    public function testReadPluginMetadata(): void
+    public function testReadPluginHeader(): void
     {
         $header = <<<HEADER
         /*
@@ -25,27 +25,27 @@ class FileHeaderParserTest extends TestCase
         */
         HEADER;
 
-        $metadata = FileHeaderParser::readPluginMetadata($header);
+        $headers = FileHeaderParser::readPluginHeader($header);
 
-        $this->assertEquals('Plugin Directory', $metadata['Name']);
-        $this->assertEquals('https://wordpress.org/plugins/', $metadata['PluginURI']);
-        $this->assertEquals('Transforms a WordPress site in The Official Plugin Directory.', $metadata['Description']);
-        $this->assertEquals('3.0', $metadata['Version']);
-        $this->assertEquals('the WordPress team', $metadata['Author']);
-        $this->assertEquals('https://wordpress.org/', $metadata['AuthorURI']);
-        $this->assertEquals('wporg-plugins', $metadata['TextDomain']);
-        $this->assertEquals('GPLv2', $metadata['License']);
-        $this->assertEquals('https://opensource.org/licenses/gpl-2.0.php', $metadata['LicenseURI']);
-        $this->assertEquals('', $metadata['DomainPath']);
-        $this->assertEquals('', $metadata['Network']);
-        $this->assertEquals('', $metadata['RequiresWP']);
-        $this->assertEquals('', $metadata['RequiresPHP']);
-        $this->assertEquals('', $metadata['UpdateURI']);
-        $this->assertEquals('', $metadata['RequiresPlugins']);
+        $this->assertEquals('Plugin Directory', $headers['Name']);
+        $this->assertEquals('https://wordpress.org/plugins/', $headers['PluginURI']);
+        $this->assertEquals('Transforms a WordPress site in The Official Plugin Directory.', $headers['Description']);
+        $this->assertEquals('3.0', $headers['Version']);
+        $this->assertEquals('the WordPress team', $headers['Author']);
+        $this->assertEquals('https://wordpress.org/', $headers['AuthorURI']);
+        $this->assertEquals('wporg-plugins', $headers['TextDomain']);
+        $this->assertEquals('GPLv2', $headers['License']);
+        $this->assertEquals('https://opensource.org/licenses/gpl-2.0.php', $headers['LicenseURI']);
+        $this->assertEquals('', $headers['DomainPath']);
+        $this->assertEquals('', $headers['Network']);
+        $this->assertEquals('', $headers['RequiresWP']);
+        $this->assertEquals('', $headers['RequiresPHP']);
+        $this->assertEquals('', $headers['UpdateURI']);
+        $this->assertEquals('', $headers['RequiresPlugins']);
     }
 
     /** @noinspection HttpUrlsUsage */
-    public function testThemeMetadata(): void
+    public function testThemeHeader(): void
     {
         $header = <<<HEADER
         /*
@@ -65,20 +65,20 @@ class FileHeaderParserTest extends TestCase
         */
         HEADER;
 
-        $metadata = FileHeaderParser::readThemeMetadata($header);
+        $headers = FileHeaderParser::readThemeHeader($header);
 
-        $this->assertEquals('Twenty Twenty-Five', $metadata['Name']);
-        $this->assertEquals('https://wp.org/themes/twentytwentyfive/', $metadata['ThemeURI']);
-        $this->assertEquals('the WordPress team', $metadata['Author']);
-        $this->assertEquals('https://wp.org', $metadata['AuthorURI']);
-        $this->assertStringStartsWith('Twenty Twenty-Five emphasizes simplicity and adaptability.', $metadata['Description']);
-        $this->assertEquals('6.7', $metadata['RequiresWP']);
-        $this->assertEquals('6.7', $metadata['TestedUpTo']);
-        $this->assertEquals('7.2.24', $metadata['RequiresPHP']);
-        $this->assertEquals('1.0', $metadata['Version']);
-        $this->assertEquals('GNU General Public License v2 or later', $metadata['License']);
-        $this->assertEquals('http://www.gnu.org/licenses/gpl-2.0.html', $metadata['LicenseURI']);
-        $this->assertEquals('twentytwentyfive', $metadata['TextDomain']);
-        $this->assertStringStartsWith('one-column, custom-colors, custom-menu, custom-logo, editor-style', $metadata['Tags']);
+        $this->assertEquals('Twenty Twenty-Five', $headers['Name']);
+        $this->assertEquals('https://wp.org/themes/twentytwentyfive/', $headers['ThemeURI']);
+        $this->assertEquals('the WordPress team', $headers['Author']);
+        $this->assertEquals('https://wp.org', $headers['AuthorURI']);
+        $this->assertStringStartsWith('Twenty Twenty-Five emphasizes simplicity and adaptability.', $headers['Description']);
+        $this->assertEquals('6.7', $headers['RequiresWP']);
+        $this->assertEquals('6.7', $headers['TestedUpTo']);
+        $this->assertEquals('7.2.24', $headers['RequiresPHP']);
+        $this->assertEquals('1.0', $headers['Version']);
+        $this->assertEquals('GNU General Public License v2 or later', $headers['License']);
+        $this->assertEquals('http://www.gnu.org/licenses/gpl-2.0.html', $headers['LicenseURI']);
+        $this->assertEquals('twentytwentyfive', $headers['TextDomain']);
+        $this->assertStringStartsWith('one-column, custom-colors, custom-menu, custom-logo, editor-style', $headers['Tags']);
     }
 }

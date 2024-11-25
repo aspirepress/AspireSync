@@ -8,7 +8,7 @@ use AspirePress\AspireSync\Utilities\RegexUtil;
 
 class FileHeaderParser
 {
-    public static function readPluginMetadata(string $content): array
+    public static function readPluginHeader(string $content): array
     {
         // https://developer.wordpress.org/plugins/plugin-basics/header-requirements/
         $headers = [
@@ -33,10 +33,10 @@ class FileHeaderParser
             // 'Title'      => 'Plugin Name',     // set by parser, not a header
             // 'AuthorName' => 'Author',          // set by parser, not a header
         ];
-        return self::readMetadata($content, $headers);
+        return self::readHeaders($content, $headers);
     }
 
-    public static function readThemeMetadata(string $content): array
+    public static function readThemeHeader(string $content): array
     {
         // https://developer.wordpress.org/themes/basics/main-stylesheet-style-css/#explanations
         $headers = [
@@ -62,19 +62,19 @@ class FileHeaderParser
             'Status'    => 'Status',
             'UpdateURI' => 'Update URI',
         ];
-        return self::readMetadata($content, $headers);
+        return self::readHeaders($content, $headers);
     }
 
-    public static function readMetadata(string $content, array $headers): array
+    public static function readHeaders(string $content, array $headers): array
     {
-        $metadata = [];
+        $parsed = [];
         foreach ($headers as $field => $key) {
             $pattern = '/^(?:[ \t]*<\?php)?[ \t\/*#@]*' . $key . ':(.*)$/mi';
             $matches = RegexUtil::match($pattern, $content);
             $value   = $matches[1] ?? '';
 
-            $metadata[$field] = mb_trim(RegexUtil::replace('/\s*(?:\*\/|\?>).*/', '', $value));
+            $parsed[$field] = mb_trim(RegexUtil::replace('/\s*(?:\*\/|\?>).*/', '', $value));
         }
-        return $metadata;
+        return $parsed;
     }
 }
