@@ -31,7 +31,7 @@ trait ErrorWritingTrait
      */
     protected function writeMessage(string|iterable $message, int $level = self::ALWAYS_WRITE): void
     {
-        $this->log?->log($level, $message, ['command' => $this->getDebugContext()]);
+        $this->log->log($level, $message, ['command' => $this->getDebugContext()]);
         switch ($level) {
             case self::ERROR:
                 $this->io->writeln("<fg=black;bg=red>" . OutputManagementUtil::error($message) . "</>");

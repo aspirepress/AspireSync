@@ -49,7 +49,7 @@
     }
   },
   "scripts": {
-    "phpstan": "phpstan --verbose --mmory-limit=2G",
+    "phpstan": "phpstan --verbose --memory-limit=2G",
     "phpunit": "phpunit",
     "phpcs": "phpcs --parallel=4",
     "phpcbf": "phpcbf --parallel=4",

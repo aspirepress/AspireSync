@@ -6,13 +6,9 @@ namespace AspirePress\AspireSync\Services\Interfaces;
 
 interface SubversionServiceInterface
 {
-    /**
-     * @return array{revision: int, items: array<string, array<int, string>>}
-     */
+    /** @return array{slugs: array<string, string[]>, revision: int} */
     public function getUpdatedSlugs(string $type, int $prevRevision, int $lastRevision): array;
 
-    /**
-     * @return array{revision: int, items: array<string, array<int, string>>}
-     */
+    /** @return array{slugs: string[], revision: int} */
     public function scrapeSlugsFromIndex(string $type): array;
 }

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace AspirePress\AspireSync\Commands;
 
 use AspirePress\AspireSync\Utilities\ErrorWritingTrait;
-use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -22,7 +20,7 @@ abstract class AbstractBaseCommand extends Command
     public LoggerInterface $log;
 
     private ?float $startTime = null;
-    private ?float $endTime = null;
+    private ?float $endTime   = null;
 
     protected function startTimer(): void
     {
@@ -44,6 +42,7 @@ abstract class AbstractBaseCommand extends Command
         $this->io = new SymfonyStyle($input, $output);
     }
 
+    /** @return array{name: string|null, startTime: float|null, elapsed: float|null} */
     protected function getDebugContext(): array
     {
         return ['name' => $this->getName(), 'startTime' => $this->startTime, 'elapsed' => $this->getElapsedTime()];

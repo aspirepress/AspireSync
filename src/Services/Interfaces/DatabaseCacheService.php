@@ -6,12 +6,12 @@ namespace AspirePress\AspireSync\Services\Interfaces;
 
 use Closure;
 use Doctrine\DBAL\Connection;
+
 use function Safe\json_decode;
 use function Safe\json_encode;
 
 class DatabaseCacheService implements CacheServiceInterface
 {
-
     private string $table = 'cache';
 
     public function __construct(private Connection $connection)
@@ -21,14 +21,14 @@ class DatabaseCacheService implements CacheServiceInterface
     public function remember(string $key, int $ttl, Closure $callback): mixed
     {
         $conn = $this->connection;
-        $sql = "select value from {$this->table} where key = :key and expires > current_timestamp";
+        $sql  = "select value from {$this->table} where key = :key and expires > current_timestamp";
 
         $row = $conn->fetchAssociative($sql, ['key' => $key]);
         if ($row) {
             return json_decode($row['value'], true);
         }
 
-        $value = $callback();
+        $value   = $callback();
         $expires = date('c', strtotime("+$ttl seconds"));
 
         $conn->beginTransaction();

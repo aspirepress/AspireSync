@@ -1,0 +1,30 @@
+name: Commit Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Build Dependencies
+        run: |
+          cp .env.dist .env
+          composer install
+
+      # not running phpcs right now, it's going to be replaced by php-cs-fixer soon
+      - name: Run tests
+        run: |
+          composer run phpstan
+          composer run test

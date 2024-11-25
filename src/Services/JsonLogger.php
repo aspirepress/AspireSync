@@ -22,7 +22,7 @@ class JsonLogger extends AbstractLogger
 
     protected string $logFile;
 
-    /** @var resource */
+    /** @var resource|null */
     protected $fileHandle;
 
     public const LEVELS = [
@@ -42,10 +42,10 @@ class JsonLogger extends AbstractLogger
         if (static::LEVELS[$this->threshold] < static::LEVELS[$level]) {
             return;
         }
-        $timestamp = (new DateTime())->format($this->dateFormat);
-        $record = compact('timestamp', 'level', 'message');
+        $timestamp                      = (new DateTime())->format($this->dateFormat);
+        $record                         = compact('timestamp', 'level', 'message');
         $context and $record['context'] = $context;
-        $json      = json_encode($record, JSON_THROW_ON_ERROR|JSON_UNESCAPED_SLASHES);
+        $json                           = json_encode($record, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
         $this->writeToLogFile($json . PHP_EOL);
     }
 
@@ -71,7 +71,6 @@ class JsonLogger extends AbstractLogger
             $level = min($level, static::LEVELS['debug']);
             $level = max($level, static::LEVELS['emergency']);
             $level = $keys[$level]; // convert to string
-
         }
         $level = strtolower($level);
         // an unrecognized level string does turn into 'debug'. we can't safely guess otherwise.

@@ -29,6 +29,7 @@ abstract class AbstractDownloadService implements DownloadServiceInterface
 
     abstract protected function getCategory(): string;
 
+    /** @return array<string, ?int> */
     private function getFileListings(): array
     {
         return ArrayUtil::fromEntries(
@@ -37,6 +38,7 @@ abstract class AbstractDownloadService implements DownloadServiceInterface
         );
     }
 
+    /** @param iterable<array{string, string}> $slugsAndVersions */
     public function downloadBatch(iterable $slugsAndVersions, bool $force = false): void
     {
         $pool    = $this->connector->pool(
@@ -87,6 +89,7 @@ abstract class AbstractDownloadService implements DownloadServiceInterface
         }
     }
 
+    /** @param iterable<array{string, string}> $slugsAndVersions */
     private function generateRequests(iterable $slugsAndVersions, bool $force): Generator
     {
         $category = $this->getCategory();
