@@ -6,7 +6,7 @@ namespace AspirePress\AspireSync\Utilities\WP;
 
 use AspirePress\AspireSync\Utilities\RegexUtil;
 
-class FileMetadataParser
+class FileHeaderParser
 {
     public static function readPluginMetadata(string $content): array
     {

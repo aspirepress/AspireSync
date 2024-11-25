@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace AspirePress\AspireSync\Tests\Unit\Utilities\WP;
 
-use AspirePress\AspireSync\Utilities\WP\FileMetadataParser;
+use AspirePress\AspireSync\Utilities\WP\FileHeaderParser;
 use PHPUnit\Framework\TestCase;
 
-class FileMetadataParserTest extends TestCase
+class FileHeaderParserTest extends TestCase
 {
     public function testReadPluginMetadata(): void
     {
@@ -25,7 +25,7 @@ class FileMetadataParserTest extends TestCase
         */
         HEADER;
 
-        $metadata = FileMetadataParser::readPluginMetadata($header);
+        $metadata = FileHeaderParser::readPluginMetadata($header);
 
         $this->assertEquals('Plugin Directory', $metadata['Name']);
         $this->assertEquals('https://wordpress.org/plugins/', $metadata['PluginURI']);
@@ -65,7 +65,7 @@ class FileMetadataParserTest extends TestCase
         */
         HEADER;
 
-        $metadata = FileMetadataParser::readThemeMetadata($header);
+        $metadata = FileHeaderParser::readThemeMetadata($header);
 
         $this->assertEquals('Twenty Twenty-Five', $metadata['Name']);
         $this->assertEquals('https://wp.org/themes/twentytwentyfive/', $metadata['ThemeURI']);
