@@ -66,7 +66,7 @@
         "phpstan": "phpstan --verbose --memory-limit=2G",
         "phpunit": "phpunit",
         "test": "@phpunit",
-        "test:unit": "@phpunit --testsuite=unit",
+        "test:unit": "@phpunit --testsuite=Unit",
         "test:functional": "@phpunit --testsuite=functional",
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
