@@ -31,6 +31,7 @@
         "phpstan/phpstan": ">=1.12.12",
         "phpunit/phpunit": ">=11.4.4",
         "roave/security-advisories": "dev-latest",
+        "symfony/maker-bundle": "^1.61",
         "thecodingmachine/phpstan-safe-rule": ">=1.2"
     },
     "config": {
