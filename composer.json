@@ -24,6 +24,7 @@
         "symfony/monolog-bundle": "^3.10",
         "symfony/process": "7.2.*",
         "symfony/runtime": "7.2.*",
+        "symfony/uid": "7.2.*",
         "symfony/yaml": "7.2.*",
         "thecodingmachine/safe": ">=2.5"
     },
