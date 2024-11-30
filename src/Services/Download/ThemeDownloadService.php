@@ -7,14 +7,17 @@ namespace App\Services\Download;
 use App\Integrations\Wordpress\WordpressDownloadConnector;
 use App\Services\Metadata\ThemeMetadataService;
 use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class ThemeDownloadService extends AbstractDownloadService
 {
     public function __construct(
         ThemeMetadataService $meta,
         WordpressDownloadConnector $connector,
-        Filesystem $filesystem,
+        #[Autowire(service: 'default.storage')]
+        FilesystemOperator $filesystem,
         LoggerInterface $log,
     ) {
         parent::__construct($meta, $connector, $filesystem, $log);

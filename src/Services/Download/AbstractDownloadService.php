@@ -11,6 +11,7 @@ use App\Utilities\ArrayUtil;
 use Exception;
 use Generator;
 use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Response;
@@ -22,7 +23,7 @@ abstract class AbstractDownloadService implements DownloadServiceInterface
     public function __construct(
         protected readonly MetadataServiceInterface $meta,
         protected readonly WordpressDownloadConnector $connector,
-        protected readonly Filesystem $filesystem,
+        protected readonly FilesystemOperator $filesystem,
         protected readonly LoggerInterface $log,
     ) {
     }

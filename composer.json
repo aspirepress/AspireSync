@@ -7,25 +7,28 @@
         "php": ">=8.3",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "guzzlehttp/guzzle": "*",
-        "league/flysystem": "*",
-        "league/flysystem-aws-s3-v3": "*",
-        "ramsey/uuid": "*",
-        "saloonphp/rate-limit-plugin": "*",
-        "saloonphp/saloon": "*",
+        "doctrine/doctrine-bundle": ">=2.13.1",
+        "doctrine/orm": ">=3.3",
+        "guzzlehttp/guzzle": ">=7.9.2",
+        "league/flysystem": ">=3.29.1",
+        "league/flysystem-aws-s3-v3": ">=3.29",
+        "league/flysystem-bundle": ">=3.3.5",
+        "ramsey/uuid": ">=4.7.6",
+        "saloonphp/rate-limit-plugin": ">=2",
+        "saloonphp/saloon": ">=3.10",
         "symfony/console": "7.2.*",
         "symfony/dotenv": "7.2.*",
-        "symfony/flex": "^2",
+        "symfony/flex": "^2.4.7",
         "symfony/framework-bundle": "7.2.*",
         "symfony/runtime": "7.2.*",
         "symfony/yaml": "7.2.*",
-        "thecodingmachine/safe": "*"
+        "thecodingmachine/safe": ">=2.5"
     },
     "require-dev": {
-        "phpstan/phpstan": "*",
-        "phpunit/phpunit": "*",
+        "phpstan/phpstan": ">=1.12.12",
+        "phpunit/phpunit": ">=11.4.4",
         "roave/security-advisories": "dev-latest",
-        "thecodingmachine/phpstan-safe-rule": "*"
+        "thecodingmachine/phpstan-safe-rule": ">=1.2"
     },
     "config": {
         "allow-plugins": {
@@ -79,7 +82,8 @@
     "extra": {
         "symfony": {
             "allow-contrib": true,
-            "require": "7.2.*"
+            "require": "7.2.*",
+            "docker": true
         }
     }
 }
