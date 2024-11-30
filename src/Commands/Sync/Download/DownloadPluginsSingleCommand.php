@@ -37,7 +37,7 @@ class DownloadPluginsSingleCommand extends AbstractBaseCommand
 
         [$version, $message] = VersionUtil::cleanVersion($version);
         if (! $version) {
-            $this->error($message);
+            $this->log->error($message);
             return Command::FAILURE;
         }
 

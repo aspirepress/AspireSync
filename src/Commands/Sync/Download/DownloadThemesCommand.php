@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Commands\Sync\Download;
 
-use App\Commands\Download\AbstractDownloadCommand;
 use App\ResourceType;
 use App\Services\Download\ThemeDownloadService;
 use App\Services\List\ThemeListService;
