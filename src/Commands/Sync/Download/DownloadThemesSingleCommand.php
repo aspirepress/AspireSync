@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\Download;
+namespace App\Commands\Sync\Download;
 
 use App\Commands\AbstractBaseCommand;
 use App\Services\Download\ThemeDownloadService;
@@ -22,7 +22,7 @@ class DownloadThemesSingleCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('download:themes:single')
+        $this->setName('sync:download:themes:single')
             ->setDescription('Download an individual theme version')
             ->addArgument('theme', InputArgument::REQUIRED, 'Theme name')
             ->addArgument('version', InputArgument::REQUIRED, 'Theme version')

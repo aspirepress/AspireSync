@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\Download;
+namespace App\Commands\Sync\Download;
 
 use App\ResourceType;
 use App\Services\Download\PluginDownloadService;

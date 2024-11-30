@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\Meta;
+namespace App\Commands\Sync\Meta;
 
 use App\Integrations\Wordpress\ThemeRequest;
 use App\Integrations\Wordpress\WordpressApiConnector;
@@ -11,7 +11,7 @@ use App\Services\List\ThemeListService;
 use App\Services\Metadata\ThemeMetadataService;
 use Saloon\Http\Request;
 
-class MetaSyncThemesCommand extends AbstractMetaSyncCommand
+class MetaFetchThemesCommand extends AbstractMetaFetchCommand
 {
     public function __construct(
         ThemeListService $listService,

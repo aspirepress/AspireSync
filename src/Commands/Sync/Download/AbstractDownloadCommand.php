@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\Download;
+namespace App\Commands\Sync\Download;
 
 use App\Commands\AbstractBaseCommand;
 use App\ResourceType;
@@ -32,7 +32,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
     protected function configure(): void
     {
         $category = $this->resourceType->plural();
-        $this->setName("download:$category")
+        $this->setName("sync:download:$category")
             ->setDescription("Grabs $category (with number of specified versions or explicitly specified $category) from the origin repo")
             ->addArgument('num-versions', InputArgument::OPTIONAL, 'Number of versions to request', 'latest')
             ->addOption($category, null, InputOption::VALUE_OPTIONAL, "List of $category to request")

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\Meta;
+namespace App\Commands\Sync\Meta;
 
 use App\Commands\AbstractBaseCommand;
 use App\Integrations\Wordpress\WordpressApiConnector;
@@ -22,7 +22,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use function Safe\json_decode;
 
-abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
+abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
 {
     public const MAX_CONCURRENT_REQUESTS = 10;
 
@@ -40,7 +40,7 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
     protected function configure(): void
     {
         $category = $this->resource->value . 's';
-        $this->setName("meta:sync:$category")
+        $this->setName("sync:meta:fetch:$category")
             ->setDescription("Fetches meta data of all new and changed $category")
             ->addOption(
                 'update-all',

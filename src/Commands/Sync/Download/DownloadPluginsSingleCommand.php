@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\Download;
+namespace App\Commands\Sync\Download;
 
 use App\Commands\AbstractBaseCommand;
 use App\Services\Download\PluginDownloadService;
@@ -22,7 +22,7 @@ class DownloadPluginsSingleCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('download:plugins:single')
+        $this->setName('sync:download:plugins:single')
             ->setDescription('Download an individual plugin version')
             ->addArgument('plugin', InputArgument::REQUIRED, 'Plugin name')
             ->addArgument('version', InputArgument::REQUIRED, 'Plugin version')

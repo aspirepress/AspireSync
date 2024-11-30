@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\Meta;
+namespace App\Commands\Sync\Meta;
 
 use App\Commands\AbstractBaseCommand;
 use App\Services\Metadata\ThemeMetadataService;
@@ -20,7 +20,7 @@ class MetaDumpThemesCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('meta:dump:themes')
+        $this->setName('sync:meta:dump:themes')
             ->setDescription('Dumps metadata of all themes in jsonl format');
     }
 

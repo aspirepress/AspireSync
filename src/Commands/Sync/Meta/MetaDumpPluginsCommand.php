@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\Meta;
+namespace App\Commands\Sync\Meta;
 
 use App\Commands\AbstractBaseCommand;
 use App\Services\Metadata\PluginMetadataService;
@@ -20,7 +20,7 @@ class MetaDumpPluginsCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('meta:dump:plugins')
+        $this->setName('sync:meta:dump:plugins')
             ->setDescription('Dumps metadata of all plugins in jsonl format');
     }
 
