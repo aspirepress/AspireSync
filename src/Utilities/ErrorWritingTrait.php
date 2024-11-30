@@ -12,6 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 trait ErrorWritingTrait
 {
+    // These levels are completely different than PSR-3 so we cannot use them for logging
     protected const int ERROR   = 1;
     protected const int WARNING = 2;
     protected const int NOTICE  = 3;
@@ -31,7 +32,7 @@ trait ErrorWritingTrait
      */
     protected function writeMessage(string|iterable $message, int $level = self::ALWAYS_WRITE): void
     {
-        $this->log->log($level, $message, ['command' => $this->getDebugContext()]);
+        // $this->log->log($level, $message, ['command' => $this->getDebugContext()]);  // not a PSR-3 level, cannot use
         switch ($level) {
             case self::ERROR:
                 $this->io->writeln("<fg=black;bg=red>" . OutputManagementUtil::error($message) . "</>");
