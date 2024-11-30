@@ -4,17 +4,28 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.3",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "guzzlehttp/guzzle": "*",
+        "league/flysystem": "*",
+        "league/flysystem-aws-s3-v3": "*",
+        "ramsey/uuid": "*",
+        "saloonphp/rate-limit-plugin": "*",
+        "saloonphp/saloon": "*",
         "symfony/console": "7.2.*",
         "symfony/dotenv": "7.2.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "7.2.*",
         "symfony/runtime": "7.2.*",
-        "symfony/yaml": "7.2.*"
+        "symfony/yaml": "7.2.*",
+        "thecodingmachine/safe": "*"
     },
     "require-dev": {
+        "phpstan/phpstan": "*",
+        "phpunit/phpunit": "*",
+        "roave/security-advisories": "dev-latest",
+        "thecodingmachine/phpstan-safe-rule": "*"
     },
     "config": {
         "allow-plugins": {
@@ -46,6 +57,11 @@
         "symfony/polyfill-php82": "*"
     },
     "scripts": {
+        "phpstan": "phpstan --verbose --memory-limit=2G",
+        "phpunit": "phpunit",
+        "test": "@phpunit",
+        "test:unit": "@phpunit --testsuite=unit",
+        "test:functional": "@phpunit --testsuite=functional",
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
@@ -62,7 +78,7 @@
     },
     "extra": {
         "symfony": {
-            "allow-contrib": false,
+            "allow-contrib": true,
             "require": "7.2.*"
         }
     }
