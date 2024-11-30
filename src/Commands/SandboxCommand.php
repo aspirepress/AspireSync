@@ -26,7 +26,7 @@ class SandboxCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->log->info("Brillant!", ['foo' => 123, 'bar' => ['baz' => 'xyzzy']]);
-        $this->error("Boom!");
+        $this->log->error("Boom!");
         return Command::SUCCESS;
     }
 }

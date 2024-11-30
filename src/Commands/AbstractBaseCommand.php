@@ -14,8 +14,6 @@ use Symfony\Contracts\Service\Attribute\Required;
 
 abstract class AbstractBaseCommand extends Command
 {
-    use ErrorWritingTrait;
-
     #[Required]
     public LoggerInterface $log;
 
@@ -40,7 +38,6 @@ abstract class AbstractBaseCommand extends Command
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         ini_set('memory_limit', '4G');
-        $this->io = new SymfonyStyle($input, $output);
     }
 
     /** @return array{name: string|null, startTime: float|null, elapsed: float|null} */

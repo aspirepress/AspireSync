@@ -65,18 +65,18 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $category = $this->resource->value . 's';
-        $this->writeMessage("Running command {$this->getName()}");
+        $this->log->notice("Running command {$this->getName()}");
         $this->startTimer();
 
         $items   = StringUtil::explodeAndTrim($input->getOption($category) ?? '');
         $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
 
-        $this->debug("Getting list of $category...");
+        $this->log->debug("Getting list of $category...");
         $toUpdate = $this->listService->getItems($items, $min_age);
-        $this->info(count($toUpdate) . " $category to download metadata for...");
+        $this->log->info(count($toUpdate) . " $category to download metadata for...");
 
         if (count($toUpdate) === 0) {
-            $this->info('No metadata to download; exiting.');
+            $this->log->info('No metadata to download; exiting.');
             return Command::SUCCESS;
         }
 
@@ -91,10 +91,10 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
         $promise->wait();
 
         if ($input->getOption($category)) {
-            $this->debug("Not saving revision when --$category was specified");
+            $this->log->debug("Not saving revision when --$category was specified");
         } else {
             $revision = $this->listService->preserveRevision();
-            $this->debug("Updated current revision to $revision");
+            $this->log->debug("Updated current revision to $revision");
         }
         $this->endTimer();
 
@@ -128,18 +128,18 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
                 ...$metadata,
             ];
         } catch (Exception $e) {
-            $this->error("$slug ... ERROR: {$e->getMessage()}");
+            $this->log->error("$slug ... ERROR: {$e->getMessage()}");
             return;
         }
 
         if (! empty($metadata['versions'])) {
-            $this->info("$slug ... [" . count($metadata['versions']) . ' versions]');
+            $this->log->info("$slug ... [" . count($metadata['versions']) . ' versions]');
         } elseif (isset($metadata['version'])) {
-            $this->info("$slug ... [1 version]");
+            $this->log->info("$slug ... [1 version]");
         } elseif (isset($metadata['skipped'])) {
-            $this->info((string) $metadata['skipped']);
+            $this->log->info((string) $metadata['skipped']);
         } else {
-            $this->info("$slug ... No versions found");
+            $this->log->info("$slug ... No versions found");
         }
 
         $this->meta->save($metadata);
@@ -148,7 +148,7 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
     protected function onError(Exception $exception): void
     {
         if (! $exception instanceof RequestException) {
-            $this->error($exception->getMessage());
+            $this->log->error($exception->getMessage());
             return;
         }
         $saloonResponse = $exception->getResponse();
@@ -167,9 +167,9 @@ abstract class AbstractMetaSyncCommand extends AbstractBaseCommand
         };
 
         if ($status === 'closed') {
-            $this->info("$slug ... [closed]");
+            $this->log->info("$slug ... [closed]");
         } else {
-            $this->error("$slug ... $code $reason");
+            $this->log->error("$slug ... $code $reason");
         }
 
         $this->meta->save(['slug' => $slug, 'name' => $slug, 'status' => $status, ...$metadata]);

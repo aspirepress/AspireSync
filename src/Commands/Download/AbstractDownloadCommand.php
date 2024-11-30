@@ -44,14 +44,14 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
     {
         $category = $this->resourceType->plural();
 
-        $this->always("Running command {$this->getName()}");
+        $this->log->notice("Running command {$this->getName()}");
         $this->startTimer();
         $force                = $input->getOption('force');
         $numVersions          = $input->getArgument('num-versions');
         $listing              = $input->getOption($category);
         $listing and $listing = StringUtil::explodeAndTrim($listing);
 
-        $this->debug("Getting list of $category...");
+        $this->log->debug("Getting list of $category...");
 
         if ($input->getOption('download-all')) {
             $pending = $this->listService->getItems($listing);
@@ -59,9 +59,9 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
             $pending = $this->listService->getUpdatedItems($listing);
         }
 
-        $this->debug(count($pending) . " $category to download...");
+        $this->log->debug(count($pending) . " $category to download...");
         if (count($pending) === 0) {
-            $this->info("No $category to download; exiting.");
+            $this->log->info("No $category to download; exiting.");
             return Command::SUCCESS;
         }
 
@@ -85,7 +85,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
             foreach ($versions as $version) {
                 [$version, $message] = VersionUtil::cleanVersion($version);
                 if (! $version) {
-                    $this->notice("Skipping $slug: $message");
+                    $this->log->notice("Skipping $slug: $message");
                     continue;
                 }
                 yield [$slug, $version];
