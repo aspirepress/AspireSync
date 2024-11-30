@@ -30,5 +30,10 @@
         <env name="TEST_DB_NAME" value="aspirecloud_testing"/>
         <env name="TEST_DB_HOST" value="db.aspiredev.org"/>
         <env name="TEST_DB_SCHEMA" value="public"/>
+
+        <!-- ###+ symfony/framework-bundle ### -->
+        <env name="APP_ENV" value="dev"/>
+        <env name="APP_SECRET" value=""/>
+        <!-- ###- symfony/framework-bundle ### -->
     </php>
 </phpunit>
