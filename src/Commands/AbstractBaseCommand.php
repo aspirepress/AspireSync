@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Commands;
 
-use App\Utilities\ErrorWritingTrait;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Contracts\Service\Attribute\Required;
 
 abstract class AbstractBaseCommand extends Command
