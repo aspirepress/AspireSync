@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services;
+namespace App\Services;
 
 // Based on https://github.com/BluePsyduck/symfony-process-manager/tree/master
 
-use AspirePress\AspireSync\Services\Interfaces\ProcessManagerInterface;
+use App\Services\Interfaces\ProcessManagerInterface;
 use Closure;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands\Download;
+namespace App\Commands\Download;
 
-use AspirePress\AspireSync\Commands\AbstractBaseCommand;
-use AspirePress\AspireSync\ResourceType;
-use AspirePress\AspireSync\Services\Download\DownloadServiceInterface;
-use AspirePress\AspireSync\Services\List\ListServiceInterface;
-use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
-use AspirePress\AspireSync\Utilities\StringUtil;
-use AspirePress\AspireSync\Utilities\VersionUtil;
+use App\Commands\AbstractBaseCommand;
+use App\ResourceType;
+use App\Services\Download\DownloadServiceInterface;
+use App\Services\List\ListServiceInterface;
+use App\Services\Metadata\MetadataServiceInterface;
+use App\Utilities\StringUtil;
+use App\Utilities\VersionUtil;
 use Generator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

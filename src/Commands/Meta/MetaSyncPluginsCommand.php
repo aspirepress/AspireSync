@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands\Meta;
+namespace App\Commands\Meta;
 
-use AspirePress\AspireSync\Integrations\Wordpress\PluginRequest;
-use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
-use AspirePress\AspireSync\ResourceType;
-use AspirePress\AspireSync\Services\List\PluginListService;
-use AspirePress\AspireSync\Services\Metadata\PluginMetadataService;
+use App\Integrations\Wordpress\PluginRequest;
+use App\Integrations\Wordpress\WordpressApiConnector;
+use App\ResourceType;
+use App\Services\List\PluginListService;
+use App\Services\Metadata\PluginMetadataService;
 use Saloon\Http\Request;
 
 class MetaSyncPluginsCommand extends AbstractMetaSyncCommand

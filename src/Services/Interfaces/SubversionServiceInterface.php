@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\Interfaces;
+namespace App\Services\Interfaces;
 
 interface SubversionServiceInterface
 {

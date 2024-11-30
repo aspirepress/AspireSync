@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\Metadata;
+namespace App\Services\Metadata;
 
 use Generator;
 

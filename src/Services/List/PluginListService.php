@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\List;
+namespace App\Services\List;
 
-use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
-use AspirePress\AspireSync\Services\List\AbstractListService;
-use AspirePress\AspireSync\Services\Metadata\PluginMetadataService;
-use AspirePress\AspireSync\Services\RevisionMetadataService;
+use App\Services\Interfaces\SubversionServiceInterface;
+use App\Services\List\AbstractListService;
+use App\Services\Metadata\PluginMetadataService;
+use App\Services\RevisionMetadataService;
 
 readonly class PluginListService extends AbstractListService
 {

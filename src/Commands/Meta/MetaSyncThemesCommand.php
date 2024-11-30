@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands\Meta;
+namespace App\Commands\Meta;
 
-use AspirePress\AspireSync\Integrations\Wordpress\ThemeRequest;
-use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
-use AspirePress\AspireSync\ResourceType;
-use AspirePress\AspireSync\Services\List\ThemeListService;
-use AspirePress\AspireSync\Services\Metadata\ThemeMetadataService;
+use App\Integrations\Wordpress\ThemeRequest;
+use App\Integrations\Wordpress\WordpressApiConnector;
+use App\ResourceType;
+use App\Services\List\ThemeListService;
+use App\Services\Metadata\ThemeMetadataService;
 use Saloon\Http\Request;
 
 class MetaSyncThemesCommand extends AbstractMetaSyncCommand

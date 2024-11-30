@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Utilities;
+namespace App\Utilities;
 
 // This class is normally just named 'Regex' elsewhere, but it gets the "Util" suffix in AS for consistency.
 

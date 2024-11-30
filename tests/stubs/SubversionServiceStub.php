@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Tests\Stubs;
+namespace App\Tests\Stubs;
 
-use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
+use App\Services\Interfaces\SubversionServiceInterface;
 
 class SubversionServiceStub implements SubversionServiceInterface
 {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\Metadata;
+namespace App\Services\Metadata;
 
-use AspirePress\AspireSync\ResourceType;
-use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
+use App\ResourceType;
+use App\Services\Metadata\MetadataServiceInterface;
 use DateTimeImmutable;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;

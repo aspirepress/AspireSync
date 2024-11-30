@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Factories;
+namespace App\Factories;
 
-use AspirePress\AspireSync\Services\JsonLogger;
+use App\Services\JsonLogger;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 

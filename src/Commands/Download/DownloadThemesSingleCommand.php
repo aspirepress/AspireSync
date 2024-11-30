@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands\Download;
+namespace App\Commands\Download;
 
-use AspirePress\AspireSync\Commands\AbstractBaseCommand;
-use AspirePress\AspireSync\Services\Download\ThemeDownloadService;
-use AspirePress\AspireSync\Utilities\VersionUtil;
+use App\Commands\AbstractBaseCommand;
+use App\Services\Download\ThemeDownloadService;
+use App\Utilities\VersionUtil;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

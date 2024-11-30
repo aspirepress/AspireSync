@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services;
+namespace App\Services;
 
 use DateTime;
 use Psr\Log\AbstractLogger;

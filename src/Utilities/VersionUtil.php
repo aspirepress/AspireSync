@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Utilities;
+namespace App\Utilities;
 
 abstract class VersionUtil
 {

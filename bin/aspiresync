@@ -1,15 +1,15 @@
 #!/usr/bin/env php
 <?php
 
-use AspirePress\AspireSync\Commands\Download\DownloadPluginsCommand;
-use AspirePress\AspireSync\Commands\Download\DownloadPluginsSingleCommand;
-use AspirePress\AspireSync\Commands\Meta\MetaSyncPluginsCommand;
-use AspirePress\AspireSync\Commands\Meta\MetaDumpPluginsCommand;
-use AspirePress\AspireSync\Commands\SandboxCommand;
-use AspirePress\AspireSync\Commands\Download\DownloadThemesCommand;
-use AspirePress\AspireSync\Commands\Download\DownloadThemesSingleCommand;
-use AspirePress\AspireSync\Commands\Meta\MetaSyncThemesCommand;
-use AspirePress\AspireSync\Commands\Meta\MetaDumpThemesCommand;
+use App\Commands\Download\DownloadPluginsCommand;
+use App\Commands\Download\DownloadPluginsSingleCommand;
+use App\Commands\Meta\MetaSyncPluginsCommand;
+use App\Commands\Meta\MetaDumpPluginsCommand;
+use App\Commands\SandboxCommand;
+use App\Commands\Download\DownloadThemesCommand;
+use App\Commands\Download\DownloadThemesSingleCommand;
+use App\Commands\Meta\MetaSyncThemesCommand;
+use App\Commands\Meta\MetaDumpThemesCommand;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\ContainerBuilder;

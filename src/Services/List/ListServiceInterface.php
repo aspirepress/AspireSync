@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\List;
+namespace App\Services\List;
 
 interface ListServiceInterface
 {

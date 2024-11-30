@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Tests\Unit\Services;
+namespace App\Tests\Unit\Services;
 
-use AspirePress\AspireSync\Services\JsonLogger;
+use App\Services\JsonLogger;
 use PHPUnit\Framework\TestCase;
 
 class JsonLoggerTest extends TestCase

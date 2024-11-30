@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\Download;
+namespace App\Services\Download;
 
-use AspirePress\AspireSync\Integrations\Wordpress\WordpressDownloadConnector;
-use AspirePress\AspireSync\Services\Metadata\ThemeMetadataService;
+use App\Integrations\Wordpress\WordpressDownloadConnector;
+use App\Services\Metadata\ThemeMetadataService;
 use League\Flysystem\Filesystem;
 use Psr\Log\LoggerInterface;
 

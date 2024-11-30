@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services;
+namespace App\Services;
 
-use AspirePress\AspireSync\Services\Interfaces\RevisionMetadataServiceInterface;
+use App\Services\Interfaces\RevisionMetadataServiceInterface;
 use Doctrine\DBAL\Connection;
 use RuntimeException;
 

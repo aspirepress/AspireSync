@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Tests\Unit\Utilities\WP;
+namespace App\Tests\Unit\Utilities\WP;
 
-use AspirePress\AspireSync\Utilities\WP\FileHeaderParser;
+use App\Utilities\WP\FileHeaderParser;
 use PHPUnit\Framework\TestCase;
 
 class FileHeaderParserTest extends TestCase

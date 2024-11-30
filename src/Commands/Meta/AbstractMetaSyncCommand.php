@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands\Meta;
+namespace App\Commands\Meta;
 
-use AspirePress\AspireSync\Commands\AbstractBaseCommand;
-use AspirePress\AspireSync\Integrations\Wordpress\WordpressApiConnector;
-use AspirePress\AspireSync\ResourceType;
-use AspirePress\AspireSync\Services\List\ListServiceInterface;
-use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
-use AspirePress\AspireSync\Utilities\StringUtil;
+use App\Commands\AbstractBaseCommand;
+use App\Integrations\Wordpress\WordpressApiConnector;
+use App\ResourceType;
+use App\Services\List\ListServiceInterface;
+use App\Services\Metadata\MetadataServiceInterface;
+use App\Utilities\StringUtil;
 use Exception;
 use Generator;
 use Saloon\Exceptions\Request\RequestException;

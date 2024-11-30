@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Tests\Unit\Utilities;
+namespace App\Tests\Unit\Utilities;
 
-use AspirePress\AspireSync\Utilities\VersionUtil;
+use App\Utilities\VersionUtil;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

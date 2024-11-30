@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services;
+namespace App\Services;
 
-use AspirePress\AspireSync\Services\Interfaces\SubversionServiceInterface;
-use AspirePress\AspireSync\Utilities\RegexUtil;
+use App\Services\Interfaces\SubversionServiceInterface;
+use App\Utilities\RegexUtil;
 use GuzzleHttp\Client as GuzzleClient;
 use RuntimeException;
 use Symfony\Component\Process\Process;

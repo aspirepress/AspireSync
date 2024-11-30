@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\Download;
+namespace App\Services\Download;
 
 interface DownloadServiceInterface
 {

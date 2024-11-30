@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Tests\Stubs;
+namespace App\Tests\Stubs;
 
-use AspirePress\AspireSync\Services\Interfaces\RevisionMetadataServiceInterface;
+use App\Services\Interfaces\RevisionMetadataServiceInterface;
 
 class RevisionMetadataServiceStub implements RevisionMetadataServiceInterface
 {

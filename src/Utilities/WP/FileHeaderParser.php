@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Utilities\WP;
+namespace App\Utilities\WP;
 
-use AspirePress\AspireSync\Utilities\RegexUtil;
+use App\Utilities\RegexUtil;
 
 class FileHeaderParser
 {

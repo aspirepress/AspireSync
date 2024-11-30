@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands\Download;
+namespace App\Commands\Download;
 
-use AspirePress\AspireSync\ResourceType;
-use AspirePress\AspireSync\Services\Download\PluginDownloadService;
-use AspirePress\AspireSync\Services\List\PluginListService;
-use AspirePress\AspireSync\Services\Metadata\PluginMetadataService;
+use App\ResourceType;
+use App\Services\Download\PluginDownloadService;
+use App\Services\List\PluginListService;
+use App\Services\Metadata\PluginMetadataService;
 
 class DownloadPluginsCommand extends AbstractDownloadCommand
 {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\Download;
+namespace App\Services\Download;
 
-use AspirePress\AspireSync\Integrations\Wordpress\DownloadRequest;
-use AspirePress\AspireSync\Integrations\Wordpress\WordpressDownloadConnector;
-use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
-use AspirePress\AspireSync\Utilities\ArrayUtil;
+use App\Integrations\Wordpress\DownloadRequest;
+use App\Integrations\Wordpress\WordpressDownloadConnector;
+use App\Services\Metadata\MetadataServiceInterface;
+use App\Utilities\ArrayUtil;
 use Exception;
 use Generator;
 use League\Flysystem\Filesystem;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync;
+namespace App;
 
 enum ResourceType: string
 {

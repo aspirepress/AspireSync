@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Factories;
+namespace App\Factories;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Tests\Unit\Plugin;
+namespace App\Tests\Unit\Plugin;
 
-use AspirePress\AspireSync\Services\List\AbstractListService;
-use AspirePress\AspireSync\Tests\Stubs\MetadataServiceStub;
-use AspirePress\AspireSync\Tests\Stubs\RevisionMetadataServiceStub;
-use AspirePress\AspireSync\Tests\Stubs\SubversionServiceStub;
+use App\Services\List\AbstractListService;
+use App\Tests\Stubs\MetadataServiceStub;
+use App\Tests\Stubs\RevisionMetadataServiceStub;
+use App\Tests\Stubs\SubversionServiceStub;
 use PHPUnit\Framework\TestCase;
 
 class AbstractListServiceTest extends TestCase
