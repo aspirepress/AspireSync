@@ -16,7 +16,8 @@ AspireSync is designed to enumerate and download the plugins and themes stored i
 
 ```shell
 make
-bin/aspiresync list
+bin/console list meta
+bin/console list download
 ```
 
 ## Configuration
