@@ -39,6 +39,7 @@ abstract class AbstractBaseCommand extends Command
 
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
+        ini_set('memory_limit', '4G');
         $this->io = new SymfonyStyle($input, $output);
     }
 
