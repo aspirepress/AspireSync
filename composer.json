@@ -21,6 +21,7 @@
         "symfony/expression-language": "7.2.*",
         "symfony/flex": "^2.4.7",
         "symfony/framework-bundle": "7.2.*",
+        "symfony/monolog-bundle": "^3.10",
         "symfony/process": "7.2.*",
         "symfony/runtime": "7.2.*",
         "symfony/yaml": "7.2.*",
