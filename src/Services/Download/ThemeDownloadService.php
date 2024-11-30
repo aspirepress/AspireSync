@@ -16,7 +16,7 @@ class ThemeDownloadService extends AbstractDownloadService
     public function __construct(
         ThemeMetadataService $meta,
         WordpressDownloadConnector $connector,
-        #[Autowire(service: 'default.storage')]
+        #[Autowire(service: 'fs.storage')]
         FilesystemOperator $filesystem,
         LoggerInterface $log,
     ) {

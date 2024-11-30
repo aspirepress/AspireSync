@@ -14,7 +14,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class GuzzleClientFactory
 {
-    public function __invoke(): GuzzleClient
+    public static function create(): GuzzleClient
     {
         // https://codewithkyrian.com/p/how-to-implement-retries-in-guzzlehttp
         $maxRetries = 10;

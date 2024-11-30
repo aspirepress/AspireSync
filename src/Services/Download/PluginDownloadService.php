@@ -16,7 +16,7 @@ class PluginDownloadService extends AbstractDownloadService
     public function __construct(
         PluginMetadataService $meta,
         WordpressDownloadConnector $connector,
-        #[Autowire(service: 'default.storage')]
+        #[Autowire(service: 'fs.storage')]
         FilesystemOperator $filesystem,
         LoggerInterface $log,
     ) {
