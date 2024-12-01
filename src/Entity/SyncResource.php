@@ -14,12 +14,12 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: SyncResourceRepository::class)]
 #[ORM\Table(name: 'sync')]
-#[ORM\UniqueConstraint(fields: ['type', 'slug', 'origin'])]
-#[ORM\Index(fields: ['slug'])]
-#[ORM\Index(fields: ['type'])]
-#[ORM\Index(fields: ['origin'])]
-#[ORM\Index(fields: ['updated'])]
-#[ORM\Index(fields: ['pulled'])]
+#[ORM\UniqueConstraint(name: 'uniq_type_slug_origin', fields: ['type', 'slug', 'origin'])]
+#[ORM\Index(name: 'idx_slug', fields: ['slug'])]
+#[ORM\Index(name: 'idx_type', fields: ['type'])]
+#[ORM\Index(name: 'idx_origin', fields: ['origin'])]
+#[ORM\Index(name: 'idx_updated', fields: ['updated'])]
+#[ORM\Index(name: 'idx_pulled', fields: ['pulled'])]
 class SyncResource
 {
     public function __construct(
@@ -41,8 +41,8 @@ class SyncResource
         #[ORM\Column(length: 32)]
         public readonly string $status,
 
-        #[ORM\Column(length: 32)]
-        public readonly string $version,
+        #[ORM\Column(length: 32, nullable: true)]
+        public readonly ?string $version,
 
         #[ORM\Column(length: 32)]
         public readonly string $origin,

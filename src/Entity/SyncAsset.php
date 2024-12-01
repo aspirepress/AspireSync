@@ -11,9 +11,9 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: SyncAssetRepository::class)]
 #[ORM\Table(name: 'sync_assets')]
-#[ORM\UniqueConstraint(columns: ['sync_id', 'version'])]
-#[ORM\Index(columns: ['created'])]
-#[ORM\Index(columns: ['processed'])]
+#[ORM\UniqueConstraint(name: 'uniq_syncid_version', columns: ['sync_id', 'version'])]
+#[ORM\Index(name: 'idx_created', columns: ['created'])]
+#[ORM\Index(name: 'idx_processed', columns: ['processed'])]
 class SyncAsset
 {
     #[ORM\Column(nullable: true)]
