@@ -51,8 +51,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'status'   => 'open',
             'version'  => $metadata['version'],
             'origin'   => $this->origin,
-            'updated'  => date('c', strtotime($metadata['last_updated'])),
-            'pulled'   => date('c'),
+            'updated'  => \Safe\date('c', \Safe\strtotime($metadata['last_updated'])),
+            'pulled'   => \Safe\date('c'),
             'metadata' => $metadata,
         ]);
 
@@ -85,8 +85,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'status'   => $status,
             'version'  => null,
             'origin'   => $this->origin,
-            'updated'  => $metadata['closed_date'] ?? date('c'),
-            'pulled'   => date('c'),
+            'updated'  => $metadata['closed_date'] ?? \Safe\date('c'),
+            'pulled'   => \Safe\date('c'),
             'metadata' => $metadata,
         ];
         $this->insertSync($row);
@@ -217,8 +217,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'status'   => $item['status'],
             'version'  => $item['version'],
             'origin'   => $item['origin'],
-            'updated'  => new DateTimeImmutable($item['updated']),
-            'pulled'   => new DateTimeImmutable($item['pulled']),
+            'updated'  => new \Safe\DateTimeImmutable($item['updated']),
+            'pulled'   => new \Safe\DateTimeImmutable($item['pulled']),
             'metadata' => json_decode($item['metadata'] ?? 'null'),
         ];
     }

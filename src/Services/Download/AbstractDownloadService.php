@@ -110,7 +110,7 @@ abstract class AbstractDownloadService implements DownloadServiceInterface
                 $this->meta->markProcessed($slug, $version);
                 continue;
             }
-            $remotePath = preg_replace('#^https?://.*?/#', '/', $url);
+            $remotePath = \Safe\preg_replace('#^https?://.*?/#', '/', $url);
             yield new DownloadRequest($remotePath, $localPath, $slug, $version);
         }
     }

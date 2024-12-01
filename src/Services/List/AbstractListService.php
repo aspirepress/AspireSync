@@ -58,7 +58,7 @@ readonly abstract class AbstractListService implements ListServiceInterface
     {
         $revision = $this->revisions->getRevisionDateForAction($this->category);
         if ($revision) {
-            $revision = date('Y-m-d', strtotime($revision));
+            $revision = \Safe\date('Y-m-d', \Safe\strtotime($revision));
         }
         return $this->filter($this->meta->getOpenVersions($revision), $requested, null);
     }

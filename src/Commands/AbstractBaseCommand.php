@@ -35,7 +35,7 @@ abstract class AbstractBaseCommand extends Command
 
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
-        ini_set('memory_limit', '4G');
+        \Safe\ini_set('memory_limit', '4G');
     }
 
     /** @return array{name: string|null, startTime: float|null, elapsed: float|null} */

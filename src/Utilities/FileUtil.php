@@ -16,11 +16,7 @@ abstract class FileUtil
 {
     public static function read(string $path): string
     {
-        $contents = file_get_contents($path);
-        if ($contents === false) {
-            throw new RuntimeException("Unable to read file {$path}");
-        }
-        return $contents;
+        return \Safe\file_get_contents($path);
     }
 
     /** @return string[] */
@@ -43,16 +39,9 @@ abstract class FileUtil
         $dir = dirname($path);
         is_dir($dir) or throw new RuntimeException("No such directory: $dir");
 
-        $tmpname = tempnam(dirname($path), "tmp_XXXXXXXX");
-        $result  = file_put_contents($tmpname, $content);
-        if ($result === false) {
-            throw new RuntimeException("Unable to write to tempfile {$tmpname}");
-        }
-
-        $result = rename($tmpname, $path);
-        if ($result === false) {
-            throw new RuntimeException("Unable to rename {$tmpname} to $path");
-        }
+        $tmpname = \Safe\tempnam(dirname($path), "tmp_XXXXXXXX");
+        \Safe\file_put_contents($tmpname, $content);
+        \Safe\rename($tmpname, $path);
     }
 
     /**
@@ -77,10 +66,7 @@ abstract class FileUtil
 
     public static function writeRaw(string $path, string $content): void
     {
-        $result = file_put_contents($path, $content);
-        if ($result === false) {
-            throw new RuntimeException("Unable to write file {$path}");
-        }
+        \Safe\file_put_contents($path, $content);
     }
 
     public static function cacheFile(string $path, int $maxAgeSecs, Closure $callback): string
