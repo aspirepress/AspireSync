@@ -30,6 +30,7 @@
         "thecodingmachine/safe": ">=2.5"
     },
     "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.65",
         "phpstan/phpstan": ">=1.12.12",
         "phpunit/phpunit": ">=11.4.4",
         "rector/rector": "^1.2",
