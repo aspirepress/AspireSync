@@ -11,4 +11,5 @@
 !README.md
 !.ATTIC/composer.json
 !composer.lock
-!docker/php.ini
+!docker/webapp/php.ini
+!docker/webapp/Caddyfile

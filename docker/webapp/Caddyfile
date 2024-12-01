@@ -1,0 +1,8 @@
+{
+  frankenphp
+}
+
+http:// {
+  root * /app/public
+  php_server
+}
