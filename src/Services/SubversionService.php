@@ -33,7 +33,7 @@ class SubversionService implements SubversionServiceInterface
             throw new RuntimeException("Unable to get list of $type to update: {$process->getErrorOutput()}");
         }
 
-        $output = simplexml_load_string($process->getOutput());
+        $output = \Safe\simplexml_load_string($process->getOutput());
 
         $slugs   = [];
         $entries = $output->logentry;

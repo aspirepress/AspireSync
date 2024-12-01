@@ -29,7 +29,7 @@ class DatabaseCacheService implements CacheServiceInterface
         }
 
         $value   = $callback();
-        $expires = date('c', strtotime("+$ttl seconds"));
+        $expires = \Safe\date('c', \Safe\strtotime("+$ttl seconds"));
 
         $conn->beginTransaction();
         $conn->delete($this->table, ['key' => $key]);
