@@ -10,6 +10,7 @@ use Doctrine\DBAL\Connection;
 use Generator;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
+use Safe\DateTimeImmutable;
 
 use function Safe\json_decode;
 use function Safe\json_encode;
@@ -214,8 +215,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'status'   => $item['status'],
             'version'  => $item['version'],
             'origin'   => $item['origin'],
-            'updated'  => new \Safe\DateTimeImmutable($item['updated']),
-            'pulled'   => new \Safe\DateTimeImmutable($item['pulled']),
+            'updated'  => new DateTimeImmutable($item['updated']),
+            'pulled'   => new DateTimeImmutable($item['pulled']),
             'metadata' => json_decode($item['metadata'] ?? 'null'),
         ];
     }
