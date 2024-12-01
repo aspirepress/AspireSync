@@ -12,9 +12,7 @@ use Symfony\Component\Process\Process;
 
 class SubversionService implements SubversionServiceInterface
 {
-    public function __construct(private readonly GuzzleClient $guzzle)
-    {
-    }
+    public function __construct(private readonly GuzzleClient $guzzle) {}
 
     /** @return array{slugs: array<string, string[]>, revision: int} */
     public function getUpdatedSlugs(string $type, int $prevRevision, int $lastRevision): array
@@ -29,7 +27,7 @@ class SubversionService implements SubversionServiceInterface
         $process = new Process($command);
         $process->run();
 
-        if (! $process->isSuccessful()) {
+        if (!$process->isSuccessful()) {
             throw new RuntimeException("Unable to get list of $type to update: {$process->getErrorOutput()}");
         }
 

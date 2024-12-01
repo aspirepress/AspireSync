@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Services\Metadata;
 
 use App\ResourceType;
-use App\Services\Metadata\MetadataServiceInterface;
-use DateTimeImmutable;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Generator;
@@ -23,8 +21,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         protected LoggerInterface $log,
         protected ResourceType $resource,
         protected string $origin = 'wp_org',
-    ) {
-    }
+    ) {}
 
     /** @param array<string, mixed> $metadata */
     public function save(array $metadata): void
@@ -35,7 +32,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'open'  => $this->saveOpen(...),
             default => $this->saveError(...),
         };
-        $this->connection->transactional(fn () => $method($metadata));
+        $this->connection->transactional(fn() => $method($metadata));
     }
 
     /** @param array<string, mixed> $metadata */
@@ -113,14 +110,14 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     public function getDownloadUrl(string $slug, string $version): ?string
     {
         $sql    = <<<'SQL'
-            SELECT url
-            FROM sync_assets 
-                JOIN sync ON sync.id = sync_assets.sync_id 
-            WHERE sync.slug = :slug 
-              AND sync.type = :type
-              AND sync.origin = :origin
-              AND sync_assets.version = :version
-        SQL;
+                SELECT url
+                FROM sync_assets 
+                    JOIN sync ON sync.id = sync_assets.sync_id 
+                WHERE sync.slug = :slug 
+                  AND sync.type = :type
+                  AND sync.origin = :origin
+                  AND sync_assets.version = :version
+            SQL;
         $result = $this->connection->fetchAssociative($sql, ['slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
         return $result['url'] ?? null;
     }
@@ -129,14 +126,14 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     public function getOpenVersions(string $revDate = '1900-01-01'): array
     {
         $sql    = <<<SQL
-            SELECT slug, sync_assets.version 
-            FROM sync_assets
-                JOIN sync ON sync.id = sync_assets.sync_id 
-            WHERE status = 'open'
-              AND pulled >= :revDate
-              AND sync.type = :type
-              AND sync.origin = :origin
-        SQL;
+                SELECT slug, sync_assets.version 
+                FROM sync_assets
+                    JOIN sync ON sync.id = sync_assets.sync_id 
+                WHERE status = 'open'
+                  AND pulled >= :revDate
+                  AND sync.type = :type
+                  AND sync.origin = :origin
+            SQL;
         $result = $this->connection->fetchAllAssociative($sql, ['revDate' => $revDate, ...$this->stdArgs()]);
 
         $out = [];

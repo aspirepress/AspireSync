@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services\List;
 
 use App\Services\Interfaces\SubversionServiceInterface;
-use App\Services\List\AbstractListService;
 use App\Services\Metadata\PluginMetadataService;
 use App\Services\RevisionMetadataService;
 

@@ -1,10 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Entity;
 
 use App\Repository\SyncResourceRepository;
 use App\ResourceType;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -52,16 +54,15 @@ class SyncResource
 
         // when this record was synced
         #[ORM\Column]
-        public readonly \DateTimeImmutable $pulled,
+        public readonly DateTimeImmutable $pulled,
 
         // last updated date in metadata
         #[ORM\Column]
-        public readonly ?\DateTimeImmutable $updated,
+        public readonly ?DateTimeImmutable $updated,
 
         #[ORM\Column(nullable: true)]
-        public readonly ?array $metadata = null
-    )
-    {
+        public readonly ?array $metadata = null,
+    ) {
         $this->assets = new ArrayCollection();
     }
 

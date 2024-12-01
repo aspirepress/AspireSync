@@ -71,7 +71,6 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
         return Command::SUCCESS;
     }
 
-
     /**
      * @param array<string, string[]> $pending Array with slugs as keys and versions as values.
      * @return Generator<array{string, string}> yields [$slug, $version]
@@ -84,7 +83,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
             // $this->log->debug("version count for $slug: $vcount", ['slug' => $slug, 'versions' => $versions]);
             foreach ($versions as $version) {
                 [$version, $message] = VersionUtil::cleanVersion($version);
-                if (! $version) {
+                if (!$version) {
                     $this->log->notice("Skipping $slug: $message");
                     continue;
                 }

@@ -28,7 +28,7 @@ class RevisionMetadataService implements RevisionMetadataServiceInterface
 
     public function preserveRevision(string $action): string
     {
-        if (! isset($this->currentRevision[$action])) {
+        if (!isset($this->currentRevision[$action])) {
             throw new RuntimeException('You did not specify a revision for action ' . $action);
         }
         $revision = $this->currentRevision[$action]['revision'];

@@ -8,15 +8,14 @@ use App\Services\Interfaces\RevisionMetadataServiceInterface;
 use App\Services\Interfaces\SubversionServiceInterface;
 use App\Services\Metadata\MetadataServiceInterface;
 
-readonly abstract class AbstractListService implements ListServiceInterface
+abstract readonly class AbstractListService implements ListServiceInterface
 {
     public function __construct(
         protected SubversionServiceInterface $svn,
         protected MetadataServiceInterface $meta,
         protected RevisionMetadataServiceInterface $revisions,
         protected string $category,
-    ) {
-    }
+    ) {}
 
     /**
      * @param string[] $filter
@@ -74,7 +73,7 @@ readonly abstract class AbstractListService implements ListServiceInterface
      */
     protected function filter(array $items, ?array $filter, ?int $min_age): array
     {
-        if (! $filter && ! $min_age) {
+        if (!$filter && !$min_age) {
             return $items;
         }
 
@@ -116,7 +115,7 @@ readonly abstract class AbstractListService implements ListServiceInterface
             $slug   = (string) $slug;
             $status = $this->meta->getStatus($slug);
             // Is this the first time we've seen the slug?
-            if (! $status) {
+            if (!$status) {
                 $update[$slug] = [];
             }
             if (in_array($slug, $requested, true)) {

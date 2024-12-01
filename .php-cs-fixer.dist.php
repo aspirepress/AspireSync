@@ -8,9 +8,8 @@ use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
 $finder = (new Finder())
     ->in(__DIR__)
     ->exclude([
+        'var',
         'vendor',
-        'storage',
-        'bootstrap',
     ])
     ->notPath([
         '_ide_helper.php',

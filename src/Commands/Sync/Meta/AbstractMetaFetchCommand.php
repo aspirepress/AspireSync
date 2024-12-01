@@ -108,7 +108,6 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
     protected function generateRequests(array $slugs): Generator
     {
         foreach ($slugs as $slug) {
-
             yield $this->makeRequest((string) $slug);
         }
     }
@@ -132,7 +131,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
             return;
         }
 
-        if (! empty($metadata['versions'])) {
+        if (!empty($metadata['versions'])) {
             $this->log->info("$slug ... [" . count($metadata['versions']) . ' versions]');
         } elseif (isset($metadata['version'])) {
             $this->log->info("$slug ... [1 version]");
@@ -147,7 +146,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
 
     protected function onError(Exception $exception): void
     {
-        if (! $exception instanceof RequestException) {
+        if (!$exception instanceof RequestException) {
             $this->log->error($exception->getMessage());
             return;
         }

@@ -13,9 +13,8 @@ class DownloadRequest extends Request
         public readonly string $remotePath,
         public readonly string $localPath,
         public readonly string $slug,
-        public readonly string $version
-    ) {
-    }
+        public readonly string $version,
+    ) {}
 
     public function resolveEndpoint(): string
     {

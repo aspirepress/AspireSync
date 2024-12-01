@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\List;
 
-use App\Services\List\AbstractListService;
 use App\Services\Metadata\ThemeMetadataService;
 use App\Services\RevisionMetadataService;
 use App\Services\SubversionService;

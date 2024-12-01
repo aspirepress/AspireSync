@@ -10,7 +10,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-
+use RuntimeException;
 
 class GuzzleClientFactory
 {
@@ -20,8 +20,7 @@ class GuzzleClientFactory
         $maxRetries = 10;
         $handler = HandlerStack::create();
         $retryMiddleware = Middleware::retry(
-            function (int $retries, RequestInterface $request, ?ResponseInterface $response, ?\RuntimeException $e)
-            use ($maxRetries) {
+            function (int $retries, RequestInterface $request, ?ResponseInterface $response, ?RuntimeException $e) use ($maxRetries) {
                 // Limit the number of retries to maxRetries
                 if ($retries >= $maxRetries) {
                     return false;
@@ -49,4 +48,3 @@ class GuzzleClientFactory
         return new GuzzleClient(['handler' => $handler, 'timeout' => 60, 'connect_timeout' => 2]);
     }
 }
-

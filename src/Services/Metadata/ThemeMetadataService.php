@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services\Metadata;
 
 use App\ResourceType;
-use App\Services\Metadata\AbstractMetadataService;
 use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;
 
