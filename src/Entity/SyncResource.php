@@ -54,11 +54,11 @@ class SyncResource
 
         // when this record was synced
         #[ORM\Column]
-        public readonly DateTimeImmutable $pulled,
+        public readonly int $pulled,
 
         // last updated date in metadata
         #[ORM\Column]
-        public readonly ?DateTimeImmutable $updated,
+        public readonly ?int $updated,
 
         #[ORM\Column(nullable: true)]
         public readonly ?array $metadata = null,

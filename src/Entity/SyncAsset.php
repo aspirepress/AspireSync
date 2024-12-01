@@ -19,7 +19,7 @@ use Symfony\Component\Uid\Uuid;
 class SyncAsset
 {
     #[ORM\Column(nullable: true)]
-    public ?DateTimeImmutable $processed = null;  // mutable!
+    public ?int $processed = null;  // mutable!
 
     /**
      * @param array<string, mixed>|null $metadata
@@ -42,7 +42,7 @@ class SyncAsset
         public readonly string $url,
 
         #[ORM\Column]
-        public readonly DateTimeImmutable $created,
+        public readonly int $created,
 
         #[ORM\Column(nullable: true)]
         public readonly ?array $metadata = null,

@@ -32,7 +32,7 @@ class RevisionMetadataService implements RevisionMetadataServiceInterface
             throw new RuntimeException('You did not specify a revision for action ' . $action);
         }
         $revision = $this->currentRevision[$action]['revision'];
-        $this->connection->insert('revisions', ['action' => $action, 'revision' => $revision]);
+        $this->connection->insert('revisions', ['action' => $action, 'revision' => $revision, 'created' => time()]);
         return (string) $revision;
     }
 
@@ -49,14 +49,14 @@ class RevisionMetadataService implements RevisionMetadataServiceInterface
     private function loadLatestRevisions(): void
     {
         $sql = <<<SQL
-            SELECT action, revision, added_at
-            FROM (SELECT *, row_number() OVER (PARTITION by action ORDER BY added_at DESC) AS rownum FROM revisions) revs
+            SELECT action, revision, added
+            FROM (SELECT *, row_number() OVER (PARTITION by action ORDER BY added DESC) AS rownum FROM revisions) revs
             WHERE revs.rownum = 1;
             SQL;
         foreach ($this->connection->fetchAllAssociative($sql) as $revision) {
             $this->revisionData[$revision['action']] = [
                 'revision' => $revision['revision'],
-                'added'    => $revision['added_at'],
+                'added'    => $revision['created'],
             ];
         }
     }

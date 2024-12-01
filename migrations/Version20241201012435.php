@@ -26,8 +26,8 @@ final class Version20241201012435 extends AbstractMigration
                       status varchar(32) not null,
                       version varchar(32),
                       origin varchar(32) not null,
-                      pulled timestamp(0) default current_timestamp not null,
-                      updated timestamp(0) default current_timestamp not null,
+                      pulled bigint not null,
+                      updated bigint not null,
                       metadata jsonb default null
                   )
                 SQL,
@@ -46,8 +46,8 @@ final class Version20241201012435 extends AbstractMigration
                           sync_id uuid not null references sync (id) on delete cascade,
                           version varchar(32) not null,
                           url text default null,
-                          created timestamp(0) not null default current_timestamp,
-                          processed timestamp(0) default null,
+                          created bigint not null,
+                          processed bigint default null,
                           metadata jsonb default null
                         )
                 SQL,
@@ -61,7 +61,7 @@ final class Version20241201012435 extends AbstractMigration
                 create table revisions (
                     action varchar(255) not null,
                     revision varchar(255) not null,
-                    added_at timestamp(0) not null default current_timestamp
+                    added bigint not null
                 )
                 SQL,
         );

@@ -10,10 +10,10 @@ use Doctrine\DBAL\Connection;
 use Generator;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
-use Safe\DateTimeImmutable;
 
 use function Safe\json_decode;
 use function Safe\json_encode;
+use function Safe\strtotime;
 
 abstract readonly class AbstractMetadataService implements MetadataServiceInterface
 {
@@ -47,10 +47,10 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'slug'     => mb_substr($metadata['slug'], 0, 255),
             'name'     => mb_substr($metadata['name'], 0, 255),
             'status'   => 'open',
-            'version'  => $metadata['version'],
+            'version'  => mb_substr($metadata['version'], 0, 32),
             'origin'   => $this->origin,
-            'updated'  => \Safe\date('c', \Safe\strtotime($metadata['last_updated'])),
-            'pulled'   => \Safe\date('c'),
+            'updated'  => strtotime($metadata['last_updated'] ?? 'now'),
+            'pulled'   => time(),
             'metadata' => $metadata,
         ]);
 
@@ -61,6 +61,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
                 'sync_id' => $id,
                 'version' => $version,
                 'url'     => $url,
+                'created' => time(),
             ]);
         }
         $this->log->debug(
@@ -83,8 +84,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'status'   => $status,
             'version'  => null,
             'origin'   => $this->origin,
-            'updated'  => $metadata['closed_date'] ?? \Safe\date('c'),
-            'pulled'   => \Safe\date('c'),
+            'updated'  => strtotime($metadata['closed_date'] ?? 'now'),
+            'pulled'   => time(),
             'metadata' => $metadata,
         ];
         $this->insertSync($row);
@@ -103,7 +104,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 
     public function getPulledAsTimestamp(string $slug): ?int
     {
-        $sql    = "select unixepoch(pulled) from sync where slug = :slug and type = :type and origin = :origin";
+        $sql    = "select pulled from sync where slug = :slug and type = :type and origin = :origin";
         $pulled = $this->connection->fetchOne($sql, ['slug' => $slug, ...$this->stdArgs()]);
         return (int) $pulled ?: null;
     }
@@ -126,16 +127,17 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     /** @return array<string, string[]> [slug => [versions]] */
     public function getOpenVersions(string $revDate = '1900-01-01'): array
     {
-        $sql    = <<<SQL
+        $stamp  = strtotime($revDate);
+        $sql = <<<SQL
                 SELECT slug, sync_assets.version 
                 FROM sync_assets
                     JOIN sync ON sync.id = sync_assets.sync_id 
                 WHERE status = 'open'
-                  AND pulled >= :revDate
+                  AND pulled >= :stamp
                   AND sync.type = :type
                   AND sync.origin = :origin
             SQL;
-        $result = $this->connection->fetchAllAssociative($sql, ['revDate' => $revDate, ...$this->stdArgs()]);
+        $result = $this->connection->fetchAllAssociative($sql, ['stamp' => $stamp, ...$this->stdArgs()]);
 
         $out = [];
         foreach ($result as $row) {
@@ -148,11 +150,11 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     {
         $sql = <<<'SQL'
             UPDATE sync_assets 
-            SET processed = current_timestamp 
+            SET processed = :stamp 
             WHERE version = :version
               AND sync_id = (SELECT id FROM sync WHERE slug = :slug AND type = :type AND origin = :origin)
             SQL;
-        $this->connection->executeQuery($sql, ['slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
+        $this->connection->executeQuery($sql, ['stamp' => time(), 'slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
         // Most things that call this already log in some other way
         // $this->log->debug("Processed $slug", ['type' => $this->resource->value, 'slug' => $slug, 'version' => $version]);
     }
@@ -215,13 +217,13 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'status'   => $item['status'],
             'version'  => $item['version'],
             'origin'   => $item['origin'],
-            'updated'  => new DateTimeImmutable($item['updated']),
-            'pulled'   => new DateTimeImmutable($item['pulled']),
+            'updated'  => $item['updated'],
+            'pulled'   => $item['pulled'],
             'metadata' => json_decode($item['metadata'] ?? 'null'),
         ];
     }
 
-    /** @param array{slug: string, metadata: mixed} $args */
+    /** @param array<string, mixed> $args */
     protected function insertSync(array $args): void
     {
         $args['metadata'] = json_encode($args['metadata']);
