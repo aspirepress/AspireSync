@@ -22,6 +22,9 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Index(name: 'idx_pulled', fields: ['pulled'])]
 class SyncResource
 {
+    /**
+     * @param array<string, mixed>|null $metadata
+     */
     public function __construct(
         #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
         #[ORM\GeneratedValue(strategy: 'CUSTOM')]

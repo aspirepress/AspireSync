@@ -19,6 +19,9 @@ class SyncAsset
     #[ORM\Column(nullable: true)]
     public ?\DateTimeImmutable $processed = null;  // mutable!
 
+    /**
+     * @param array<string, mixed>|null $metadata
+     */
     public function __construct(
         #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
         #[ORM\GeneratedValue(strategy: 'CUSTOM')]
