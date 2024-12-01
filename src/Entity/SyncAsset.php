@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -10,6 +11,9 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: SyncAssetRepository::class)]
 #[ORM\Table(name: 'sync_assets')]
+#[ORM\UniqueConstraint(columns: ['sync_id', 'version'])]
+#[ORM\Index(columns: ['created'])]
+#[ORM\Index(columns: ['processed'])]
 class SyncAsset
 {
     #[ORM\Column(nullable: true)]

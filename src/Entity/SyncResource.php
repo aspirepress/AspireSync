@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -13,6 +14,12 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: SyncResourceRepository::class)]
 #[ORM\Table(name: 'sync')]
+#[ORM\UniqueConstraint(fields: ['type', 'slug', 'origin'])]
+#[ORM\Index(fields: ['slug'])]
+#[ORM\Index(fields: ['type'])]
+#[ORM\Index(fields: ['origin'])]
+#[ORM\Index(fields: ['updated'])]
+#[ORM\Index(fields: ['pulled'])]
 class SyncResource
 {
     public function __construct(
