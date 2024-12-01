@@ -1,9 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Entity;
 
 use App\Repository\SyncAssetRepository;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
@@ -17,7 +19,7 @@ use Symfony\Component\Uid\Uuid;
 class SyncAsset
 {
     #[ORM\Column(nullable: true)]
-    public ?\DateTimeImmutable $processed = null;  // mutable!
+    public ?DateTimeImmutable $processed = null;  // mutable!
 
     /**
      * @param array<string, mixed>|null $metadata
@@ -40,10 +42,9 @@ class SyncAsset
         public readonly string $url,
 
         #[ORM\Column]
-        public readonly \DateTimeImmutable $created,
+        public readonly DateTimeImmutable $created,
 
         #[ORM\Column(nullable: true)]
         public readonly ?array $metadata = null,
-    ) {
-    }
+    ) {}
 }

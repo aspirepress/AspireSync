@@ -28,7 +28,7 @@ abstract class FileUtil
     public static function readJson(string $path): array  // @phpstan-ignore missingType.iterableValue
     {
         $content = json_decode(static::read($path), true, 512, JSON_THROW_ON_ERROR);
-        if (! is_array($content)) {
+        if (!is_array($content)) {
             throw new RuntimeException("Cannot decode json file {$path} -- content is not an object or array");
         }
         return $content;

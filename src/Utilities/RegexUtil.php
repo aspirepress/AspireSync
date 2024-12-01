@@ -75,7 +75,7 @@ class RegexUtil
         string|array $replacement,
         string|array $subject,
         int $limit = -1,
-        ?int &$count = null
+        ?int &$count = null,
     ): string|array {
         return preg_replace($pattern, $replacement, $subject, $limit, $count);
     }

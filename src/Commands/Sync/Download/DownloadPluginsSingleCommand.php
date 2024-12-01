@@ -36,7 +36,7 @@ class DownloadPluginsSingleCommand extends AbstractBaseCommand
         $force   = $input->getOption('force');
 
         [$version, $message] = VersionUtil::cleanVersion($version);
-        if (! $version) {
+        if (!$version) {
             $this->log->error($message);
             return Command::FAILURE;
         }

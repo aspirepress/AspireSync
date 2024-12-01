@@ -14,9 +14,7 @@ class DatabaseCacheService implements CacheServiceInterface
 {
     private string $table = 'cache';
 
-    public function __construct(private Connection $connection)
-    {
-    }
+    public function __construct(private Connection $connection) {}
 
     public function remember(string $key, int $ttl, Closure $callback): mixed
     {

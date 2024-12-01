@@ -30,6 +30,7 @@
         "thecodingmachine/safe": ">=2.5"
     },
     "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.65",
         "phpstan/phpstan": ">=1.12.12",
         "phpunit/phpunit": ">=11.4.4",
         "rector/rector": "^1.2",
@@ -69,9 +70,12 @@
     "scripts": {
         "phpstan": "phpstan --verbose --memory-limit=2G",
         "phpunit": "phpunit",
+        "php-cs-fixer": "php-cs-fixer",
         "test": "@phpunit",
         "test:unit": "@phpunit --testsuite=Unit",
         "test:functional": "@phpunit --testsuite=functional",
+        "style:check": "@php-cs-fixer check",
+        "style:fix": "@php-cs-fixer fix",
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"

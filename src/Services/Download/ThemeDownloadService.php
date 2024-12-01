@@ -6,7 +6,6 @@ namespace App\Services\Download;
 
 use App\Integrations\Wordpress\WordpressDownloadConnector;
 use App\Services\Metadata\ThemeMetadataService;
-use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;

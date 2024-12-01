@@ -10,7 +10,6 @@ use App\Services\Metadata\MetadataServiceInterface;
 use App\Utilities\ArrayUtil;
 use Exception;
 use Generator;
-use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
 use Saloon\Exceptions\Request\RequestException;
@@ -25,8 +24,7 @@ abstract class AbstractDownloadService implements DownloadServiceInterface
         protected readonly WordpressDownloadConnector $connector,
         protected readonly FilesystemOperator $filesystem,
         protected readonly LoggerInterface $log,
-    ) {
-    }
+    ) {}
 
     abstract protected function getCategory(): string;
 
@@ -64,7 +62,7 @@ abstract class AbstractDownloadService implements DownloadServiceInterface
         $this->meta->markProcessed($slug, $version);
 
         $contents = $response->getBody()->getContents();
-        if (! $contents) {
+        if (!$contents) {
             $this->log->warning("Empty response", compact('remotePath', 'localPath'));
             return;
         }
@@ -98,7 +96,7 @@ abstract class AbstractDownloadService implements DownloadServiceInterface
 
         foreach ($slugsAndVersions as [$slug, $version]) {
             $url = $this->meta->getDownloadUrl($slug, $version);
-            if (! $url) {
+            if (!$url) {
                 $this->log->warning("No download URL", compact('slug', 'version'));
             }
 
