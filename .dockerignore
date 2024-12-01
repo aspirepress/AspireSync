@@ -3,12 +3,13 @@
 
 # Copy these directories
 !bin/
-!config/
+!.ATTIC/config/
 !src
 
 # Copy these files
 !.env
 !README.md
-!composer.json
+!.ATTIC/composer.json
 !composer.lock
-!docker/php.ini
+!docker/webapp/php.ini
+!docker/webapp/Caddyfile

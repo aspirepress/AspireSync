@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\Metadata;
+namespace App\Services\Metadata;
 
-use AspirePress\AspireSync\ResourceType;
-use AspirePress\AspireSync\Services\Metadata\AbstractMetadataService;
+use App\ResourceType;
+use App\Services\Metadata\AbstractMetadataService;
 use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;
 

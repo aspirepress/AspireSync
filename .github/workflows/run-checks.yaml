@@ -20,7 +20,6 @@ jobs:
 
       - name: Build Dependencies
         run: |
-          cp .env.dist .env
           composer install
 
       # not running phpcs right now, it's going to be replaced by php-cs-fixer soon

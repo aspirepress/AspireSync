@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Factories;
+namespace App\Factories;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ConnectException;
@@ -14,7 +14,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class GuzzleClientFactory
 {
-    public function __invoke(): GuzzleClient
+    public static function create(): GuzzleClient
     {
         // https://codewithkyrian.com/p/how-to-implement-retries-in-guzzlehttp
         $maxRetries = 10;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Commands;
+namespace App\Commands;
 
-use AspirePress\AspireSync\Commands\AbstractBaseCommand;
+use App\Commands\AbstractBaseCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -26,7 +26,7 @@ class SandboxCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->log->info("Brillant!", ['foo' => 123, 'bar' => ['baz' => 'xyzzy']]);
-        $this->error("Boom!");
+        $this->log->error("Boom!");
         return Command::SUCCESS;
     }
 }

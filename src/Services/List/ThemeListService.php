@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\List;
+namespace App\Services\List;
 
-use AspirePress\AspireSync\Services\List\AbstractListService;
-use AspirePress\AspireSync\Services\Metadata\ThemeMetadataService;
-use AspirePress\AspireSync\Services\RevisionMetadataService;
-use AspirePress\AspireSync\Services\SubversionService;
+use App\Services\List\AbstractListService;
+use App\Services\Metadata\ThemeMetadataService;
+use App\Services\RevisionMetadataService;
+use App\Services\SubversionService;
 
 readonly class ThemeListService extends AbstractListService
 {

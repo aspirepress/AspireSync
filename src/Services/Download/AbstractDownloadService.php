@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\Download;
+namespace App\Services\Download;
 
-use AspirePress\AspireSync\Integrations\Wordpress\DownloadRequest;
-use AspirePress\AspireSync\Integrations\Wordpress\WordpressDownloadConnector;
-use AspirePress\AspireSync\Services\Metadata\MetadataServiceInterface;
-use AspirePress\AspireSync\Utilities\ArrayUtil;
+use App\Integrations\Wordpress\DownloadRequest;
+use App\Integrations\Wordpress\WordpressDownloadConnector;
+use App\Services\Metadata\MetadataServiceInterface;
+use App\Utilities\ArrayUtil;
 use Exception;
 use Generator;
 use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Response;
@@ -22,7 +23,7 @@ abstract class AbstractDownloadService implements DownloadServiceInterface
     public function __construct(
         protected readonly MetadataServiceInterface $meta,
         protected readonly WordpressDownloadConnector $connector,
-        protected readonly Filesystem $filesystem,
+        protected readonly FilesystemOperator $filesystem,
         protected readonly LoggerInterface $log,
     ) {
     }

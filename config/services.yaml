@@ -1,0 +1,28 @@
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    storage_service: 'fs.storage.%env(DOWNLOADS_FILESYSTEM)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    Aws\S3\S3Client:
+        arguments:
+            -
+                version: '2006-03-01'
+                region: '%env(S3_REGION)%'
+                endpoint: '%env(S3_ENDPOINT)%'
+                credentials:
+                    key: '%env(S3_KEY)%'
+                    secret: '%env(S3_SECRET)%'
+
+    GuzzleHttp\Client:
+        factory: ['App\Factories\GuzzleClientFactory', 'create']

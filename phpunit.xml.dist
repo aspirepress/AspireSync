@@ -8,15 +8,11 @@
          failOnWarning="true"
          colors="true"
          stderr="true"
-         cacheDirectory="/tmp/.wpc-phpunit.cache"
          beStrictAboutCoverageMetadata="true">
     <testsuites>
-        <testsuite name="unit">
-            <directory suffix="Test.php">tests/unit</directory>
+        <testsuite name="Unit">
+            <directory suffix="Test.php">tests/Unit</directory>
         </testsuite>
-<!--        <testsuite name="functional">-->
-<!--            <directory suffix="Test.php">tests/functional</directory>-->
-<!--        </testsuite>-->
     </testsuites>
     <source>
         <include>
@@ -24,11 +20,15 @@
         </include>
     </source>
     <php>
-        <env name="APP_ENV" value="testing"/>
         <env name="TEST_DB_USER" value="test"/>
         <env name="TEST_DB_PASS" value="test"/>
         <env name="TEST_DB_NAME" value="aspirecloud_testing"/>
         <env name="TEST_DB_HOST" value="db.aspiredev.org"/>
         <env name="TEST_DB_SCHEMA" value="public"/>
+
+        <!-- ###+ symfony/framework-bundle ### -->
+        <env name="APP_ENV" value="dev"/>
+        <env name="APP_SECRET" value=""/>
+        <!-- ###- symfony/framework-bundle ### -->
     </php>
 </phpunit>

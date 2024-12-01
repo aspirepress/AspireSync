@@ -1,0 +1,23 @@
+# Read the documentation at https://github.com/thephpleague/flysystem-bundle/blob/master/docs/1-getting-started.md
+flysystem:
+    storages:
+        fs.storage:
+            adapter: 'lazy'
+            options:
+                source: '%storage_service%'
+
+        fs.storage.local:
+            adapter: 'local'
+            options:
+                directory: '%kernel.project_dir%/var/storage/default'
+
+        fs.storage.s3:
+            # https://github.com/thephpleague/flysystem-bundle/blob/3.x/docs/2-cloud-storage-providers.md#aws-sdk-s3
+            adapter: 'aws'
+            visibility: 'public'
+            options:
+                client: 'Aws\S3\S3Client'
+                bucket: '%env(S3_BUCKET)%'
+                options:
+                    endpoint: '%env(S3_ENDPOINT)%'
+

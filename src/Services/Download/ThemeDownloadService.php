@@ -2,19 +2,22 @@
 
 declare(strict_types=1);
 
-namespace AspirePress\AspireSync\Services\Download;
+namespace App\Services\Download;
 
-use AspirePress\AspireSync\Integrations\Wordpress\WordpressDownloadConnector;
-use AspirePress\AspireSync\Services\Metadata\ThemeMetadataService;
+use App\Integrations\Wordpress\WordpressDownloadConnector;
+use App\Services\Metadata\ThemeMetadataService;
 use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class ThemeDownloadService extends AbstractDownloadService
 {
     public function __construct(
         ThemeMetadataService $meta,
         WordpressDownloadConnector $connector,
-        Filesystem $filesystem,
+        #[Autowire(service: 'fs.storage')]
+        FilesystemOperator $filesystem,
         LoggerInterface $log,
     ) {
         parent::__construct($meta, $connector, $filesystem, $log);

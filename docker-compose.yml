@@ -1,18 +1,47 @@
 services:
-  aspiresync:
+  webapp:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/webapp/Dockerfile
       target: dev
-    networks:
-      - app-net
-      - aspire-net
+    ports:
+      - ${LOCAL_HTTP_PORT:-8199}:80
     volumes:
-      - .:/opt/aspiresync
-    # entrypoint: ['/opt/aspiresync/bin/aspiresync']  # good for prod, annoying in dev
-    tty: true   # keeps the container running
+      - .:/app
+    networks:
+      traefik: ~
+      app-net: ~
+      aspire-net:
+        aliases:
+          - 'sync.aspiredev.org'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ap-sync.rule=Host(`sync.aspiredev.org`)"
+      - "traefik.http.routers.ap-sync-https.rule=Host(`sync.aspiredev.org`)"
+      - "traefik.http.routers.ap-sync-https.tls=true"
+
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/opt/pgdata
+      - POSTGRES_DB=aspiresync
+    ports:
+      - "${LOCAL_POSTGRES_PORT:-15432}:5432"
+    volumes:
+      - pgdata:/opt/pgdata
+    networks:
+      app-net: ~
+      aspire-net:
+        aliases:
+          - 'db.sync.aspiredev.org'
 
 networks:
   app-net: ~
   aspire-net:
     external: true
+  traefik:
+    external: true
+
+volumes:
+  pgdata: ~
