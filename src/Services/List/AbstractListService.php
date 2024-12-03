@@ -84,17 +84,18 @@ abstract readonly class AbstractListService implements ListServiceInterface
                 $filtered[$slug] = $items[$slug];
             }
         }
+        if (!$min_age) {
+            return $filtered;
+        }
 
-        $out = $min_age ? [] : $filtered;
-        if ($min_age) {
-            $cutoff = time() - $min_age;
-            foreach ($filtered as $slug => $value) {
-                $slug      = (string) $slug; // LOLPHP: php will turn any numeric string key into an int
-                $timestamp = $this->meta->getPulledAsTimestamp($slug);
-                if ($timestamp === null || $timestamp <= $cutoff) {
-                    $out[$slug] = $value;
-                }
+        $new = $this->meta->getPulledAfter(time() - $min_age);
+        $out = [];
+        foreach ($filtered as $slug => $value) {
+            $slug = (string) $slug; // LOLPHP: php will turn any numeric string key into an int
+            if ($new[$slug] ?? null) {
+                continue;
             }
+            $out[$slug] = $value;
         }
         return $out;
     }

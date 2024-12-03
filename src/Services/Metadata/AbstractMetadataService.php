@@ -102,11 +102,20 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         return $this->connection->fetchOne($sql, ['slug' => $slug, ...$this->stdArgs()]) ?: null;
     }
 
-    public function getPulledAsTimestamp(string $slug): ?int
+    /** @return array<string,int> */
+    public function getPulledAfter(int $timestamp): array
     {
-        $sql    = "select pulled from sync where slug = :slug and type = :type and origin = :origin";
-        $pulled = $this->connection->fetchOne($sql, ['slug' => $slug, ...$this->stdArgs()]);
-        return (int) $pulled ?: null;
+        return $this->connection->createQueryBuilder()
+            ->select('slug', 'pulled')
+            ->from('sync')
+            ->andWhere('type = :type')
+            ->andWhere('origin = :origin')
+            ->andWhere('pulled > :timestamp')
+            ->setParameter('type', $this->resource->value)
+            ->setParameter('origin', $this->origin)
+            ->setParameter('timestamp', $timestamp)
+            ->executeQuery()
+            ->fetchAllKeyValue();
     }
 
     public function getDownloadUrl(string $slug, string $version): ?string
@@ -200,27 +209,6 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     protected function stdArgs(): array
     {
         return ['type' => $this->resource->value, 'origin' => $this->origin];
-    }
-
-    // keep fetch protected so we don't expose the raw db schema publicly
-    /** @return array<string, string|array<string, mixed>>|null */
-    protected function fetch(string $slug): ?array
-    {
-        $sql    = "select * from sync where slug = :slug and type = :type and origin = :origin";
-        $params = ['slug' => $slug, ...$this->stdArgs()];
-        $item   = $this->connection->fetchAssociative($sql, $params);
-        return [
-            'id'       => $item['id'],
-            'type'     => $item['type'],
-            'slug'     => $item['slug'],
-            'name'     => $item['name'],
-            'status'   => $item['status'],
-            'version'  => $item['version'],
-            'origin'   => $item['origin'],
-            'updated'  => $item['updated'],
-            'pulled'   => $item['pulled'],
-            'metadata' => json_decode($item['metadata'] ?? 'null'),
-        ];
     }
 
     /** @param array<string, mixed> $args */
