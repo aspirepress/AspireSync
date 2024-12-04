@@ -6,12 +6,13 @@ namespace App\Services\Metadata;
 
 use App\ResourceType;
 use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
 readonly class PluginMetadataService extends AbstractMetadataService
 {
-    public function __construct(Connection $connection, LoggerInterface $log)
+    public function __construct(EntityManagerInterface $em, LoggerInterface $log)
     {
-        parent::__construct($connection, $log, ResourceType::Plugin);
+        parent::__construct($em, $log, ResourceType::Plugin);
     }
 }

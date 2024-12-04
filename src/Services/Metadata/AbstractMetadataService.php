@@ -7,6 +7,8 @@ namespace App\Services\Metadata;
 use App\ResourceType;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\ORM\EntityManagerInterface;
 use Generator;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
@@ -18,7 +20,7 @@ use function Safe\strtotime;
 abstract readonly class AbstractMetadataService implements MetadataServiceInterface
 {
     public function __construct(
-        protected Connection $connection,
+        protected EntityManagerInterface $em,
         protected LoggerInterface $log,
         protected ResourceType $resource,
         protected string $origin = 'wp_org',
@@ -33,7 +35,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'open'  => $this->saveOpen(...),
             default => $this->saveError(...),
         };
-        $this->connection->transactional(fn() => $method($metadata));
+        $this->connection()->transactional(fn() => $method($metadata));
     }
 
     /** @param array<string, mixed> $metadata */
@@ -56,7 +58,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 
         $versions = $metadata['versions'] ?: [$metadata['version'] => $metadata['download_link']];
         foreach ($versions as $version => $url) {
-            $this->connection->insert('sync_assets', [
+            $this->connection()->insert('sync_assets', [
                 'id'      => Uuid::uuid7()->toString(),
                 'sync_id' => $id,
                 'version' => $version,
@@ -99,20 +101,15 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     public function getStatus(string $slug): ?string
     {
         $sql = "select status from sync where slug = :slug and type = :type and origin = :origin";
-        return $this->connection->fetchOne($sql, ['slug' => $slug, ...$this->stdArgs()]) ?: null;
+        return $this->connection()->fetchOne($sql, ['slug' => $slug, ...$this->stdArgs()]) ?: null;
     }
 
     /** @return array<string,int> */
     public function getPulledAfter(int $timestamp): array
     {
-        return $this->connection->createQueryBuilder()
+        return $this->querySync()
             ->select('slug', 'pulled')
-            ->from('sync')
-            ->andWhere('type = :type')
-            ->andWhere('origin = :origin')
             ->andWhere('pulled > :timestamp')
-            ->setParameter('type', $this->resource->value)
-            ->setParameter('origin', $this->origin)
             ->setParameter('timestamp', $timestamp)
             ->executeQuery()
             ->fetchAllKeyValue();
@@ -120,17 +117,11 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 
     public function getDownloadUrl(string $slug, string $version): ?string
     {
-        $sql    = <<<'SQL'
-                SELECT url
-                FROM sync_assets 
-                    JOIN sync ON sync.id = sync_assets.sync_id 
-                WHERE sync.slug = :slug 
-                  AND sync.type = :type
-                  AND sync.origin = :origin
-                  AND sync_assets.version = :version
-            SQL;
-        $result = $this->connection->fetchAssociative($sql, ['slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
-        return $result['url'] ?? null;
+        return $this->querySyncAssets($slug)
+            ->select('url')
+            ->where('sync_assets.version = :version')
+            ->setParameter('version', $version)
+            ->fetchOne();
     }
 
     /** @return array<string, string[]> [slug => [versions]] */
@@ -146,7 +137,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
                   AND sync.type = :type
                   AND sync.origin = :origin
             SQL;
-        $result = $this->connection->fetchAllAssociative($sql, ['stamp' => $stamp, ...$this->stdArgs()]);
+        $result = $this->connection()->fetchAllAssociative($sql, ['stamp' => $stamp, ...$this->stdArgs()]);
 
         $out = [];
         foreach ($result as $row) {
@@ -163,7 +154,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             WHERE version = :version
               AND sync_id = (SELECT id FROM sync WHERE slug = :slug AND type = :type AND origin = :origin)
             SQL;
-        $this->connection->executeQuery($sql, ['stamp' => time(), 'slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
+        $this->connection()->executeQuery($sql, ['stamp' => time(), 'slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
         // Most things that call this already log in some other way
         // $this->log->debug("Processed $slug", ['type' => $this->resource->value, 'slug' => $slug, 'version' => $version]);
     }
@@ -171,7 +162,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     public function exportAllMetadata(): Generator
     {
         $sql  = "select * from sync where status in ('open', 'closed') and type = :type and origin = :origin";
-        $rows = $this->connection->executeQuery($sql, $this->stdArgs());
+        $rows = $this->connection()->executeQuery($sql, $this->stdArgs());
         while ($row = $rows->fetchAssociative()) {
             $metadata = json_decode($row['metadata'], true);
             unset($row['metadata']);
@@ -197,7 +188,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
               and sync.origin = :origin
             SQL;
 
-        $results = $this->connection->executeQuery(
+        $results = $this->connection()->executeQuery(
             $sql,
             ['slug' => $slug, 'versions' => $versions, ...$this->stdArgs()],
             ['versions' => ArrayParameterType::STRING]
@@ -211,12 +202,39 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         return ['type' => $this->resource->value, 'origin' => $this->origin];
     }
 
+    protected function querySync(): QueryBuilder
+    {
+        return $this->connection()->createQueryBuilder()
+            ->select('*')
+            ->from('sync')
+            ->andWhere('type = :type')
+            ->andWhere('origin = :origin')
+            ->setParameter('type', $this->resource->value)
+            ->setParameter('origin', $this->origin);
+    }
+
+    protected function querySyncAssets(string $slug): QueryBuilder
+    {
+        return $this->connection()->createQueryBuilder()
+            ->select('*')
+            ->from('sync_assets')
+            ->andWhere('sync_assets.sync_id = (SELECT id FROM sync WHERE slug = :slug AND type = :type AND origin = :origin)')
+            ->setParameter('slug', $slug)
+            ->setParameter('type', $this->resource->value)
+            ->setParameter('origin', $this->origin);
+    }
+
     /** @param array<string, mixed> $args */
     protected function insertSync(array $args): void
     {
         $args['metadata'] = json_encode($args['metadata']);
-        $conn             = $this->connection;
+        $conn             = $this->connection();
         $conn->delete('sync', ['slug' => $args['slug'], ...$this->stdArgs()]);
         $conn->insert('sync', $args);
+    }
+
+    private function connection(): Connection
+    {
+        return $this->em->getConnection();
     }
 }
