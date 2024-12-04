@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\List;
 
+use App\ResourceType;
 use App\Services\Interfaces\RevisionMetadataServiceInterface;
 use App\Services\Interfaces\SubversionServiceInterface;
 use App\Services\Metadata\MetadataServiceInterface;
@@ -14,7 +15,7 @@ abstract readonly class AbstractListService implements ListServiceInterface
         protected SubversionServiceInterface $svn,
         protected MetadataServiceInterface $meta,
         protected RevisionMetadataServiceInterface $revisions,
-        protected string $category,
+        protected ResourceType $type,
     ) {}
 
     /**
@@ -23,7 +24,7 @@ abstract readonly class AbstractListService implements ListServiceInterface
      */
     public function getItems(array $filter, ?int $min_age = null): array
     {
-        $lastRevision = $this->revisions->getRevisionForAction($this->category);
+        $lastRevision = $this->revisions->getRevisionForType($this->type);
         $updates      = $lastRevision
             ? $this->getUpdatableItems($filter, $lastRevision)
             : $this->getAllSubversionSlugs();
@@ -32,7 +33,7 @@ abstract readonly class AbstractListService implements ListServiceInterface
 
     public function preserveRevision(): string
     {
-        return $this->revisions->preserveRevision($this->category);
+        return $this->revisions->preserveRevision($this->type);
     }
 
     /**
@@ -42,8 +43,8 @@ abstract readonly class AbstractListService implements ListServiceInterface
      */
     protected function getAllSubversionSlugs(): array
     {
-        $result = $this->svn->scrapeSlugsFromIndex($this->category);
-        $this->revisions->setCurrentRevision($this->category, $result['revision']);
+        $result = $this->svn->scrapeSlugsFromIndex($this->type);
+        $this->revisions->setCurrentRevision($this->type, $result['revision']);
 
         // transform to [slug => [versions]] format
         $out = [];
@@ -55,7 +56,7 @@ abstract readonly class AbstractListService implements ListServiceInterface
 
     public function getUpdatedItems(?array $requested): array
     {
-        $revision = $this->revisions->getRevisionDateForAction($this->category);
+        $revision = $this->revisions->getRevisionDateForType($this->type);
         if ($revision) {
             $revision = \Safe\date('Y-m-d', \Safe\strtotime($revision));
         }
@@ -133,12 +134,12 @@ abstract readonly class AbstractListService implements ListServiceInterface
      */
     protected function getUpdatableItems(?array $requested, string $lastRevision): array
     {
-        $output = $this->svn->getUpdatedSlugs($this->category, 0, (int) $lastRevision); // FIXME second arg should be prevRevision
+        $output = $this->svn->getUpdatedSlugs($this->type, 0, (int) $lastRevision); // FIXME second arg should be prevRevision
 
         $revision = $output['revision'];
         $slugs    = $output['slugs'];
 
-        $this->revisions->setCurrentRevision($this->category, $revision);
+        $this->revisions->setCurrentRevision($this->type, $revision);
 
         return $this->addNewAndRequested($slugs, $requested);
     }

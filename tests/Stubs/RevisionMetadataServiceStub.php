@@ -4,26 +4,27 @@ declare(strict_types=1);
 
 namespace App\Tests\Stubs;
 
+use App\ResourceType;
 use App\Services\Interfaces\RevisionMetadataServiceInterface;
 
 class RevisionMetadataServiceStub implements RevisionMetadataServiceInterface
 {
-    public function setCurrentRevision(string $action, int $revision): void
+    public function setCurrentRevision(ResourceType $type, int $revision): void
     {
         // de nada
     }
 
-    public function preserveRevision(string $action): string
+    public function preserveRevision(ResourceType $type): string
     {
         return "666";
     }
 
-    public function getRevisionForAction(string $action): ?string
+    public function getRevisionForType(ResourceType $type): ?string
     {
         return null;
     }
 
-    public function getRevisionDateForAction(string $action): ?string
+    public function getRevisionDateForType(ResourceType $type): ?string
     {
         return null;
     }

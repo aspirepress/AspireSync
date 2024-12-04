@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\ResourceType;
 use App\Services\Interfaces\RevisionMetadataServiceInterface;
 use Doctrine\DBAL\Connection;
 use RuntimeException;
@@ -21,29 +22,29 @@ class RevisionMetadataService implements RevisionMetadataServiceInterface
         $this->loadLatestRevisions();
     }
 
-    public function setCurrentRevision(string $action, int $revision): void
+    public function setCurrentRevision(ResourceType $type, int $revision): void
     {
-        $this->currentRevision[$action] = ['revision' => $revision];
+        $this->currentRevision[$type->value] = ['revision' => $revision];
     }
 
-    public function preserveRevision(string $action): string
+    public function preserveRevision(ResourceType $type): string
     {
-        if (!isset($this->currentRevision[$action])) {
-            throw new RuntimeException('You did not specify a revision for action ' . $action);
+        if (!isset($this->currentRevision[$type->value])) {
+            throw new RuntimeException('You did not specify a revision for action ' . $type);
         }
-        $revision = $this->currentRevision[$action]['revision'];
-        $this->connection->insert('revisions', ['action' => $action, 'revision' => $revision, 'created' => time()]);
+        $revision = $this->currentRevision[$type->value]['revision'];
+        $this->connection->insert('revisions', ['action' => $type, 'revision' => $revision, 'created' => time()]);
         return (string) $revision;
     }
 
-    public function getRevisionForAction(string $action): ?string
+    public function getRevisionForType(ResourceType $type): ?string
     {
-        return $this->revisionData[$action]['revision'] ?? null;
+        return $this->revisionData[$type->value]['revision'] ?? null;
     }
 
-    public function getRevisionDateForAction(string $action): ?string
+    public function getRevisionDateForType(ResourceType $type): ?string
     {
-        return $this->revisionData[$action]['added'] ?? null;
+        return $this->revisionData[$type->value]['added'] ?? null;
     }
 
     private function loadLatestRevisions(): void

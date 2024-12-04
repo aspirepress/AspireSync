@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Stubs;
 
+use App\ResourceType;
 use App\Services\Interfaces\SubversionServiceInterface;
 
 class SubversionServiceStub implements SubversionServiceInterface
 {
-    public function getUpdatedSlugs(string $type, int $prevRevision, int $lastRevision): array
+    public function getUpdatedSlugs(ResourceType $type, int $prevRevision, int $lastRevision): array
     {
         return [
             'revision' => 123,
@@ -16,7 +17,7 @@ class SubversionServiceStub implements SubversionServiceInterface
         ];
     }
 
-    public function scrapeSlugsFromIndex(string $type): array
+    public function scrapeSlugsFromIndex(ResourceType $type): array
     {
         return [
             'revision' => 123,
