@@ -62,11 +62,12 @@ class SubversionService implements SubversionServiceInterface
         [, $rawslugs] = RegexUtil::matchAll('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $html);
 
         [, $revision] = RegexUtil::match('/Revision (\d+):/', $html);
+        $revision = (int) $revision or throw new RuntimeException("Unable to get revision from {$type->plural()} index");
 
         $slugs = [];
         foreach ($rawslugs as $slug) {
             $slugs[urldecode($slug)] = [];
         }
-        return ['slugs' => $slugs, 'revision' => (int) $revision];
+        return ['slugs' => $slugs, 'revision' => $revision];
     }
 }

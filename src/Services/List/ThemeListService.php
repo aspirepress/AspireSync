@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Services\List;
 
 use App\ResourceType;
+use App\Services\Interfaces\RevisionServiceInterface;
+use App\Services\Interfaces\SubversionServiceInterface;
 use App\Services\Metadata\ThemeMetadataService;
-use App\Services\RevisionService;
-use App\Services\SubversionService;
 
 readonly class ThemeListService extends AbstractListService
 {
-    public function __construct(SubversionService $svn, ThemeMetadataService $meta, RevisionService $revisions)
+    public function __construct(SubversionServiceInterface $svn, ThemeMetadataService $meta, RevisionServiceInterface $revisions)
     {
         parent::__construct($svn, $meta, $revisions, ResourceType::Theme);
     }

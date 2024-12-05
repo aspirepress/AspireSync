@@ -8,6 +8,7 @@ use App\ResourceType;
 use App\Services\Interfaces\RevisionServiceInterface;
 use App\Services\Interfaces\SubversionServiceInterface;
 use App\Services\Metadata\MetadataServiceInterface;
+use App\Utilities\ArrayUtil;
 
 abstract readonly class AbstractListService implements ListServiceInterface
 {
@@ -29,7 +30,7 @@ abstract readonly class AbstractListService implements ListServiceInterface
      * @param string[] $filter
      * @return array<string|int, string[]>
      */
-    public function getItems(array $filter, ?int $min_age = null): array
+    public function getItems(?array $filter, ?int $min_age = null): array
     {
         $lastRevision = $this->revisions->getRevision($this->name);
         $updates      = $lastRevision
@@ -69,37 +70,13 @@ abstract readonly class AbstractListService implements ListServiceInterface
      * Reduces the items slated for update to only those specified in the filter.
      *
      * @param  array<string|int, array{}> $slugs
-     * @param  string[]|null              $filter
+     * @param  string[]|null              $requested
      * @return array<string|int, array{}>
      */
-    protected function filter(array $slugs, ?array $filter, ?int $min_age): array
+    protected function filter(array $slugs, ?array $requested, ?int $min_age): array
     {
-        if (!$filter && !$min_age) {
-            return $slugs;
-        }
-
-        $filtered = $filter ? [] : $slugs;
-        $filter ??= [];
-
-        foreach ($filter as $slug) {
-            if (array_key_exists($slug, $slugs)) {
-                $filtered[$slug] = $slugs[$slug];
-            }
-        }
-        if (!$min_age) {
-            return $filtered;
-        }
-
-        $new = $this->meta->getPulledAfter(time() - $min_age);
-        $out = [];
-        foreach ($filtered as $slug => $value) {
-            $slug = (string) $slug; // LOLPHP: php will turn any numeric string key into an int
-            if ($new[$slug] ?? null) {
-                continue;
-            }
-            $out[$slug] = $value;
-        }
-        return $out;
+        $out = $requested ? ArrayUtil::onlyKeys($slugs, $requested) : $slugs;
+        return $min_age ? array_diff_key($out, $this->meta->getPulledAfter(time() - $min_age)) : $out;
     }
 
     /**
@@ -112,13 +89,13 @@ abstract readonly class AbstractListService implements ListServiceInterface
      */
     protected function addNewAndRequested(array $update, ?array $requested): array
     {
-        $all_slugs = $this->meta->getAllSlugs();
-        $all_svn   = $this->getAllSubversionSlugs();
+        $all_sync = $this->meta->getAllSlugs();
+        $all_svn  = $this->getAllSubversionSlugs();
 
-        foreach ($all_svn as $slug => $versions) {
+        foreach (array_keys($all_svn) as $slug) {
             $slug = (string) $slug; // php will turn numeric keys into ints
-            if (!array_key_exists($slug, $all_slugs) || in_array($slug, $requested, true)) {
-                $update[$slug] = $versions;
+            if (!array_key_exists($slug, $all_sync) || in_array($slug, $requested, true)) {
+                $update[$slug] = [];
             }
         }
         return $update;
