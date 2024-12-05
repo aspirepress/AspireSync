@@ -54,7 +54,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
             $pending = $requested;
         } elseif ($input->getOption('download-all')) {
             $this->log->debug("Getting list of all $category...");
-            $pending = $this->listService->getItems(null);
+            $pending = $this->listService->getItems();
         } else {
             $this->log->debug("Getting list of updated $category...");
             $pending = $this->listService->getUpdatedItems();

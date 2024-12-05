@@ -9,7 +9,6 @@ use App\Integrations\Wordpress\WordpressApiConnector;
 use App\ResourceType;
 use App\Services\List\ListServiceInterface;
 use App\Services\Metadata\MetadataServiceInterface;
-use App\Utilities\ArrayUtil;
 use App\Utilities\StringUtil;
 use Exception;
 use Generator;
@@ -40,12 +39,12 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $category = $this->resource->value . 's';
+        $category = $this->resource->plural();
         $this->setName("sync:meta:fetch:$category")
             ->setDescription("Fetches meta data of all new and changed $category")
             ->addOption(
                 'update-all',
-                'u',
+                null,
                 InputOption::VALUE_NONE,
                 'Update all metadata; otherwise, we only update what has changed'
             )
@@ -58,7 +57,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
             ->addOption(
                 $category,
                 null,
-                InputOption::VALUE_OPTIONAL,
+                InputOption::VALUE_REQUIRED,
                 "List of $category (separated by commas) to explicitly update"
             );
     }
@@ -76,7 +75,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
             $toUpdate = $requested;
         } else {
             $this->log->debug("Getting list of $category...");
-            $toUpdate = $this->listService->getItems(null);
+            $toUpdate = $this->listService->getItems();
             if ($min_age) {
                 $toUpdate = array_diff_key($toUpdate, $this->meta->getPulledAfter(time() - $min_age));
             }
@@ -111,10 +110,10 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
     }
 
     /**
-     * @param string[] $slugs
+     * @param (string|int)[] $slugs
      * @return Generator<Request>
      */
-    protected function generateRequests(array $slugs): Generator
+    protected function generateRequests(iterable $slugs): Generator
     {
         foreach ($slugs as $slug) {
             yield $this->makeRequest((string) $slug);
