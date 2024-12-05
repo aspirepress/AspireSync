@@ -6,7 +6,7 @@ namespace App\Tests\Unit\Plugin;
 
 use App\Services\List\AbstractListService;
 use App\Tests\Stubs\MetadataServiceStub;
-use App\Tests\Stubs\RevisionMetadataServiceStub;
+use App\Tests\Stubs\RevisionServiceStub;
 use App\Tests\Stubs\SubversionServiceStub;
 use PHPUnit\Framework\TestCase;
 
@@ -21,7 +21,7 @@ class AbstractListServiceTest extends TestCase
             {
                 $svn  = new SubversionServiceStub();
                 $meta = new MetadataServiceStub();
-                $rev  = new RevisionMetadataServiceStub();
+                $rev  = new RevisionServiceStub();
                 parent::__construct($svn, $meta, $rev, 'stuff');
             }
         };

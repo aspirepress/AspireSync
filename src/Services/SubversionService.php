@@ -15,7 +15,7 @@ class SubversionService implements SubversionServiceInterface
 {
     public function __construct(private readonly GuzzleClient $guzzle) {}
 
-    /** @return array{slugs: array<string, string[]>, revision: int} */
+    /** @return array{slugs: array<string|int, array{}>, revision: int} */
     public function getUpdatedSlugs(ResourceType $type, int $prevRevision, int $lastRevision): array
     {
         if ($prevRevision === $lastRevision) {
@@ -44,14 +44,14 @@ class SubversionService implements SubversionServiceInterface
             $path     = (string) $entry->paths->path[0];
             $matches  = RegexUtil::match('#/([A-z\-_]+)/#', $path);
             if ($matches) {
-                $item         = trim($matches[1]);
-                $slugs[$item] = [];
+                $slug         = trim($matches[1]);
+                $slugs[$slug] = [];
             }
         }
-        return ['revision' => $revision, 'slugs' => $slugs];
+        return ['slugs' => $slugs, 'revision' => $revision];
     }
 
-    /** @return array{slugs: string[], revision: int} */
+    /** @return array{slugs: array<string|int, array{}>, revision: int} */
     public function scrapeSlugsFromIndex(ResourceType $type): array
     {
         $html = $this->guzzle
@@ -59,13 +59,14 @@ class SubversionService implements SubversionServiceInterface
             ->getBody()
             ->getContents();
 
-        [, $slugs] = RegexUtil::matchAll('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $html);
+        [, $rawslugs] = RegexUtil::matchAll('#<li><a href="([^/]+)/">([^/]+)/</a></li>#', $html);
 
         [, $revision] = RegexUtil::match('/Revision (\d+):/', $html);
 
-        $slugs = array_map(urldecode(...), $slugs);
-        // $slugs = array_map(fn ($slug) => (string) urldecode($slug), $slugs);
-
+        $slugs = [];
+        foreach ($rawslugs as $slug) {
+            $slugs[urldecode($slug)] = [];
+        }
         return ['slugs' => $slugs, 'revision' => (int) $revision];
     }
 }

@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\ResourceType;
-use App\Services\Interfaces\RevisionMetadataServiceInterface;
+use App\Services\Interfaces\RevisionServiceInterface;
 use Doctrine\DBAL\Connection;
 use RuntimeException;
 
-class RevisionMetadataService implements RevisionMetadataServiceInterface
+class RevisionService implements RevisionServiceInterface
 {
     /** @var array<string, array{revision:string, added:string}> */
     private array $revisionData = [];
@@ -22,29 +21,29 @@ class RevisionMetadataService implements RevisionMetadataServiceInterface
         $this->loadLatestRevisions();
     }
 
-    public function setCurrentRevision(ResourceType $type, int $revision): void
+    public function setCurrentRevision(string $key, int $revision): void
     {
-        $this->currentRevision[$type->value] = ['revision' => $revision];
+        $this->currentRevision[$key] = ['revision' => $revision];
     }
 
-    public function preserveRevision(ResourceType $type): string
+    public function preserveRevision(string $key): string
     {
-        if (!isset($this->currentRevision[$type->value])) {
-            throw new RuntimeException('You did not specify a revision for action ' . $type);
+        if (!isset($this->currentRevision[$key])) {
+            throw new RuntimeException("No revision found for '$key'");
         }
-        $revision = $this->currentRevision[$type->value]['revision'];
-        $this->connection->insert('revisions', ['action' => $type, 'revision' => $revision, 'created' => time()]);
+        $revision = $this->currentRevision[$key]['revision'];
+        $this->connection->insert('revisions', ['action' => $key, 'revision' => $revision, 'created' => time()]);
         return (string) $revision;
     }
 
-    public function getRevisionForType(ResourceType $type): ?string
+    public function getRevision(string $key): ?string
     {
-        return $this->revisionData[$type->value]['revision'] ?? null;
+        return $this->revisionData[$key]['revision'] ?? null;
     }
 
-    public function getRevisionDateForType(ResourceType $type): ?string
+    public function getRevisionDate(string $key): ?string
     {
-        return $this->revisionData[$type->value]['added'] ?? null;
+        return $this->revisionData[$key]['added'] ?? null;
     }
 
     private function loadLatestRevisions(): void
