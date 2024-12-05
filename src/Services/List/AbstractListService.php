@@ -5,23 +5,25 @@ declare(strict_types=1);
 namespace App\Services\List;
 
 use App\ResourceType;
-use App\Services\Interfaces\RevisionServiceInterface;
 use App\Services\Interfaces\SubversionServiceInterface;
 use App\Services\Metadata\MetadataServiceInterface;
 use App\Utilities\ArrayUtil;
+use Doctrine\ORM\EntityManagerInterface;
+use RuntimeException;
 
-abstract readonly class AbstractListService implements ListServiceInterface
+abstract class AbstractListService implements ListServiceInterface
 {
     protected string $name;
 
     public function __construct(
         protected SubversionServiceInterface $svn,
         protected MetadataServiceInterface $meta,
-        protected RevisionServiceInterface $revisions,
+        protected EntityManagerInterface $em,
         protected ResourceType $type,
         protected string $origin = 'wp_org',
     ) {
         $this->name = "list-{$type->plural()}@$origin";
+        $this->loadLatestRevisions();
     }
 
     //region Public API
@@ -32,26 +34,35 @@ abstract readonly class AbstractListService implements ListServiceInterface
      */
     public function getItems(?array $filter, ?int $min_age = null): array
     {
-        $lastRevision = $this->revisions->getRevision($this->name);
+        $lastRevision = $this->getRevision($this->name);
         $updates      = $lastRevision
             ? $this->getUpdatableItems($filter, $lastRevision)
             : $this->getAllSubversionSlugs();
         return $this->filter($updates, $filter, $min_age);
     }
 
-    public function preserveRevision(): string
-    {
-        return $this->revisions->preserveRevision($this->name);
-    }
-
     /** @return array<string|int, array{}> */
     public function getUpdatedItems(?array $requested): array
     {
-        $revision = $this->revisions->getRevisionDate($this->name);
+        $revision = $this->getRevisionDate($this->name);
         if ($revision) {
             $revision = \Safe\date('Y-m-d', \Safe\strtotime($revision));
         }
         return $this->filter($this->meta->getOpenVersions($revision), $requested, null);
+    }
+
+    public function preserveRevision(): string
+    {
+        $name = $this->name;
+        if (!isset($this->currentRevision[$name])) {
+            throw new RuntimeException("No revision found for '$name'");
+        }
+        $revision = $this->currentRevision[$name]['revision'];
+        $this->em->getConnection()->insert(
+            'revisions',
+            ['action' => $name, 'revision' => $revision, 'created' => time()]
+        );
+        return (string) $revision;
     }
 
     //endregion
@@ -62,7 +73,7 @@ abstract readonly class AbstractListService implements ListServiceInterface
     protected function getAllSubversionSlugs(): array
     {
         $result = $this->svn->scrapeSlugsFromIndex($this->type);
-        $this->revisions->setCurrentRevision($this->name, $result['revision']);
+        $this->setCurrentRevision($this->name, $result['revision']);
         return $result['slugs'];
     }
 
@@ -112,8 +123,48 @@ abstract readonly class AbstractListService implements ListServiceInterface
         $revision = $output['revision'];
         $slugs    = $output['slugs'];
 
-        $this->revisions->setCurrentRevision($this->name, $revision);
+        $this->setCurrentRevision($this->name, $revision);
         return $this->addNewAndRequested($slugs, $requested);
+    }
+
+    //endregion
+
+    //region RevisionService inlined
+
+    /** @var array<string, array{revision:string, added:string}> */
+    private array $revisionData = [];
+
+    /** @var array<string, string[]> */
+    private array $currentRevision = [];
+
+    public function setCurrentRevision(string $key, int $revision): void
+    {
+        $this->currentRevision[$key] = ['revision' => $revision];
+    }
+
+    public function getRevision(string $key): ?string
+    {
+        return $this->revisionData[$key]['revision'] ?? null;
+    }
+
+    public function getRevisionDate(string $key): ?string
+    {
+        return $this->revisionData[$key]['added'] ?? null;
+    }
+
+    private function loadLatestRevisions(): void
+    {
+        $sql = <<<SQL
+                SELECT action, revision, added
+                FROM (SELECT *, row_number() OVER (PARTITION by action ORDER BY added DESC) AS rownum FROM revisions) revs
+                WHERE revs.rownum = 1;
+            SQL;
+        foreach ($this->em->getConnection()->fetchAllAssociative($sql) as $revision) {
+            $this->revisionData[$revision['action']] = [
+                'revision' => $revision['revision'],
+                'added'    => $revision['created'],
+            ];
+        }
     }
 
     //endregion
