@@ -9,6 +9,7 @@ use App\Integrations\Wordpress\WordpressApiConnector;
 use App\ResourceType;
 use App\Services\List\ListServiceInterface;
 use App\Services\Metadata\MetadataServiceInterface;
+use App\Utilities\ArrayUtil;
 use App\Utilities\StringUtil;
 use Exception;
 use Generator;
@@ -64,21 +65,29 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $category = $this->resource->value . 's';
+        $category = $this->resource->plural();
         $this->log->notice("Running command {$this->getName()}");
         $this->startTimer();
 
-        $items   = StringUtil::explodeAndTrim($input->getOption($category) ?? '');
-        $min_age = (int) $input->getOption('skip-newer-than-secs') ?: null;
+        $requested = array_fill_keys(StringUtil::explodeAndTrim($input->getOption($category) ?? ''), []);
+        $min_age = (int) $input->getOption('skip-newer-than-secs');
 
-        $this->log->debug("Getting list of $category...");
-        $toUpdate = $this->listService->getItems($items, $min_age);
-        $this->log->info(count($toUpdate) . " $category to download metadata for...");
+        if ($requested) {
+            $toUpdate = $requested;
+        } else {
+            $this->log->debug("Getting list of $category...");
+            $toUpdate = $this->listService->getItems(null);
+            if ($min_age) {
+                $toUpdate = array_diff_key($toUpdate, $this->meta->getPulledAfter(time() - $min_age));
+            }
+        }
 
         if (count($toUpdate) === 0) {
             $this->log->info('No metadata to download; exiting.');
             return Command::SUCCESS;
         }
+
+        $this->log->info(count($toUpdate) . " $category to download metadata for...");
 
         $pool = $this->api->pool(
             requests: $this->generateRequests(array_keys($toUpdate)),
@@ -90,7 +99,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $promise = $pool->send();
         $promise->wait();
 
-        if ($input->getOption($category)) {
+        if ($requested) {
             $this->log->debug("Not saving revision when --$category was specified");
         } else {
             $revision = $this->listService->preserveRevision();

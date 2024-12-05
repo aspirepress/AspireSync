@@ -46,17 +46,18 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
 
         $this->log->notice("Running command {$this->getName()}");
         $this->startTimer();
-        $force                = $input->getOption('force');
-        $numVersions          = $input->getArgument('num-versions');
-        $listing              = $input->getOption($category);
-        $listing and $listing = StringUtil::explodeAndTrim($listing);
+        $force       = $input->getOption('force');
+        $numVersions = $input->getArgument('num-versions');
+        $requested   = array_fill_keys(StringUtil::explodeAndTrim($input->getOption($category) ?? ''), []);
 
-        $this->log->debug("Getting list of $category...");
-
-        if ($input->getOption('download-all')) {
-            $pending = $this->listService->getItems($listing);
+        if ($requested) {
+            $pending = $requested;
+        } elseif ($input->getOption('download-all')) {
+            $this->log->debug("Getting list of all $category...");
+            $pending = $this->listService->getItems(null);
         } else {
-            $pending = $this->listService->getUpdatedItems($listing);
+            $this->log->debug("Getting list of updated $category...");
+            $pending = $this->listService->getUpdatedItems();
         }
 
         $this->log->debug(count($pending) . " $category to download...");
