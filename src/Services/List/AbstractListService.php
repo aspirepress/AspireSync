@@ -112,16 +112,15 @@ abstract readonly class AbstractListService implements ListServiceInterface
      */
     protected function addNewAndRequested(array $update, ?array $requested): array
     {
-        $allSlugs = $this->getAllSubversionSlugs();
+        $all_slugs = $this->meta->getAllSlugs();
+        $all_svn   = $this->getAllSubversionSlugs();
 
-        foreach ($allSlugs as $slug => $versions) {
-            $slug   = (string) $slug;
-            $status = $this->meta->getStatus($slug);
-            if (!$status || in_array($slug, $requested, true)) {
-                $update[$slug] = [];
+        foreach ($all_svn as $slug => $versions) {
+            $slug = (string) $slug; // php will turn numeric keys into ints
+            if (!array_key_exists($slug, $all_slugs) || in_array($slug, $requested, true)) {
+                $update[$slug] = $versions;
             }
         }
-
         return $update;
     }
 

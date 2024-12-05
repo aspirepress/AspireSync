@@ -43,4 +43,14 @@ class MetadataServiceStub implements MetadataServiceInterface
     {
         // nothingness
     }
+
+    public function getPulledAfter(int $timestamp): array
+    {
+        return [];
+    }
+
+    public function getAllSlugs(): array
+    {
+        return [];
+    }
 }

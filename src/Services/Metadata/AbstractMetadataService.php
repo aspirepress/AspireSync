@@ -26,6 +26,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         protected string $origin = 'wp_org',
     ) {}
 
+    //region Public API
+
     /** @param array<string, mixed> $metadata */
     public function save(array $metadata): void
     {
@@ -97,13 +99,6 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         );
     }
 
-    // These getters are more efficient than using ->fetch()
-    public function getStatus(string $slug): ?string
-    {
-        $sql = "select status from sync where slug = :slug and type = :type and origin = :origin";
-        return $this->connection()->fetchOne($sql, ['slug' => $slug, ...$this->stdArgs()]) ?: null;
-    }
-
     /** @return array<string,int> */
     public function getPulledAfter(int $timestamp): array
     {
@@ -146,6 +141,11 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         return $out;
     }
 
+    public function getAllSlugs(): array
+    {
+        return $this->querySync()->select('slug')->executeQuery()->fetchFirstColumn() ?: [];
+    }
+
     public function markProcessed(string $slug, string $version): void
     {
         $sql = <<<'SQL'
@@ -155,8 +155,6 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
               AND sync_id = (SELECT id FROM sync WHERE slug = :slug AND type = :type AND origin = :origin)
             SQL;
         $this->connection()->executeQuery($sql, ['stamp' => time(), 'slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
-        // Most things that call this already log in some other way
-        // $this->log->debug("Processed $slug", ['type' => $this->resource->value, 'slug' => $slug, 'version' => $version]);
     }
 
     public function exportAllMetadata(): Generator
@@ -195,6 +193,10 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         );
         return $results->fetchFirstColumn();
     }
+
+    //endregion
+
+    //region Protected/Private API
 
     /** @return array{type: string, origin: string} */
     protected function stdArgs(): array
@@ -237,4 +239,6 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     {
         return $this->em->getConnection();
     }
+
+    //endregion
 }
