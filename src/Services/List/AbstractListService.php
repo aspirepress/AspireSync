@@ -30,14 +30,14 @@ abstract class AbstractListService implements ListServiceInterface
     /** @return array<string|int, string[]> */
     public function getItems(): array
     {
-        $lastRevision = $this->getRevision($this->name);
+        $lastRevision = $this->getRevision();
         return $lastRevision ? $this->getUpdatableItems($lastRevision) : $this->getAllSubversionSlugs();
     }
 
     /** @return array<string|int, array{}> */
     public function getUpdatedItems(): array
     {
-        $revision = $this->getRevisionDate($this->name);
+        $revision = $this->getRevisionDate();
         if ($revision) {
             $revision = \Safe\date('Y-m-d', \Safe\strtotime($revision));
         }
@@ -66,7 +66,7 @@ abstract class AbstractListService implements ListServiceInterface
     protected function getAllSubversionSlugs(): array
     {
         $result = $this->svn->scrapeSlugsFromIndex($this->type);
-        $this->setCurrentRevision($this->name, $result['revision']);
+        $this->setCurrentRevision($result['revision']);
         return $result['slugs'];
     }
 
@@ -76,7 +76,7 @@ abstract class AbstractListService implements ListServiceInterface
         $output   = $this->svn->getUpdatedSlugs($this->type, 0, (int) $lastRevision); // FIXME second arg should be prevRevision
         $revision = $output['revision'];
         $slugs    = $output['slugs'];
-        $this->setCurrentRevision($this->name, $revision);
+        $this->setCurrentRevision($revision);
         $new = array_diff_key($this->getAllSubversionSlugs(), $this->meta->getAllSlugs());
         return [...$slugs, ...$new];
     }
@@ -91,19 +91,19 @@ abstract class AbstractListService implements ListServiceInterface
     /** @var array<string, string[]> */
     private array $currentRevision = [];
 
-    public function setCurrentRevision(string $key, int $revision): void
+    public function setCurrentRevision(int $revision): void
     {
-        $this->currentRevision[$key] = ['revision' => $revision];
+        $this->currentRevision[$this->name] = ['revision' => $revision];
     }
 
-    public function getRevision(string $key): ?string
+    public function getRevision(): ?string
     {
-        return $this->revisionData[$key]['revision'] ?? null;
+        return $this->revisionData[$this->name]['revision'] ?? null;
     }
 
-    public function getRevisionDate(string $key): ?string
+    public function getRevisionDate(): ?string
     {
-        return $this->revisionData[$key]['added'] ?? null;
+        return $this->revisionData[$this->name]['added'] ?? null;
     }
 
     private function loadLatestRevisions(): void
