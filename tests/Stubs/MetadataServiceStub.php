@@ -34,7 +34,7 @@ class MetadataServiceStub implements MetadataServiceInterface
         return 'open';
     }
 
-    public function getOpenVersions(string $revDate = '1900-01-01'): array
+    public function getOpenVersions(?int $timestamp = 1): array
     {
         return [];
     }
