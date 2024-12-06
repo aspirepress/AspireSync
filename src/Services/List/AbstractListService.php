@@ -116,7 +116,7 @@ abstract class AbstractListService implements ListServiceInterface
         foreach ($this->em->getConnection()->fetchAllAssociative($sql) as $revision) {
             $this->revisionData[$revision['action']] = [
                 'revision' => $revision['revision'],
-                'added'    => $revision['created'],
+                'added'    => $revision['added'],
             ];
         }
     }
