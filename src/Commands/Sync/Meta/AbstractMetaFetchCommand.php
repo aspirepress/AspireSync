@@ -122,11 +122,12 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
 
     protected function onResponse(Response $saloonResponse): void
     {
-        $response = $saloonResponse->getPsrResponse();
-        $request  = $saloonResponse->getRequest();
-        $slug     = $request->slug ?? throw new Exception('Missing slug in request');
-
+        $slug = null;
         try {
+            $response = $saloonResponse->getPsrResponse();
+            $request  = $saloonResponse->getRequest();
+            $slug     = $request->slug ?? throw new Exception('Missing slug in request');
+
             $metadata = json_decode($response->getBody()->getContents(), assoc: true);
             $metadata = [
                 'slug'   => $slug,
@@ -134,51 +135,55 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 'status' => 'open',
                 ...$metadata,
             ];
+            if (!empty($metadata['versions'])) {
+                $this->log->info("$slug ... [" . count($metadata['versions']) . ' versions]');
+            } elseif (isset($metadata['version'])) {
+                $this->log->info("$slug ... [1 version]");
+            } elseif (isset($metadata['skipped'])) {
+                $this->log->info((string) $metadata['skipped']);
+            } else {
+                $this->log->info("$slug ... No versions found");
+            }
+            $this->meta->save($metadata);
         } catch (Exception $e) {
             $this->log->error("$slug ... ERROR: {$e->getMessage()}");
             return;
         }
-
-        if (!empty($metadata['versions'])) {
-            $this->log->info("$slug ... [" . count($metadata['versions']) . ' versions]');
-        } elseif (isset($metadata['version'])) {
-            $this->log->info("$slug ... [1 version]");
-        } elseif (isset($metadata['skipped'])) {
-            $this->log->info((string) $metadata['skipped']);
-        } else {
-            $this->log->info("$slug ... No versions found");
-        }
-
-        $this->meta->save($metadata);
     }
 
     protected function onError(Exception $exception): void
     {
-        if (!$exception instanceof RequestException) {
-            $this->log->error($exception->getMessage());
+        $slug = null;
+        try {
+            if (!$exception instanceof RequestException) {
+                $this->log->error($exception->getMessage());
+                return;
+            }
+            $saloonResponse = $exception->getResponse();
+            $response       = $saloonResponse->getPsrResponse();
+            $request        = $saloonResponse->getRequest();
+            $slug           = $request->slug ?? throw new Exception('Missing slug in request');
+            $code           = $response->getStatusCode();
+            $reason         = $response->getReasonPhrase();
+
+            $metadata = json_decode($response->getBody()->getContents(), assoc: true);
+            $error    = $metadata['error'] ?? null;
+
+            $status = match ($code) {
+                404 => $error === 'closed' ? 'closed' : 'not-found',
+                default => 'error',
+            };
+
+            if ($status === 'closed') {
+                $this->log->info("$slug ... [closed]");
+            } else {
+                $this->log->error("$slug ... $code $reason");
+            }
+
+            $this->meta->save(['slug' => $slug, 'name' => $slug, 'status' => $status, ...$metadata]);
+        } catch (Exception $e) {
+            $this->log->error("$slug ... ERROR: {$e->getMessage()}");
             return;
         }
-        $saloonResponse = $exception->getResponse();
-        $response       = $saloonResponse->getPsrResponse();
-        $request        = $saloonResponse->getRequest();
-        $slug           = $request->slug ?? throw new Exception('Missing slug in request');
-        $code           = $response->getStatusCode();
-        $reason         = $response->getReasonPhrase();
-
-        $metadata = json_decode($response->getBody()->getContents(), assoc: true);
-        $error    = $metadata['error'] ?? null;
-
-        $status = match ($code) {
-            404 => $error === 'closed' ? 'closed' : 'not-found',
-            default => 'error',
-        };
-
-        if ($status === 'closed') {
-            $this->log->info("$slug ... [closed]");
-        } else {
-            $this->log->error("$slug ... $code $reason");
-        }
-
-        $this->meta->save(['slug' => $slug, 'name' => $slug, 'status' => $status, ...$metadata]);
     }
 }
