@@ -63,8 +63,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             $this->connection()->insert('sync_assets', [
                 'id'      => Uuid::uuid7()->toString(),
                 'sync_id' => $id,
-                'version' => $version,
-                'url'     => $url,
+                'version' => mb_substr((string) $version, 0, 32),
+                'url'     => mb_substr($url, 0, 4096),
                 'created' => time(),
             ]);
         }
