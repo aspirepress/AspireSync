@@ -51,7 +51,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'slug'     => mb_substr($metadata['slug'], 0, 255),
             'name'     => mb_substr($metadata['name'], 0, 255),
             'status'   => 'open',
-            'version'  => mb_substr($metadata['version'], 0, 32),
+            'version'  => mb_substr((string) $metadata['version'], 0, 32),
             'origin'   => $this->origin,
             'updated'  => strtotime($metadata['last_updated'] ?? 'now'),
             'pulled'   => time(),
