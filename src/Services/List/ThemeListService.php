@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\List;
 
+use App\ResourceType;
+use App\Services\Interfaces\SubversionServiceInterface;
 use App\Services\Metadata\ThemeMetadataService;
-use App\Services\RevisionMetadataService;
-use App\Services\SubversionService;
+use Doctrine\ORM\EntityManagerInterface;
 
-readonly class ThemeListService extends AbstractListService
+class ThemeListService extends AbstractListService
 {
-    public function __construct(SubversionService $svn, ThemeMetadataService $meta, RevisionMetadataService $revisions)
+    public function __construct(SubversionServiceInterface $svn, ThemeMetadataService $meta, EntityManagerInterface $em)
     {
-        parent::__construct($svn, $meta, $revisions, 'themes');
+        parent::__construct($svn, $meta, $em, ResourceType::Theme);
     }
 }

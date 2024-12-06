@@ -21,12 +21,14 @@ interface MetadataServiceInterface
     /** @param array<string, mixed> $metadata */
     public function save(array $metadata): void;
 
-    public function getStatus(string $slug): ?string;
-
-    public function getPulledAsTimestamp(string $slug): ?int;
-
-    /** @return array<string, string[]> */
+    /** @return array<string|int, string[]> */
     public function getOpenVersions(string $revDate = '1900-01-01'): array;
 
     public function markProcessed(string $slug, string $version): void;
+
+    /** @return array<string,int> */
+    public function getPulledAfter(int $timestamp): array;
+
+    /** @return array<string|int, array{}> */
+    public function getAllSlugs(): array;
 }

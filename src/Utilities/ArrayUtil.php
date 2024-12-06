@@ -28,6 +28,26 @@ class ArrayUtil
         return $assoc;
     }
 
+    /**
+     * @param array<string|int,mixed> $arr
+     * @param string[] $keys
+     * @return array<string|int,mixed>
+     */
+    public static function onlyKeys(array $arr, array $keys): array
+    {
+        return array_intersect_key($arr, array_flip($keys));
+    }
+
+    /**
+     * @param array<string|int,mixed> $arr
+     * @param string[] $keys
+     * @return array<string|int,mixed>
+     */
+    public static function withoutKeys(array $arr, array $keys): array
+    {
+        return array_diff_key($arr, array_flip($keys));
+    }
+
     private function __construct()
     {
         // not instantiable

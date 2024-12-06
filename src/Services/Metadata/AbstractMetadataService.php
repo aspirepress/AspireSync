@@ -7,22 +7,26 @@ namespace App\Services\Metadata;
 use App\ResourceType;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\ORM\EntityManagerInterface;
 use Generator;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
-use Safe\DateTimeImmutable;
 
 use function Safe\json_decode;
 use function Safe\json_encode;
+use function Safe\strtotime;
 
 abstract readonly class AbstractMetadataService implements MetadataServiceInterface
 {
     public function __construct(
-        protected Connection $connection,
+        protected EntityManagerInterface $em,
         protected LoggerInterface $log,
         protected ResourceType $resource,
         protected string $origin = 'wp_org',
     ) {}
+
+    //region Public API
 
     /** @param array<string, mixed> $metadata */
     public function save(array $metadata): void
@@ -33,7 +37,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'open'  => $this->saveOpen(...),
             default => $this->saveError(...),
         };
-        $this->connection->transactional(fn() => $method($metadata));
+        $this->connection()->transactional(fn() => $method($metadata));
     }
 
     /** @param array<string, mixed> $metadata */
@@ -47,20 +51,21 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'slug'     => mb_substr($metadata['slug'], 0, 255),
             'name'     => mb_substr($metadata['name'], 0, 255),
             'status'   => 'open',
-            'version'  => $metadata['version'],
+            'version'  => mb_substr($metadata['version'], 0, 32),
             'origin'   => $this->origin,
-            'updated'  => \Safe\date('c', \Safe\strtotime($metadata['last_updated'])),
-            'pulled'   => \Safe\date('c'),
+            'updated'  => strtotime($metadata['last_updated'] ?? 'now'),
+            'pulled'   => time(),
             'metadata' => $metadata,
         ]);
 
         $versions = $metadata['versions'] ?: [$metadata['version'] => $metadata['download_link']];
         foreach ($versions as $version => $url) {
-            $this->connection->insert('sync_assets', [
+            $this->connection()->insert('sync_assets', [
                 'id'      => Uuid::uuid7()->toString(),
                 'sync_id' => $id,
                 'version' => $version,
                 'url'     => $url,
+                'created' => time(),
             ]);
         }
         $this->log->debug(
@@ -83,8 +88,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'status'   => $status,
             'version'  => null,
             'origin'   => $this->origin,
-            'updated'  => $metadata['closed_date'] ?? \Safe\date('c'),
-            'pulled'   => \Safe\date('c'),
+            'updated'  => strtotime($metadata['closed_date'] ?? 'now'),
+            'pulled'   => time(),
             'metadata' => $metadata,
         ];
         $this->insertSync($row);
@@ -94,48 +99,40 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         );
     }
 
-    // These getters are more efficient than using ->fetch()
-    public function getStatus(string $slug): ?string
+    /** @return array<string,int> */
+    public function getPulledAfter(int $timestamp): array
     {
-        $sql = "select status from sync where slug = :slug and type = :type and origin = :origin";
-        return $this->connection->fetchOne($sql, ['slug' => $slug, ...$this->stdArgs()]) ?: null;
-    }
-
-    public function getPulledAsTimestamp(string $slug): ?int
-    {
-        $sql    = "select unixepoch(pulled) from sync where slug = :slug and type = :type and origin = :origin";
-        $pulled = $this->connection->fetchOne($sql, ['slug' => $slug, ...$this->stdArgs()]);
-        return (int) $pulled ?: null;
+        return $this->querySync()
+            ->select('slug', 'pulled')
+            ->andWhere('pulled > :timestamp')
+            ->setParameter('timestamp', $timestamp)
+            ->executeQuery()
+            ->fetchAllKeyValue();
     }
 
     public function getDownloadUrl(string $slug, string $version): ?string
     {
-        $sql    = <<<'SQL'
-                SELECT url
-                FROM sync_assets 
-                    JOIN sync ON sync.id = sync_assets.sync_id 
-                WHERE sync.slug = :slug 
-                  AND sync.type = :type
-                  AND sync.origin = :origin
-                  AND sync_assets.version = :version
-            SQL;
-        $result = $this->connection->fetchAssociative($sql, ['slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
-        return $result['url'] ?? null;
+        return $this->querySyncAssets($slug)
+            ->select('url')
+            ->where('sync_assets.version = :version')
+            ->setParameter('version', $version)
+            ->fetchOne();
     }
 
     /** @return array<string, string[]> [slug => [versions]] */
     public function getOpenVersions(string $revDate = '1900-01-01'): array
     {
-        $sql    = <<<SQL
+        $stamp  = strtotime($revDate);
+        $sql = <<<SQL
                 SELECT slug, sync_assets.version 
                 FROM sync_assets
                     JOIN sync ON sync.id = sync_assets.sync_id 
                 WHERE status = 'open'
-                  AND pulled >= :revDate
+                  AND pulled >= :stamp
                   AND sync.type = :type
                   AND sync.origin = :origin
             SQL;
-        $result = $this->connection->fetchAllAssociative($sql, ['revDate' => $revDate, ...$this->stdArgs()]);
+        $result = $this->connection()->fetchAllAssociative($sql, ['stamp' => $stamp, ...$this->stdArgs()]);
 
         $out = [];
         foreach ($result as $row) {
@@ -144,23 +141,26 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         return $out;
     }
 
+    public function getAllSlugs(): array
+    {
+        return $this->querySync()->select('slug')->executeQuery()->fetchFirstColumn() ?: [];
+    }
+
     public function markProcessed(string $slug, string $version): void
     {
         $sql = <<<'SQL'
             UPDATE sync_assets 
-            SET processed = current_timestamp 
+            SET processed = :stamp 
             WHERE version = :version
               AND sync_id = (SELECT id FROM sync WHERE slug = :slug AND type = :type AND origin = :origin)
             SQL;
-        $this->connection->executeQuery($sql, ['slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
-        // Most things that call this already log in some other way
-        // $this->log->debug("Processed $slug", ['type' => $this->resource->value, 'slug' => $slug, 'version' => $version]);
+        $this->connection()->executeQuery($sql, ['stamp' => time(), 'slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
     }
 
     public function exportAllMetadata(): Generator
     {
         $sql  = "select * from sync where status in ('open', 'closed') and type = :type and origin = :origin";
-        $rows = $this->connection->executeQuery($sql, $this->stdArgs());
+        $rows = $this->connection()->executeQuery($sql, $this->stdArgs());
         while ($row = $rows->fetchAssociative()) {
             $metadata = json_decode($row['metadata'], true);
             unset($row['metadata']);
@@ -186,7 +186,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
               and sync.origin = :origin
             SQL;
 
-        $results = $this->connection->executeQuery(
+        $results = $this->connection()->executeQuery(
             $sql,
             ['slug' => $slug, 'versions' => $versions, ...$this->stdArgs()],
             ['versions' => ArrayParameterType::STRING]
@@ -194,39 +194,51 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         return $results->fetchFirstColumn();
     }
 
+    //endregion
+
+    //region Protected/Private API
+
     /** @return array{type: string, origin: string} */
     protected function stdArgs(): array
     {
         return ['type' => $this->resource->value, 'origin' => $this->origin];
     }
 
-    // keep fetch protected so we don't expose the raw db schema publicly
-    /** @return array<string, string|array<string, mixed>>|null */
-    protected function fetch(string $slug): ?array
+    protected function querySync(): QueryBuilder
     {
-        $sql    = "select * from sync where slug = :slug and type = :type and origin = :origin";
-        $params = ['slug' => $slug, ...$this->stdArgs()];
-        $item   = $this->connection->fetchAssociative($sql, $params);
-        return [
-            'id'       => $item['id'],
-            'type'     => $item['type'],
-            'slug'     => $item['slug'],
-            'name'     => $item['name'],
-            'status'   => $item['status'],
-            'version'  => $item['version'],
-            'origin'   => $item['origin'],
-            'updated'  => new DateTimeImmutable($item['updated']),
-            'pulled'   => new DateTimeImmutable($item['pulled']),
-            'metadata' => json_decode($item['metadata'] ?? 'null'),
-        ];
+        return $this->connection()->createQueryBuilder()
+            ->select('*')
+            ->from('sync')
+            ->andWhere('type = :type')
+            ->andWhere('origin = :origin')
+            ->setParameter('type', $this->resource->value)
+            ->setParameter('origin', $this->origin);
     }
 
-    /** @param array{slug: string, metadata: mixed} $args */
+    protected function querySyncAssets(string $slug): QueryBuilder
+    {
+        return $this->connection()->createQueryBuilder()
+            ->select('*')
+            ->from('sync_assets')
+            ->andWhere('sync_assets.sync_id = (SELECT id FROM sync WHERE slug = :slug AND type = :type AND origin = :origin)')
+            ->setParameter('slug', $slug)
+            ->setParameter('type', $this->resource->value)
+            ->setParameter('origin', $this->origin);
+    }
+
+    /** @param array<string, mixed> $args */
     protected function insertSync(array $args): void
     {
         $args['metadata'] = json_encode($args['metadata']);
-        $conn             = $this->connection;
+        $conn             = $this->connection();
         $conn->delete('sync', ['slug' => $args['slug'], ...$this->stdArgs()]);
         $conn->insert('sync', $args);
     }
+
+    private function connection(): Connection
+    {
+        return $this->em->getConnection();
+    }
+
+    //endregion
 }

@@ -4,142 +4,121 @@ declare(strict_types=1);
 
 namespace App\Services\List;
 
-use App\Services\Interfaces\RevisionMetadataServiceInterface;
+use App\ResourceType;
 use App\Services\Interfaces\SubversionServiceInterface;
 use App\Services\Metadata\MetadataServiceInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use RuntimeException;
 
-abstract readonly class AbstractListService implements ListServiceInterface
+abstract class AbstractListService implements ListServiceInterface
 {
+    protected string $name;
+
     public function __construct(
         protected SubversionServiceInterface $svn,
         protected MetadataServiceInterface $meta,
-        protected RevisionMetadataServiceInterface $revisions,
-        protected string $category,
-    ) {}
+        protected EntityManagerInterface $em,
+        protected ResourceType $type,
+        protected string $origin = 'wp_org',
+    ) {
+        $this->name = "list-{$type->plural()}@$origin";
+        $this->loadLatestRevisions();
+    }
 
-    /**
-     * @param string[] $filter
-     * @return array<string, string[]>
-     */
-    public function getItems(array $filter, ?int $min_age = null): array
+    //region Public API
+
+    /** @return array<string|int, string[]> */
+    public function getItems(): array
     {
-        $lastRevision = $this->revisions->getRevisionForAction($this->category);
-        $updates      = $lastRevision
-            ? $this->getUpdatableItems($filter, $lastRevision)
-            : $this->getAllSubversionSlugs();
-        return $this->filter($updates, $filter, $min_age);
+        $lastRevision = $this->getRevision();
+        return $lastRevision ? $this->getUpdatableItems($lastRevision) : $this->getAllSubversionSlugs();
+    }
+
+    /** @return array<string|int, array{}> */
+    public function getUpdatedItems(): array
+    {
+        $revision = $this->getRevisionDate();
+        if ($revision) {
+            $revision = \Safe\date('Y-m-d', \Safe\strtotime($revision));
+        }
+        return $this->meta->getOpenVersions($revision);
     }
 
     public function preserveRevision(): string
     {
-        return $this->revisions->preserveRevision($this->category);
-    }
-
-    /**
-     * @return array<string|int, string[]>
-     *
-     * LOLPHP: should always return array<string, string[]> but numeric keys like '1976' get forcibly cast to int when read.
-     */
-    protected function getAllSubversionSlugs(): array
-    {
-        $result = $this->svn->scrapeSlugsFromIndex($this->category);
-        $this->revisions->setCurrentRevision($this->category, $result['revision']);
-
-        // transform to [slug => [versions]] format
-        $out = [];
-        foreach ($result['slugs'] as $slug) {
-            $out[$slug] = [];
+        $name = $this->name;
+        if (!isset($this->currentRevision[$name])) {
+            throw new RuntimeException("No revision found for '$name'");
         }
-        return $out;
+        $revision = $this->currentRevision[$name]['revision'];
+        $this->em->getConnection()->insert(
+            'revisions',
+            ['action' => $name, 'revision' => $revision, 'created' => time()]
+        );
+        return (string) $revision;
     }
 
-    public function getUpdatedItems(?array $requested): array
-    {
-        $revision = $this->revisions->getRevisionDateForAction($this->category);
-        if ($revision) {
-            $revision = \Safe\date('Y-m-d', \Safe\strtotime($revision));
-        }
-        return $this->filter($this->meta->getOpenVersions($revision), $requested, null);
-    }
+    //endregion
 
     //region Protected API
 
-    /**
-     * Reduces the items slated for update to only those specified in the filter.
-     *
-     * @param  array<string, string[]>  $items
-     * @param  array<int, string>|null  $filter
-     * @return array<string, string[]>
-     */
-    protected function filter(array $items, ?array $filter, ?int $min_age): array
+    /** @return array<string|int, array{}> */
+    protected function getAllSubversionSlugs(): array
     {
-        if (!$filter && !$min_age) {
-            return $items;
-        }
-
-        $filtered = $filter ? [] : $items;
-
-        foreach ($filter as $slug) {
-            if (array_key_exists($slug, $items)) {
-                $filtered[$slug] = $items[$slug];
-            }
-        }
-
-        $out = $min_age ? [] : $filtered;
-        if ($min_age) {
-            $cutoff = time() - $min_age;
-            foreach ($filtered as $slug => $value) {
-                $slug      = (string) $slug; // LOLPHP: php will turn any numeric string key into an int
-                $timestamp = $this->meta->getPulledAsTimestamp($slug);
-                if ($timestamp === null || $timestamp <= $cutoff) {
-                    $out[$slug] = $value;
-                }
-            }
-        }
-        return $out;
+        $result = $this->svn->scrapeSlugsFromIndex($this->type);
+        $this->setCurrentRevision($result['revision']);
+        return $result['slugs'];
     }
 
-    /**
-     * Takes the entire list of items, and adds any we have not seen before,
-     * plus merges items that we have explicitly queued for update.
-     *
-     * @param array<string, string[]> $update
-     * @param string[] $requested
-     * @return array<string, string[]>
-     */
-    protected function addNewAndRequested(array $update, ?array $requested): array
+    /** @return array<string, string[]> */
+    protected function getUpdatableItems(string $lastRevision): array
     {
-        $allSlugs = $this->getAllSubversionSlugs();
-
-        foreach ($allSlugs as $slug => $versions) {
-            $slug   = (string) $slug;
-            $status = $this->meta->getStatus($slug);
-            // Is this the first time we've seen the slug?
-            if (!$status) {
-                $update[$slug] = [];
-            }
-            if (in_array($slug, $requested, true)) {
-                $update[$slug] = [];
-            }
-        }
-
-        return $update;
-    }
-
-    /**
-     * @param string[] $requested
-     * @return array<string, string[]>
-     */
-    protected function getUpdatableItems(?array $requested, string $lastRevision): array
-    {
-        $output = $this->svn->getUpdatedSlugs($this->category, 0, (int) $lastRevision); // FIXME second arg should be prevRevision
-
+        $output   = $this->svn->getUpdatedSlugs($this->type, 0, (int) $lastRevision); // FIXME second arg should be prevRevision
         $revision = $output['revision'];
         $slugs    = $output['slugs'];
+        $this->setCurrentRevision($revision);
+        $new = array_diff_key($this->getAllSubversionSlugs(), $this->meta->getAllSlugs());
+        return [...$slugs, ...$new];
+    }
 
-        $this->revisions->setCurrentRevision($this->category, $revision);
+    //endregion
 
-        return $this->addNewAndRequested($slugs, $requested);
+    //region RevisionService inlined
+
+    /** @var array<string, array{revision:string, added:string}> */
+    private array $revisionData = [];
+
+    /** @var array<string, string[]> */
+    private array $currentRevision = [];
+
+    public function setCurrentRevision(int $revision): void
+    {
+        $this->currentRevision[$this->name] = ['revision' => $revision];
+    }
+
+    public function getRevision(): ?string
+    {
+        return $this->revisionData[$this->name]['revision'] ?? null;
+    }
+
+    public function getRevisionDate(): ?string
+    {
+        return $this->revisionData[$this->name]['added'] ?? null;
+    }
+
+    private function loadLatestRevisions(): void
+    {
+        $sql = <<<SQL
+                SELECT action, revision, added
+                FROM (SELECT *, row_number() OVER (PARTITION by action ORDER BY added DESC) AS rownum FROM revisions) revs
+                WHERE revs.rownum = 1;
+            SQL;
+        foreach ($this->em->getConnection()->fetchAllAssociative($sql) as $revision) {
+            $this->revisionData[$revision['action']] = [
+                'revision' => $revision['revision'],
+                'added'    => $revision['created'],
+            ];
+        }
     }
 
     //endregion

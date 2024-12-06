@@ -34,11 +34,6 @@ class MetadataServiceStub implements MetadataServiceInterface
         return 'open';
     }
 
-    public function getPulledAsTimestamp(string $slug): ?int
-    {
-        return 12345;
-    }
-
     public function getOpenVersions(string $revDate = '1900-01-01'): array
     {
         return [];
@@ -47,5 +42,15 @@ class MetadataServiceStub implements MetadataServiceInterface
     public function markProcessed(string $slug, string $version): void
     {
         // nothingness
+    }
+
+    public function getPulledAfter(int $timestamp): array
+    {
+        return [];
+    }
+
+    public function getAllSlugs(): array
+    {
+        return [];
     }
 }

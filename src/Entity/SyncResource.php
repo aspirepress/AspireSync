@@ -6,7 +6,6 @@ namespace App\Entity;
 
 use App\Repository\SyncResourceRepository;
 use App\ResourceType;
-use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -54,11 +53,11 @@ class SyncResource
 
         // when this record was synced
         #[ORM\Column]
-        public readonly DateTimeImmutable $pulled,
+        public readonly int $pulled,
 
         // last updated date in metadata
         #[ORM\Column]
-        public readonly ?DateTimeImmutable $updated,
+        public readonly ?int $updated,
 
         #[ORM\Column(nullable: true)]
         public readonly ?array $metadata = null,
