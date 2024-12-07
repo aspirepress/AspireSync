@@ -63,8 +63,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             $this->connection()->insert('sync_assets', [
                 'id'      => Uuid::uuid7()->toString(),
                 'sync_id' => $id,
-                'version' => $version,
-                'url'     => $url,
+                'version' => mb_substr((string) $version, 0, 32),
+                'url'     => mb_substr($url, 0, 4096),
                 'created' => time(),
             ]);
         }
@@ -120,9 +120,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     }
 
     /** @return array<string, string[]> [slug => [versions]] */
-    public function getOpenVersions(string $revDate = '1900-01-01'): array
+    public function getOpenVersions(int $timestamp = 1): array
     {
-        $stamp  = strtotime($revDate);
         $sql = <<<SQL
                 SELECT slug, sync_assets.version 
                 FROM sync_assets
@@ -132,7 +131,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
                   AND sync.type = :type
                   AND sync.origin = :origin
             SQL;
-        $result = $this->connection()->fetchAllAssociative($sql, ['stamp' => $stamp, ...$this->stdArgs()]);
+        $result = $this->connection()->fetchAllAssociative($sql, ['stamp' => $timestamp, ...$this->stdArgs()]);
 
         $out = [];
         foreach ($result as $row) {

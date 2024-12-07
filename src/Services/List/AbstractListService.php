@@ -37,11 +37,9 @@ abstract class AbstractListService implements ListServiceInterface
     /** @return array<string|int, array{}> */
     public function getUpdatedItems(): array
     {
-        $revision = $this->getRevisionDate();
-        if ($revision) {
-            $revision = \Safe\date('Y-m-d', \Safe\strtotime($revision));
-        }
-        return $this->meta->getOpenVersions($revision);
+        // HACK: return everything until meta and download versions of ListService get different names
+        return $this->meta->getOpenVersions(-1);    // FIXME: make getRevisionTime() work again
+        // return $this->meta->getOpenVersions($this->getRevisionTime());
     }
 
     public function preserveRevision(): string
@@ -101,9 +99,9 @@ abstract class AbstractListService implements ListServiceInterface
         return $this->revisionData[$this->name]['revision'] ?? null;
     }
 
-    public function getRevisionDate(): ?string
+    public function getRevisionTime(): int
     {
-        return $this->revisionData[$this->name]['added'] ?? null;
+        return $this->revisionData[$this->name]['added'] ?? 1;
     }
 
     private function loadLatestRevisions(): void
@@ -116,7 +114,7 @@ abstract class AbstractListService implements ListServiceInterface
         foreach ($this->em->getConnection()->fetchAllAssociative($sql) as $revision) {
             $this->revisionData[$revision['action']] = [
                 'revision' => $revision['revision'],
-                'added'    => $revision['created'],
+                'added'    => $revision['added'],
             ];
         }
     }

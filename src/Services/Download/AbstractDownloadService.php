@@ -70,8 +70,13 @@ abstract class AbstractDownloadService implements DownloadServiceInterface
         $this->filesystem->write($localPath, $contents);
     }
 
-    protected function onError(RequestException $exception): void
+    protected function onError(Exception $exception): void
     {
+        if (!($exception instanceof RequestException)) {
+            $this->log->error("ERROR: " . $exception->getMessage());
+            return;
+        }
+
         $saloonResponse = $exception->getResponse();
         $response       = $saloonResponse->getPsrResponse();
         $request        = $saloonResponse->getRequest();
