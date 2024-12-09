@@ -60,6 +60,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 InputOption::VALUE_REQUIRED,
                 "List of $category (separated by commas) to explicitly update"
             );
+        $this->listService->setName($this->getName());
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

@@ -6,6 +6,8 @@ namespace App\Services\List;
 
 interface ListServiceInterface
 {
+    public function setName(string $name): void;
+
     /** @return array<string, string[]> */
     public function getItems(): array;
 
