@@ -21,11 +21,15 @@ abstract class AbstractListService implements ListServiceInterface
         protected ResourceType $type,
         protected string $origin = 'wp_org',
     ) {
-        $this->name = "list-{$type->plural()}@$origin";
         $this->loadLatestRevisions();
     }
 
     //region Public API
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
 
     /** @return array<string|int, string[]> */
     public function getItems(): array

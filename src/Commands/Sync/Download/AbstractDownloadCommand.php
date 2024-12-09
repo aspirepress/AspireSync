@@ -38,6 +38,7 @@ abstract class AbstractDownloadCommand extends AbstractBaseCommand
             ->addOption($category, null, InputOption::VALUE_OPTIONAL, "List of $category to request")
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force download even if file exists')
             ->addOption('download-all', null, InputOption::VALUE_NONE, "Download all $category");
+        $this->listService->setName($this->getName());
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
