@@ -41,9 +41,7 @@ abstract class AbstractListService implements ListServiceInterface
     /** @return array<string|int, array{}> */
     public function getUpdatedItems(): array
     {
-        // HACK: return everything until meta and download versions of ListService get different names
-        return $this->meta->getOpenVersions(-1);    // FIXME: make getRevisionTime() work again
-        // return $this->meta->getOpenVersions($this->getRevisionTime());
+        return $this->meta->getOpenVersions($this->getRevisionTime());
     }
 
     public function preserveRevision(): string
