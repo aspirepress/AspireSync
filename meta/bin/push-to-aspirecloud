@@ -5,7 +5,6 @@
 type=$1
 [[ $type = 'plugins' ]] || [[ $type = 'themes' ]] || die "Usage: $0 plugins|themes"
 
-
 key=${ASPIRECLOUD_ADMIN_API_KEY:?variable not defined}
 url=${ASPIRECLOUD_ADMIN_API_URL:?variable not defined}
 
