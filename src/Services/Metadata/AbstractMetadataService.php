@@ -45,7 +45,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     {
         $id = Uuid::uuid7()->toString();
         $slug = mb_substr($metadata['slug'], 0, 255);
-        $version = mb_substr((string)$metadata['version'], 0, 32);
+        $version = mb_substr((string) $metadata['version'], 0, 32);
 
         if (!$clobber && $this->slugAndVersionExists($slug, $version)) {
             $this->log->debug("Not updating unmodified {$this->resource->value}", compact('slug', 'version'));
@@ -70,7 +70,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             $this->connection()->insert('sync_assets', [
                 'id' => Uuid::uuid7()->toString(),
                 'sync_id' => $id,
-                'version' => mb_substr((string)$version, 0, 32),
+                'version' => mb_substr((string) $version, 0, 32),
                 'url' => mb_substr($url, 0, 4096),
                 'created' => time(),
             ]);
@@ -267,27 +267,27 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     private function slugAndVersionExists(string $slug, string $version): bool
     {
         return $this
-                ->querySync()
-                ->select('1')
-                ->andWhere('slug = :slug')
-                ->andWhere('version = :version')
-                ->setParameter('slug', $slug)
-                ->setParameter('version', $version)
-                ->executeQuery()
-                ->fetchOne() !== false;
+            ->querySync()
+            ->select('1')
+            ->andWhere('slug = :slug')
+            ->andWhere('version = :version')
+            ->setParameter('slug', $slug)
+            ->setParameter('version', $version)
+            ->executeQuery()
+            ->fetchOne() !== false;
     }
 
     private function slugAndStatusExists(string $slug, string $status): bool
     {
         return $this
-                ->querySync()
-                ->select('1')
-                ->andWhere('slug = :slug')
-                ->andWhere('status = :status')
-                ->setParameter('slug', $slug)
-                ->setParameter('status', $status)
-                ->executeQuery()
-                ->fetchOne() !== false;
+            ->querySync()
+            ->select('1')
+            ->andWhere('slug = :slug')
+            ->andWhere('status = :status')
+            ->setParameter('slug', $slug)
+            ->setParameter('status', $status)
+            ->executeQuery()
+            ->fetchOne() !== false;
     }
 
     //endregion
