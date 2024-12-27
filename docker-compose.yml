@@ -4,6 +4,9 @@ services:
       context: .
       dockerfile: docker/webapp/Dockerfile
       target: dev
+    environment:
+      ASPIRECLOUD_ADMIN_API_URL: ${ASPIRECLOUD_ADMIN_API_URL}
+      ASPIRECLOUD_ADMIN_API_KEY: ${ASPIRECLOUD_ADMIN_API_KEY}
     ports:
       - ${LOCAL_HTTP_PORT:-8199}:80
     volumes:
