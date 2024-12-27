@@ -6,9 +6,6 @@ set -o errexit
 cd $(dirname $0)/../..
 base=$(pwd)
 
-[[ -f .env ]] && . .env
-[[ -f .env.local ]] && . .env.local
-
 function warn {
     echo "$@" >&2
 }
