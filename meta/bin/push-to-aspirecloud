@@ -2,17 +2,42 @@
 
 . $(dirname $0)/prelude.bash
 
-type=$1
-[[ $type = 'plugins' ]] || [[ $type = 'themes' ]] || die "Usage: $0 plugins|themes"
+URL=${ASPIRECLOUD_ADMIN_API_URL:?variable not defined}
+KEY=${ASPIRECLOUD_ADMIN_API_KEY:?variable not defined}
 
-key=${ASPIRECLOUD_ADMIN_API_KEY:?variable not defined}
-url=${ASPIRECLOUD_ADMIN_API_URL:?variable not defined}
+CHUNK_SIZE=${CHUNK_SIZE:-50} # values > 100 are likely to run into POST size limits
 
-bin/console sync:meta:dump:$type | curl -XPOST \
-  -H "Authorization: Bearer $key" \
-  -H 'Content-Type: application/nljson' \
-  -H 'Accept: application/json' \
-  --data-binary @- \
-  $CURL_EXTRA_ARGS \
-  $url/v1/import
+function main() {
+  local type=$1
+  [[ $type = 'plugins' ]] || [[ $type = 'themes' ]] || die "Usage: $0 plugins|themes"
 
+  local buffer=$(mktemp)
+  trap 'rm -f "$buffer"' EXIT
+
+  local count=0
+
+  while IFS= read -r line || [[ -n $line ]]; do
+    echo "$line" >> $buffer
+    (( count += 1 ))
+    echo -e -n "\ruploading $count $type ... "
+    [[ $(wc -l < $buffer) -ge $CHUNK_SIZE ]] && upload $buffer
+  done < <(bin/console sync:meta:dump:$type)
+
+  upload $buffer
+
+  echo "done"
+}
+
+function upload() {
+  buffer=$1
+  [[ -s $buffer ]] && curl --silent -XPOST \
+    -H "Authorization: Bearer $KEY" \
+    -H 'Content-Type: application/nljson' \
+    -H 'Accept: application/json' \
+    --data-binary @"$buffer" \
+    $CURL_EXTRA_ARGS \
+    "$URL/v1/import" > /dev/null
+  cp /dev/null $buffer
+}
+
+main "$@"
