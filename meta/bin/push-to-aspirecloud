@@ -5,7 +5,7 @@
 URL=${ASPIRECLOUD_ADMIN_API_URL:?variable not defined}
 KEY=${ASPIRECLOUD_ADMIN_API_KEY:?variable not defined}
 
-CHUNK_SIZE=${CHUNK_SIZE:-50} # values > 100 are likely to run into POST size limits
+CHUNK_SIZE=${CHUNK_SIZE:-100} # values > 100 are likely to run into POST size limits
 
 CURL_ARGS=${CURL_ARGS:-'--compressed'}
 
