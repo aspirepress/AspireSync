@@ -156,10 +156,11 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         $this->connection()->executeQuery($sql, ['stamp' => time(), 'slug' => $slug, 'version' => $version, ...$this->stdArgs()]);
     }
 
-    public function exportAllMetadata(): Generator
+    public function exportAllMetadata(int $after = 0): Generator
     {
-        $sql  = "select * from sync where status in ('open', 'closed') and type = :type and origin = :origin";
-        $rows = $this->connection()->executeQuery($sql, $this->stdArgs());
+        $query = $this->querySync()->select('*');
+        $after > 0 and $query->andWhere('pulled > :after')->setParameter('after', $after);
+        $rows = $query->executeQuery();
         while ($row = $rows->fetchAssociative()) {
             $metadata = json_decode($row['metadata'], true);
             unset($row['metadata']);
