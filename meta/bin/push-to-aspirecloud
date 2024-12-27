@@ -1,0 +1,19 @@
+#!/bin/bash
+
+. $(dirname $0)/prelude.bash
+
+type=$1
+[[ $type = 'plugins' ]] || [[ $type = 'themes' ]] || die "Usage: $0 plugins|themes"
+
+
+key=${ASPIRECLOUD_ADMIN_API_KEY:?variable not defined}
+url=${ASPIRECLOUD_ADMIN_API_URL:?variable not defined}
+
+bin/console sync:meta:dump:$type | curl -XPOST \
+  -H "Authorization: Bearer $key" \
+  -H 'Content-Type: application/nljson' \
+  -H 'Accept: application/json' \
+  --data-binary @- \
+  $CURL_EXTRA_ARGS \
+  $url/v1/import
+
