@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#
+# EXAMPLE: bin/console sync:meta:dump:plugins --after='-1 hour' | meta/bin/push-to-aspirecloud
+#
+
 . $(dirname $0)/prelude.bash
 
 URL=${ASPIRECLOUD_ADMIN_API_URL:?variable not defined}
@@ -10,9 +14,6 @@ CHUNK_SIZE=${CHUNK_SIZE:-100} # values > 100 are likely to run into POST size li
 CURL_ARGS=${CURL_ARGS:-'--compressed'}
 
 function main() {
-  local type=$1
-  [[ $type = 'plugins' ]] || [[ $type = 'themes' ]] || die "Usage: $0 plugins|themes"
-
   local buffer=$(mktemp)
   trap 'rm -f "$buffer"' EXIT
 
@@ -21,9 +22,9 @@ function main() {
   while IFS= read -r line || [[ -n $line ]]; do
     echo "$line" >> $buffer
     (( count += 1 ))
-    echo -e -n "\ruploading $count $type ... "
+    echo -e -n "\ruploading $count ... "
     [[ $(wc -l < $buffer) -ge $CHUNK_SIZE ]] && upload $buffer
-  done < <(bin/console sync:meta:dump:$type)
+  done
 
   upload $buffer
 
