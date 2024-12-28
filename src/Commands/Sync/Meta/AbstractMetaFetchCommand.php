@@ -26,6 +26,8 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
 {
     public const MAX_CONCURRENT_REQUESTS = 10;
 
+    private bool $clobber = false;
+
     public function __construct(
         protected readonly ListServiceInterface $listService,
         protected readonly MetadataServiceInterface $meta,
@@ -68,6 +70,8 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $category = $this->resource->plural();
         $this->log->notice("Running command {$this->getName()}");
         $this->startTimer();
+
+        $this->clobber = (bool) $input->getOption('update-all');
 
         $requested = array_fill_keys(StringUtil::explodeAndTrim($input->getOption($category) ?? ''), []);
         $min_age = (int) $input->getOption('skip-newer-than-secs');
@@ -124,6 +128,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
     protected function onResponse(Response $saloonResponse): void
     {
         $slug = null;
+
         try {
             $response = $saloonResponse->getPsrResponse();
             $request  = $saloonResponse->getRequest();
@@ -145,7 +150,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
             } else {
                 $this->log->info("$slug ... No versions found");
             }
-            $this->meta->save($metadata);
+            $this->meta->save($metadata, $this->clobber);
         } catch (Exception $e) {
             $this->log->error("$slug ... ERROR: {$e->getMessage()}");
             return;

@@ -19,7 +19,7 @@ interface MetadataServiceInterface
     public function exportAllMetadata(): Generator;
 
     /** @param array<string, mixed> $metadata */
-    public function save(array $metadata): void;
+    public function save(array $metadata, bool $clobber = false): void;
 
     /** @return array<string|int, string[]> */
     public function getOpenVersions(int $timestamp = 1): array;
