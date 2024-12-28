@@ -6,7 +6,7 @@ AspireSync is designed to enumerate and download the plugins and themes stored i
 
 * Download themes and plugins from the WordPress .org repository to the local filesystem or S3 storage.
 * Stores metadata and other information about every version of every plugin in sqlite.
-* Can export metadata as newline-delimited json for consumption by [AspireCloud](https://github.com/aspiresync/AspireCloud). 
+* Can export metadata as newline-delimited json for consumption by [AspireCloud](https://github.com/aspiresync/AspireCloud).
 * Can download all versions of plugins and themes, or just the latest version.
 * Handles closed and not found plugins/themes, preventing further download attempts for them.
 * Incremental updates, syncing only those items that have updated in subversion since the last sync.
@@ -34,3 +34,16 @@ You can configure the following environment variables to determine where uploads
 | S3_ENDPOINT          | The S3 API endpoint, only required if using S3 storage from a provider other than AWS                                    |
 | S3_KEY               | The AWS access_key_id for S3.  Optional if host/container roles are in effect.                                           |
 | S3_SECRET            | The companion secret to the `S3_KEY`;   Optional if host/container roles are in effect.                                  |
+
+### AspireCloud Integration
+
+To upload metadata to AspireCloud, use the
+`meta/bin/push-to-aspirecloud` script, which requires two environment variables:
+*
+*NOTE:
+** these variables must be set in your actual environment: putting them only in a .env file will not work!
+
+| Env Variable              | Description                                                                                            |
+|---------------------------|--------------------------------------------------------------------------------------------------------|
+| ASPIRECLOUD_ADMIN_API_URL | Base URL of AC admin API, e.g. `http://aspiredev.org/admin/api/v1`.  Do not include a trailing slash.  |
+| ASPIRECLOUD_ADMIN_API_KEY | API key generated in the AC instance.  Must belong to a user with RepoAdmin or SuperAdmin permissions. |
