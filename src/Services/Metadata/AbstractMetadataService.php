@@ -128,6 +128,18 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             ->fetchAllKeyValue();
     }
 
+    /** @return array<string,int> */
+    public function getCheckedAfter(int $timestamp): array
+    {
+        return $this
+            ->querySync()
+            ->select('slug', 'checked')
+            ->andWhere('checked > :timestamp')
+            ->setParameter('timestamp', $timestamp)
+            ->executeQuery()
+            ->fetchAllKeyValue();
+    }
+
     public function getDownloadUrl(string $slug, string $version): ?string
     {
         return $this
