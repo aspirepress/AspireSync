@@ -88,7 +88,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $this->startTimer();
 
         $this->clobber = (bool) $input->getOption('update-all');
-        $this->limit = (int)$input->getOption('limit');
+        $this->limit = (int) $input->getOption('limit');
 
         $pulledCutoff = (int) $input->getOption('skip-pulled-after');
         $checkedCutoff = (int) $input->getOption('skip-checked-after');
