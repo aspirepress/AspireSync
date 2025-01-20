@@ -280,6 +280,15 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 
     private function slugAndVersionExists(string $slug, string $version): bool
     {
+        // update checked timestamp
+        $this
+            ->connection()
+            ->update(
+                'sync',
+                ['checked' => time()],
+                ['slug' => $slug, 'version' => $version, ...$this->stdArgs()],
+            );
+
         return $this
             ->querySync()
             ->select('1')
