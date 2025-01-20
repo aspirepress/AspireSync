@@ -28,6 +28,9 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
 
     private bool $clobber = false;
 
+    private ?int $limit = null;
+    private int $generated = 0;
+
     public function __construct(
         protected readonly ListServiceInterface $listService,
         protected readonly MetadataServiceInterface $meta,
@@ -64,6 +67,12 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 'Skip downloading metadata with checked timestamp > N',
             )
             ->addOption(
+                'limit',
+                null,
+                InputOption::VALUE_REQUIRED,
+                "Stop after fetching N $category",
+            )
+            ->addOption(
                 $category,
                 null,
                 InputOption::VALUE_REQUIRED,
@@ -79,10 +88,18 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $this->startTimer();
 
         $this->clobber = (bool) $input->getOption('update-all');
+        $this->limit = (int)$input->getOption('limit');
 
-        $requested = array_fill_keys(StringUtil::explodeAndTrim($input->getOption($category) ?? ''), []);
         $pulledCutoff = (int) $input->getOption('skip-pulled-after');
         $checkedCutoff = (int) $input->getOption('skip-checked-after');
+        $category_option = $input->getOption($category) ?? '';
+
+        $not_saving_revision_reason = '';
+
+        $this->limit !== null and $not_saving_revision_reason = "--limit was specified";
+        $category_option and $not_saving_revision_reason = "--$category was specified";
+
+        $requested = array_fill_keys(StringUtil::explodeAndTrim($category_option), []);
 
         if ($requested) {
             $toUpdate = $requested;
@@ -117,11 +134,11 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $promise = $pool->send();
         $promise->wait();
 
-        if ($requested) {
-            $this->log->debug("Not saving revision when --$category was specified");
+        if ($not_saving_revision_reason) {
+            $this->log->info("Not saving revision: $not_saving_revision_reason");
         } else {
             $revision = $this->listService->preserveRevision();
-            $this->log->debug("Updated current revision to $revision");
+            $this->log->info("Updated current revision to $revision");
         }
         $this->endTimer();
 
@@ -135,7 +152,11 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
     protected function generateRequests(iterable $slugs): Generator
     {
         foreach ($slugs as $slug) {
+            if ($this->limit !== null && $this->generated >= $this->limit) {
+                return;
+            }
             yield $this->makeRequest((string) $slug);
+            $this->generated++;
         }
     }
 
