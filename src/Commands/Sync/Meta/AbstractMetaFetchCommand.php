@@ -77,6 +77,12 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 null,
                 InputOption::VALUE_REQUIRED,
                 "List of $category (separated by commas) to explicitly update",
+            )
+            ->addOption(
+                "$category-from",
+                null,
+                InputOption::VALUE_REQUIRED,
+                "File containing list of $category to explicitly update (one per line)",
             );
         $this->listService->setName($this->getName());
     }
@@ -95,6 +101,10 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $checkedCutoff = (int) $input->getOption('skip-checked-after');
         $category_option = $input->getOption($category) ?? '';
 
+        if ($infile = $input->getOption("$category-from")) {
+            $category_option = \Safe\file_get_contents($infile);
+        }
+
         $not_saving_revision_reason = '';
 
         $this->limit !== null and $not_saving_revision_reason = "--limit was specified";
@@ -103,19 +113,21 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $requested = array_fill_keys(StringUtil::explodeAndTrim($category_option), []);
 
         if ($requested) {
+            $count = count($requested);
+            $this->log->debug("Getting $count requested $category...");
             $toUpdate = $requested;
         } else {
             $this->log->debug("Getting list of $category...");
             $toUpdate = $this->listService->getItems();
             $this->log->debug("Items to update: " . count($toUpdate));
-            if ($pulledCutoff) {
-                $toUpdate = array_diff_key($toUpdate, $this->meta->getPulledAfter($pulledCutoff));
-                $this->log->debug("after --skip-pulled-after=$pulledCutoff: " . count($toUpdate));
-            }
-            if ($checkedCutoff) {
-                $toUpdate = array_diff_key($toUpdate, $this->meta->getCheckedAfter($checkedCutoff));
-                $this->log->debug("after --skip-checked-after=$checkedCutoff: " . count($toUpdate));
-            }
+        }
+        if ($pulledCutoff) {
+            $toUpdate = array_diff_key($toUpdate, $this->meta->getPulledAfter($pulledCutoff));
+            $this->log->debug("after --skip-pulled-after=$pulledCutoff: " . count($toUpdate));
+        }
+        if ($checkedCutoff) {
+            $toUpdate = array_diff_key($toUpdate, $this->meta->getCheckedAfter($checkedCutoff));
+            $this->log->debug("after --skip-checked-after=$checkedCutoff: " . count($toUpdate));
         }
 
         if (count($toUpdate) === 0) {
