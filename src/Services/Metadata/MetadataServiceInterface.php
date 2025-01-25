@@ -29,6 +29,9 @@ interface MetadataServiceInterface
     /** @return array<string,int> */
     public function getPulledAfter(int $timestamp): array;
 
+    /** @return array<string,int> */
+    public function getCheckedAfter(int $timestamp): array;
+
     /** @return array<string|int, array{}> */
     public function getAllSlugs(): array;
 }

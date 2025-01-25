@@ -49,6 +49,11 @@ class MetadataServiceStub implements MetadataServiceInterface
         return [];
     }
 
+    public function getCheckedAfter(int $timestamp): array
+    {
+        return [];
+    }
+
     public function getAllSlugs(): array
     {
         return [];

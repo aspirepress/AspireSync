@@ -62,6 +62,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'origin' => $this->origin,
             'updated' => strtotime($metadata['last_updated'] ?? 'now'),
             'pulled' => time(),
+            'checked' => time(),
             'metadata' => $metadata,
         ]);
 
@@ -104,6 +105,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'origin' => $this->origin,
             'updated' => strtotime($metadata['closed_date'] ?? 'now'),
             'pulled' => time(),
+            'checked' => time(),
             'metadata' => $metadata,
         ];
         $this->insertSync($row);
@@ -121,6 +123,18 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             ->querySync()
             ->select('slug', 'pulled')
             ->andWhere('pulled > :timestamp')
+            ->setParameter('timestamp', $timestamp)
+            ->executeQuery()
+            ->fetchAllKeyValue();
+    }
+
+    /** @return array<string,int> */
+    public function getCheckedAfter(int $timestamp): array
+    {
+        return $this
+            ->querySync()
+            ->select('slug', 'checked')
+            ->andWhere('checked > :timestamp')
             ->setParameter('timestamp', $timestamp)
             ->executeQuery()
             ->fetchAllKeyValue();
@@ -266,6 +280,15 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 
     private function slugAndVersionExists(string $slug, string $version): bool
     {
+        // update checked timestamp
+        $this
+            ->connection()
+            ->update(
+                'sync',
+                ['checked' => time()],
+                ['slug' => $slug, 'version' => $version, ...$this->stdArgs()],
+            );
+
         return $this
             ->querySync()
             ->select('1')
@@ -279,6 +302,12 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 
     private function slugAndStatusExists(string $slug, string $status): bool
     {
+        $this->connection()->update(
+            'sync',
+            ['checked' => time()],
+            ['slug' => $slug, 'status' => $status, ...$this->stdArgs()],
+        );
+
         return $this
             ->querySync()
             ->select('1')

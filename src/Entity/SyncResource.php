@@ -55,6 +55,10 @@ class SyncResource
         #[ORM\Column]
         public readonly int $pulled,
 
+        // when this record was checked, regardless of sync
+        #[ORM\Column]
+        public readonly int $checked,
+
         // last updated date in metadata
         #[ORM\Column]
         public readonly ?int $updated,

@@ -28,6 +28,9 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
 
     private bool $clobber = false;
 
+    private ?int $limit = null;
+    private int $generated = 0;
+
     public function __construct(
         protected readonly ListServiceInterface $listService,
         protected readonly MetadataServiceInterface $meta,
@@ -42,25 +45,38 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
     protected function configure(): void
     {
         $category = $this->resource->plural();
-        $this->setName("sync:meta:fetch:$category")
+        $this
+            ->setName("sync:meta:fetch:$category")
             ->setDescription("Fetches meta data of all new and changed $category")
             ->addOption(
                 'update-all',
                 null,
                 InputOption::VALUE_NONE,
-                'Update all metadata; otherwise, we only update what has changed'
+                'Update all metadata; otherwise, we only update what has changed',
             )
             ->addOption(
-                'skip-newer-than-secs',
+                'skip-pulled-after',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Skip downloading metadata pulled more recently than N seconds'
+                'Skip downloading metadata with pulled timestamp > N',
+            )
+            ->addOption(
+                'skip-checked-after',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Skip downloading metadata with checked timestamp > N',
+            )
+            ->addOption(
+                'limit',
+                null,
+                InputOption::VALUE_REQUIRED,
+                "Stop after fetching N $category",
             )
             ->addOption(
                 $category,
                 null,
                 InputOption::VALUE_REQUIRED,
-                "List of $category (separated by commas) to explicitly update"
+                "List of $category (separated by commas) to explicitly update",
             );
         $this->listService->setName($this->getName());
     }
@@ -72,17 +88,33 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $this->startTimer();
 
         $this->clobber = (bool) $input->getOption('update-all');
+        $limit = $input->getOption('limit');
+        $this->limit = ($limit === null) ? null : (int) $limit; // don't convert null to 0
 
-        $requested = array_fill_keys(StringUtil::explodeAndTrim($input->getOption($category) ?? ''), []);
-        $min_age = (int) $input->getOption('skip-newer-than-secs');
+        $pulledCutoff = (int) $input->getOption('skip-pulled-after');
+        $checkedCutoff = (int) $input->getOption('skip-checked-after');
+        $category_option = $input->getOption($category) ?? '';
+
+        $not_saving_revision_reason = '';
+
+        $this->limit !== null and $not_saving_revision_reason = "--limit was specified";
+        $category_option and $not_saving_revision_reason = "--$category was specified";
+
+        $requested = array_fill_keys(StringUtil::explodeAndTrim($category_option), []);
 
         if ($requested) {
             $toUpdate = $requested;
         } else {
             $this->log->debug("Getting list of $category...");
             $toUpdate = $this->listService->getItems();
-            if ($min_age) {
-                $toUpdate = array_diff_key($toUpdate, $this->meta->getPulledAfter(time() - $min_age));
+            $this->log->debug("Items to update: " . count($toUpdate));
+            if ($pulledCutoff) {
+                $toUpdate = array_diff_key($toUpdate, $this->meta->getPulledAfter($pulledCutoff));
+                $this->log->debug("after --skip-pulled-after=$pulledCutoff: " . count($toUpdate));
+            }
+            if ($checkedCutoff) {
+                $toUpdate = array_diff_key($toUpdate, $this->meta->getCheckedAfter($checkedCutoff));
+                $this->log->debug("after --skip-checked-after=$checkedCutoff: " . count($toUpdate));
             }
         }
 
@@ -97,17 +129,17 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
             requests: $this->generateRequests(array_keys($toUpdate)),
             concurrency: static::MAX_CONCURRENT_REQUESTS,
             responseHandler: $this->onResponse(...),
-            exceptionHandler: $this->onError(...)
+            exceptionHandler: $this->onError(...),
         );
 
         $promise = $pool->send();
         $promise->wait();
 
-        if ($requested) {
-            $this->log->debug("Not saving revision when --$category was specified");
+        if ($not_saving_revision_reason) {
+            $this->log->info("Not saving revision: $not_saving_revision_reason");
         } else {
             $revision = $this->listService->preserveRevision();
-            $this->log->debug("Updated current revision to $revision");
+            $this->log->info("Updated current revision to $revision");
         }
         $this->endTimer();
 
@@ -121,7 +153,12 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
     protected function generateRequests(iterable $slugs): Generator
     {
         foreach ($slugs as $slug) {
+            if ($this->limit !== null && $this->generated >= $this->limit) {
+                $this->log->info("Limit reached -- downloading $this->limit {$this->resource->plural()}");
+                return;
+            }
             yield $this->makeRequest((string) $slug);
+            $this->generated++;
         }
     }
 
@@ -131,13 +168,13 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
 
         try {
             $response = $saloonResponse->getPsrResponse();
-            $request  = $saloonResponse->getRequest();
-            $slug     = $request->slug ?? throw new Exception('Missing slug in request');
+            $request = $saloonResponse->getRequest();
+            $slug = $request->slug ?? throw new Exception('Missing slug in request');
 
             $metadata = json_decode($response->getBody()->getContents(), assoc: true);
             $metadata = [
-                'slug'   => $slug,
-                'name'   => $slug,
+                'slug' => $slug,
+                'name' => $slug,
                 'status' => 'open',
                 ...$metadata,
             ];
@@ -166,14 +203,14 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 return;
             }
             $saloonResponse = $exception->getResponse();
-            $response       = $saloonResponse->getPsrResponse();
-            $request        = $saloonResponse->getRequest();
-            $slug           = $request->slug ?? throw new Exception('Missing slug in request');
-            $code           = $response->getStatusCode();
-            $reason         = $response->getReasonPhrase();
+            $response = $saloonResponse->getPsrResponse();
+            $request = $saloonResponse->getRequest();
+            $slug = $request->slug ?? throw new Exception('Missing slug in request');
+            $code = $response->getStatusCode();
+            $reason = $response->getReasonPhrase();
 
             $metadata = json_decode($response->getBody()->getContents(), assoc: true);
-            $error    = $metadata['error'] ?? null;
+            $error = $metadata['error'] ?? null;
 
             $status = match ($code) {
                 404 => $error === 'closed' ? 'closed' : 'not-found',
