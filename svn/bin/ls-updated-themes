@@ -1,0 +1,18 @@
+#!/bin/bash
+
+. $(dirname $0)/prelude.bash
+
+date=$1
+[[ -n $date ]] || die "usage: $0 <date>"
+
+timestamp=$(php -r "echo strtotime('$date');")
+ymd=$(date -r $timestamp +%Y-%m-%d)
+
+tmp=${TMPDIR:-/tmp}
+
+checkout=$(mktemp -d $tmp/themes-svn.XXXXXXXX)
+trap "rm -rf $checkout" EXIT
+
+RUN cd $checkout
+RUN svn co https://themes.svn.wordpress.org --depth empty > /dev/null
+RUN $base/bin/svn-changed-slugs $ymd
