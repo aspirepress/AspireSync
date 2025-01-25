@@ -88,7 +88,8 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $this->startTimer();
 
         $this->clobber = (bool) $input->getOption('update-all');
-        $this->limit = (int) $input->getOption('limit');
+        $limit = $input->getOption('limit');
+        $this->limit = ($limit === null) ? null : (int) $limit; // don't convert null to 0
 
         $pulledCutoff = (int) $input->getOption('skip-pulled-after');
         $checkedCutoff = (int) $input->getOption('skip-checked-after');
@@ -153,6 +154,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
     {
         foreach ($slugs as $slug) {
             if ($this->limit !== null && $this->generated >= $this->limit) {
+                $this->log->info("Limit reached -- downloading $this->limit {$this->resource->plural()}");
                 return;
             }
             yield $this->makeRequest((string) $slug);
