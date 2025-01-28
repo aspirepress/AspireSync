@@ -7,8 +7,8 @@
 LOOKBACK_INTERVAL=${LOOKBACK_INTERVAL:--2 hours}
 
 function main () {
-  bin/console sync:meta:dump:plugins --after="$LOOKBACK_INTERVAL" | meta/bin/push-to-aspirecloud
-  bin/console sync:meta:dump:themes --after="$LOOKBACK_INTERVAL" | meta/bin/push-to-aspirecloud
+  bin/console sync:meta:dump:plugins --after="$LOOKBACK_INTERVAL" | bin/push-to-aspirecloud
+  bin/console sync:meta:dump:themes --after="$LOOKBACK_INTERVAL" | bin/push-to-aspirecloud
 }
 
 main "$@"
