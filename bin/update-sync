@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# export TRACE=1
-
 . $(dirname $0)/prelude.bash
 
 TMPDIR=${TMPDIR:-/tmp}
@@ -13,6 +11,9 @@ function main () {
   plugins=$(mktemp $TMPDIR/plugins.list.XXXXXXXX)
   themes=$(mktemp $TMPDIR/themes.list.XXXXXXXX)
   trap "rm -f $plugins $themes" EXIT
+
+  # Doesn't really belong here, but it's cheap enough to run
+  bin/console doctrine:migrations:migrate --quiet --no-interaction
 
   svn/bin/ls-updated-plugins "$LOOKBACK_INTERVAL" | sort > $plugins
   svn/bin/ls-updated-themes "$LOOKBACK_INTERVAL" | sort > $themes
