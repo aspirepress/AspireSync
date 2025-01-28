@@ -3,13 +3,19 @@
 
 # Copy these directories
 !bin/
-!.ATTIC/config/
-!src
+!config/
+!migrations/
+!public/
+!src/
+!svn/bin
 
 # Copy these files
 !.env
+!.env.*
 !README.md
-!.ATTIC/composer.json
+!composer.json
 !composer.lock
-!docker/webapp/php.ini
 !docker/webapp/Caddyfile
+!docker/webapp/php.ini
+!symfony.lock
+
