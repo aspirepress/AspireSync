@@ -5,9 +5,7 @@
 date=$1
 [[ -n $date ]] || die "usage: $0 <date>"
 
-timestamp=$(php -r "echo strtotime('$date');")
-ymd=$(date -r $timestamp +%Y-%m-%d)
-
+ymd=$(php -r "echo date('Y-m-d', strtotime('$date'));")
 tmp=${TMPDIR:-/tmp}
 
 checkout=$(mktemp -d $tmp/themes-svn.XXXXXXXX)

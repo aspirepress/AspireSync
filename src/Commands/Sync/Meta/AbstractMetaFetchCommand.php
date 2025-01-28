@@ -9,6 +9,7 @@ use App\Integrations\Wordpress\WordpressApiConnector;
 use App\ResourceType;
 use App\Services\List\ListServiceInterface;
 use App\Services\Metadata\MetadataServiceInterface;
+use App\Utilities\RegexUtil;
 use App\Utilities\StringUtil;
 use Exception;
 use Generator;
@@ -73,13 +74,13 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 "Stop after fetching N $category",
             )
             ->addOption(
-                $category,
+                'slugs',
                 null,
                 InputOption::VALUE_REQUIRED,
                 "List of $category (separated by commas) to explicitly update",
             )
             ->addOption(
-                "$category-from",
+                'slugs-from',
                 null,
                 InputOption::VALUE_REQUIRED,
                 "File containing list of $category to explicitly update (one per line)",
@@ -97,20 +98,22 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $limit = $input->getOption('limit');
         $this->limit = ($limit === null) ? null : (int) $limit; // don't convert null to 0
 
-        $pulledCutoff = (int) $input->getOption('skip-pulled-after');
-        $checkedCutoff = (int) $input->getOption('skip-checked-after');
-        $category_option = $input->getOption($category) ?? '';
-
-        if ($infile = $input->getOption("$category-from")) {
-            $category_option = \Safe\file_get_contents($infile);
+        $pulledCutoff = 0;
+        $checkedCutoff = 0;
+        if ($timestamp = $input->getOption('skip-pulled-after')) {
+            $pulledCutoff = static::parseTimestamp($timestamp);
+        }
+        if ($timestamp = $input->getOption('skip-checked-after')) {
+            $checkedCutoff = static::parseTimestamp($timestamp);
         }
 
-        $not_saving_revision_reason = '';
+        $slugs = $input->getOption('slugs') ?? '';
 
-        $this->limit !== null and $not_saving_revision_reason = "--limit was specified";
-        $category_option and $not_saving_revision_reason = "--$category was specified";
+        if ($infile = $input->getOption('slugs-from')) {
+            $slugs .= \Safe\file_get_contents($infile);
+        }
 
-        $requested = array_fill_keys(StringUtil::explodeAndTrim($category_option), []);
+        $requested = array_fill_keys(StringUtil::explodeAndTrim($slugs), []);
 
         if ($requested) {
             $count = count($requested);
@@ -123,11 +126,11 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         }
         if ($pulledCutoff) {
             $toUpdate = array_diff_key($toUpdate, $this->meta->getPulledAfter($pulledCutoff));
-            $this->log->debug("after --skip-pulled-after=$pulledCutoff: " . count($toUpdate));
+            $this->log->debug("after --skip-pulled-after $pulledCutoff : " . count($toUpdate));
         }
         if ($checkedCutoff) {
             $toUpdate = array_diff_key($toUpdate, $this->meta->getCheckedAfter($checkedCutoff));
-            $this->log->debug("after --skip-checked-after=$checkedCutoff: " . count($toUpdate));
+            $this->log->debug("after --skip-checked-after $checkedCutoff : " . count($toUpdate));
         }
 
         if (count($toUpdate) === 0) {
@@ -147,6 +150,10 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $promise = $pool->send();
         $promise->wait();
 
+        $not_saving_revision_reason = '';
+        $this->limit !== null and $not_saving_revision_reason = "--limit was specified";
+        $slugs and $not_saving_revision_reason = "--slugs or --slugs-from was specified";
+
         if ($not_saving_revision_reason) {
             $this->log->info("Not saving revision: $not_saving_revision_reason");
         } else {
@@ -159,7 +166,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
     }
 
     /**
-     * @param (string|int)[] $slugs
+     * @param iterable<array-key> $slugs
      * @return Generator<Request>
      */
     protected function generateRequests(iterable $slugs): Generator
@@ -240,5 +247,13 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
             $this->log->error("$slug ... ERROR: {$e->getMessage()}");
             return;
         }
+    }
+
+    protected static function parseTimestamp(string $timestamp): int
+    {
+        if (RegexUtil::match('/^\d+$/', $timestamp)) {
+            return (int) $timestamp;
+        }
+        return \Safe\strtotime($timestamp);
     }
 }
