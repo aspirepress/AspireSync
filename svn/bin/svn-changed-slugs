@@ -1,0 +1,15 @@
+#!/bin/bash
+
+pwd=$(pwd)
+
+. $(dirname $0)/prelude.bash
+
+cd $pwd
+
+[[ -d .svn ]] || die "Current directory does not appear to be a svn checkout"
+
+date=$1
+[[ -n $date ]] || die "Usage: $0 yyyy-mm-dd"
+
+ RUN svn log --revision "{$date}:head" --verbose | perl -nE 'next unless m!^\s+[A-Z] /(.*?)/!; say $1 unless $seen{$1}++'
+

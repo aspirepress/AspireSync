@@ -1,0 +1,25 @@
+#!/bin/bash
+
+. $(dirname $0)/prelude.bash
+
+TMPDIR=${TMPDIR:-/tmp}
+
+LOOKBACK_INTERVAL=${LOOKBACK_INTERVAL:--2 days}
+RECHECK_INTERVAL=${RECHECK_INTERVAL:--4 hours}
+
+function main () {
+  plugins=$(mktemp $TMPDIR/plugins.list.XXXXXXXX)
+  themes=$(mktemp $TMPDIR/themes.list.XXXXXXXX)
+  trap "rm -f $plugins $themes" EXIT
+
+  # Doesn't really belong here, but it's cheap enough to run
+  bin/console doctrine:migrations:migrate --quiet --no-interaction
+
+  svn/bin/ls-updated-plugins "$LOOKBACK_INTERVAL" | sort > $plugins
+  svn/bin/ls-updated-themes "$LOOKBACK_INTERVAL" | sort > $themes
+
+  bin/console sync:meta:fetch:plugins -vvv --slugs-from=$plugins --skip-checked-after="$RECHECK_INTERVAL"
+  bin/console sync:meta:fetch:themes -vvv --slugs-from=$themes --skip-checked-after="$RECHECK_INTERVAL"
+}
+
+main "$@"

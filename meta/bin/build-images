@@ -1,0 +1,20 @@
+#!/bin/bash
+
+. $(dirname $0)/prelude.bash
+
+tag=${TAG:-$(git describe --tags --abbrev=0)}
+platform=${PLATFORM:-linux/amd64,linux/arm64}
+
+if [[ -n $GHCR_TOKEN ]]; then
+    echo $GHCR_TOKEN | docker login ghcr.io -u userame-is-ignored --password-stdin
+    push_arg='--push'
+fi
+
+buildx() {
+    local file=$1
+    local name=$2
+    local tag=$3
+    docker buildx build --platform $platform -f $file --target prod -t $name:$tag -t $name:latest $push_arg .
+}
+
+buildx docker/webapp/Dockerfile ghcr.io/aspirepress/aspiresync $tag
