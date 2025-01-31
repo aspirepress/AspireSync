@@ -29,20 +29,15 @@ class SyncAsset
         #[ORM\Column(type: UuidType::NAME, unique: true)]
         #[ORM\Id]
         public readonly Uuid $id,
-
         #[ORM\JoinColumn(name: 'sync_id', nullable: false)]
         #[ORM\ManyToOne(inversedBy: 'assets')]
         public readonly SyncResource $resource,
-
         #[ORM\Column(length: 32)]
         public readonly string $version,
-
         #[ORM\Column(type: Types::TEXT, nullable: true)]
         public readonly string $url,
-
         #[ORM\Column]
         public readonly int $created,
-
         #[ORM\Column(nullable: true)]
         public readonly ?array $metadata = null,
     ) {}
