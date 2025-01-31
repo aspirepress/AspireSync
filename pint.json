@@ -1,0 +1,13 @@
+{
+  "preset": "per",
+  "exclude": [
+    "svn",
+    "tmp",
+    "var",
+    "vendor"
+  ],
+  "notName": [
+    "_ide_helper.php",
+    ".phpstorm.meta.php"
+  ]
+}

@@ -32,22 +32,16 @@ class SyncResource
         #[ORM\Column(type: UuidType::NAME, unique: true)]
         #[ORM\Id]
         public readonly Uuid $id,
-
         #[ORM\Column(length: 32)]
         public readonly ResourceType $type,
-
         #[ORM\Column(length: 255)]
         public readonly string $slug,
-
         #[ORM\Column(type: Types::TEXT)]
         public readonly string $name,
-
         #[ORM\Column(length: 32)]
         public readonly string $status,
-
         #[ORM\Column(length: 32, nullable: true)]
         public readonly ?string $version,
-
         #[ORM\Column(length: 32)]
         public readonly string $origin,
 
@@ -62,7 +56,6 @@ class SyncResource
         // last updated date in metadata
         #[ORM\Column]
         public readonly ?int $updated,
-
         #[ORM\Column(nullable: true)]
         public readonly ?array $metadata = null,
     ) {

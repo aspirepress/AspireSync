@@ -53,7 +53,7 @@ abstract class AbstractListService implements ListServiceInterface
         $revision = $this->currentRevision[$name]['revision'];
         $this->em->getConnection()->insert(
             'revisions',
-            ['action' => $name, 'revision' => $revision, 'added' => time()]
+            ['action' => $name, 'revision' => $revision, 'added' => time()],
         );
         return (string) $revision;
     }
