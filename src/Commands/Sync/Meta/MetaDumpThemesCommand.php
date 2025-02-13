@@ -21,7 +21,8 @@ class MetaDumpThemesCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('sync:meta:dump:themes')
+        $this
+            ->setName('sync:dump:themes')
             ->setDescription('Dumps metadata of all themes in jsonl format')
             ->addOption('after', null, InputOption::VALUE_REQUIRED, 'Dump only plugins synced after this date');
     }

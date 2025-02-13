@@ -45,7 +45,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
     {
         $category = $this->resource->plural();
         $this
-            ->setName("sync:meta:fetch:$category")
+            ->setName("sync:fetch:$category")
             ->setDescription("Fetches meta data of all new and changed $category")
             ->addOption(
                 'update-all',

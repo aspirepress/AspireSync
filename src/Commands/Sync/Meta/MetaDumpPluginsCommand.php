@@ -21,7 +21,8 @@ class MetaDumpPluginsCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('sync:meta:dump:plugins')
+        $this
+            ->setName('sync:dump:plugins')
             ->setDescription('Dumps metadata of all plugins in jsonl format')
             ->addOption('after', null, InputOption::VALUE_REQUIRED, 'Dump only plugins synced after this date');
     }
