@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\Sync\Meta;
+namespace App\Commands\Sync;
 
 use App\Commands\AbstractBaseCommand;
 use App\Integrations\Wordpress\WordpressApiConnector;
@@ -22,7 +22,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use function Safe\json_decode;
 
-abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
+abstract class AbstractFetchCommand extends AbstractBaseCommand
 {
     public const MAX_CONCURRENT_REQUESTS = 10;
 
