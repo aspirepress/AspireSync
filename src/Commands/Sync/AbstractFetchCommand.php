@@ -46,6 +46,18 @@ abstract class AbstractFetchCommand extends AbstractBaseCommand
             ->setName("sync:fetch:$category")
             ->setDescription("Fetches meta data of all new and changed $category")
             ->addOption(
+                'slugs',
+                null,
+                InputOption::VALUE_REQUIRED,
+                "List of $category (separated by commas) to explicitly update",
+            )
+            ->addOption(
+                'slugs-from',
+                null,
+                InputOption::VALUE_REQUIRED,
+                "File containing list of $category to explicitly update (one per line)",
+            )
+            ->addOption(
                 'empty-slugs-ok',
                 null,
                 InputOption::VALUE_NONE,
@@ -68,18 +80,6 @@ abstract class AbstractFetchCommand extends AbstractBaseCommand
                 null,
                 InputOption::VALUE_REQUIRED,
                 "Stop after fetching N $category",
-            )
-            ->addOption(
-                'slugs',
-                null,
-                InputOption::VALUE_REQUIRED,
-                "List of $category (separated by commas) to explicitly update",
-            )
-            ->addOption(
-                'slugs-from',
-                null,
-                InputOption::VALUE_REQUIRED,
-                "File containing list of $category to explicitly update (one per line)",
             );
     }
 
