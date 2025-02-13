@@ -16,9 +16,9 @@ final class Version20250213184154 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql('DROP TABLE sync_assets');
-        $this->addSql('DROP TABLE revisions');
-        $this->addSql('DROP TABLE cache');
+        $this->addSql('DROP TABLE IF EXISTS sync_assets');
+        $this->addSql('DROP TABLE IF EXISTS revisions');
+        $this->addSql('DROP TABLE IF EXISTS cache');
     }
 
     public function down(Schema $schema): void
