@@ -26,8 +26,6 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
 {
     public const MAX_CONCURRENT_REQUESTS = 10;
 
-    private bool $clobber = false;
-
     private ?int $limit = null;
     private int $generated = 0;
 
@@ -47,12 +45,6 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $this
             ->setName("sync:fetch:$category")
             ->setDescription("Fetches meta data of all new and changed $category")
-            ->addOption(
-                'update-all',
-                null,
-                InputOption::VALUE_NONE,
-                'Update all metadata; otherwise, we only update what has changed',
-            )
             ->addOption(
                 'empty-slugs-ok',
                 null,
@@ -97,7 +89,6 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $this->log->notice("Running command {$this->getName()}");
         $this->startTimer();
 
-        $this->clobber = (bool) $input->getOption('update-all');
         $limit = $input->getOption('limit');
         $this->limit = ($limit === null) ? null : (int) $limit; // don't convert null to 0
 
@@ -196,7 +187,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 'status' => 'open',
                 ...$metadata,
             ];
-            $this->meta->save($metadata, $this->clobber);
+            $this->meta->save($metadata);
         } catch (Exception $e) {
             $this->log->error("$slug ... ERROR: {$e->getMessage()}");
             return;

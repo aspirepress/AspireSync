@@ -28,7 +28,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     //region Public API
 
     /** @param array<string, mixed> $metadata */
-    public function save(array $metadata, bool $clobber = false): void
+    public function save(array $metadata): void
     {
         // status is something we add, and is the normalized error e.g. not-found
         $status = $metadata['status'] ?? 'open';
@@ -36,17 +36,17 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'open' => $this->saveOpen(...),
             default => $this->saveError(...),
         };
-        $this->connection()->transactional(fn() => $method($metadata, $clobber));
+        $this->connection()->transactional(fn() => $method($metadata));
     }
 
     /** @param array<string, mixed> $metadata */
-    protected function saveOpen(array $metadata, bool $clobber): bool
+    protected function saveOpen(array $metadata): bool
     {
         $id = Uuid::uuid7()->toString();
         $slug = mb_substr($metadata['slug'], 0, 255);
         $version = mb_substr((string) $metadata['version'], 0, 32);
 
-        if (!$clobber && $this->slugAndVersionExists($slug, $version)) {
+        if ($this->slugAndVersionExists($slug, $version)) {
             $this->log->debug("Not updating unmodified {$this->resource->value}", compact('slug', 'version'));
             return false;
         }
@@ -76,13 +76,13 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     }
 
     /** @param array<string, mixed> $metadata */
-    protected function saveError(array $metadata, bool $clobber): bool
+    protected function saveError(array $metadata): bool
     {
         $closed = $metadata['closed'] ?? false;
         $status = $closed ? 'closed' : $metadata['status'] ?? 'error';
         $slug = mb_substr($metadata['slug'], 0, 255);
 
-        if (!$clobber && $this->slugAndStatusExists($slug, $status)) {
+        if ($this->slugAndStatusExists($slug, $status)) {
             $this->log->debug("Not updating closed {$this->resource->value}", compact('slug', 'status'));
             return false;
         }

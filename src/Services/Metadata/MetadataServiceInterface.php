@@ -11,7 +11,7 @@ interface MetadataServiceInterface
     public function exportAllMetadata(): Generator;
 
     /** @param array<string, mixed> $metadata */
-    public function save(array $metadata, bool $clobber = false): void;
+    public function save(array $metadata): void;
 
     /** @return array<string,int> */
     public function getPulledAfter(int $timestamp): array;

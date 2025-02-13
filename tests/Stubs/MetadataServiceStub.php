@@ -24,7 +24,7 @@ class MetadataServiceStub implements MetadataServiceInterface
         yield from [];
     }
 
-    public function save(array $metadata, bool $clobber = false): void
+    public function save(array $metadata): void
     {
         // de nada
     }
