@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services\Metadata;
 
 use App\ResourceType;
-use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -67,15 +66,6 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         ]);
 
         $versions = $metadata['versions'] ?: [$metadata['version'] => $metadata['download_link']];
-        foreach ($versions as $version => $url) {
-            $this->connection()->insert('sync_assets', [
-                'id' => Uuid::uuid7()->toString(),
-                'sync_id' => $id,
-                'version' => mb_substr((string) $version, 0, 32),
-                'url' => mb_substr($url, 0, 4096),
-                'created' => time(),
-            ]);
-        }
 
         $slug = $metadata['slug'];
         $type = $this->resource->value;
@@ -148,54 +138,9 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             ->fetchAllKeyValue();
     }
 
-    public function getDownloadUrl(string $slug, string $version): ?string
-    {
-        return $this
-            ->querySyncAssets($slug)
-            ->select('url')
-            ->where('sync_assets.version = :version')
-            ->setParameter('version', $version)
-            ->fetchOne();
-    }
-
-    /** @return array<string, string[]> [slug => [versions]] */
-    public function getOpenVersions(int $timestamp = 1): array
-    {
-        $sql = <<<SQL
-            SELECT slug, sync_assets.version 
-            FROM sync_assets
-                JOIN sync ON sync.id = sync_assets.sync_id 
-            WHERE status = 'open'
-              AND pulled >= :stamp
-              AND sync.type = :type
-              AND sync.origin = :origin
-            SQL;
-        $result = $this->connection()->fetchAllAssociative($sql, ['stamp' => $timestamp, ...$this->stdArgs()]);
-
-        $out = [];
-        foreach ($result as $row) {
-            $out[$row['slug']][] = $row['version'];
-        }
-        return $out;
-    }
-
     public function getAllSlugs(): array
     {
         return $this->querySync()->select('slug')->executeQuery()->fetchFirstColumn() ?: [];
-    }
-
-    public function markProcessed(string $slug, string $version): void
-    {
-        $sql = <<<'SQL'
-            UPDATE sync_assets 
-            SET processed = :stamp 
-            WHERE version = :version
-              AND sync_id = (SELECT id FROM sync WHERE slug = :slug AND type = :type AND origin = :origin)
-            SQL;
-        $this->connection()->executeQuery(
-            $sql,
-            ['stamp' => time(), 'slug' => $slug, 'version' => $version, ...$this->stdArgs()],
-        );
     }
 
     public function exportAllMetadata(int $after = 0): Generator
@@ -209,31 +154,6 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             $metadata['aspiresync_meta'] = $row;
             yield json_encode($metadata);
         }
-    }
-
-    /**
-     * @param string[] $versions
-     * @return string[]
-     */
-    public function getUnprocessedVersions(string $slug, array $versions): array
-    {
-        $sql = <<<'SQL'
-            select sync_assets.version 
-            from sync_assets
-                join sync on sync.id = sync_assets.sync_id 
-            where sync.slug = :slug 
-              and processed is null 
-              and sync_assets.version in (:versions)
-              and sync.type = :type
-              and sync.origin = :origin
-            SQL;
-
-        $results = $this->connection()->executeQuery(
-            $sql,
-            ['slug' => $slug, 'versions' => $versions, ...$this->stdArgs()],
-            ['versions' => ArrayParameterType::STRING],
-        );
-        return $results->fetchFirstColumn();
     }
 
     //endregion
@@ -254,20 +174,6 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             ->from('sync')
             ->andWhere('type = :type')
             ->andWhere('origin = :origin')
-            ->setParameter('type', $this->resource->value)
-            ->setParameter('origin', $this->origin);
-    }
-
-    protected function querySyncAssets(string $slug): QueryBuilder
-    {
-        return $this
-            ->connection()->createQueryBuilder()
-            ->select('*')
-            ->from('sync_assets')
-            ->andWhere(
-                'sync_assets.sync_id = (SELECT id FROM sync WHERE slug = :slug AND type = :type AND origin = :origin)',
-            )
-            ->setParameter('slug', $slug)
             ->setParameter('type', $this->resource->value)
             ->setParameter('origin', $this->origin);
     }
