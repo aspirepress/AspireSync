@@ -7,7 +7,6 @@ namespace App\Commands\Sync\Meta;
 use App\Commands\AbstractBaseCommand;
 use App\Integrations\Wordpress\WordpressApiConnector;
 use App\ResourceType;
-use App\Services\List\ListServiceInterface;
 use App\Services\Metadata\MetadataServiceInterface;
 use App\Utilities\RegexUtil;
 use App\Utilities\StringUtil;
@@ -33,7 +32,6 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
     private int $generated = 0;
 
     public function __construct(
-        protected readonly ListServiceInterface $listService,
         protected readonly MetadataServiceInterface $meta,
         protected readonly WordpressApiConnector $api,
         protected readonly ResourceType $resource,
@@ -54,6 +52,12 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 null,
                 InputOption::VALUE_NONE,
                 'Update all metadata; otherwise, we only update what has changed',
+            )
+            ->addOption(
+                'empty-slugs-ok',
+                null,
+                InputOption::VALUE_NONE,
+                'Exit successfully if slugs list is empty',
             )
             ->addOption(
                 'skip-pulled-after',
@@ -85,7 +89,6 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 InputOption::VALUE_REQUIRED,
                 "File containing list of $category to explicitly update (one per line)",
             );
-        $this->listService->setName($this->getName());
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -115,14 +118,20 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
 
         $requested = array_fill_keys(StringUtil::explodeAndTrim($slugs), []);
 
+        if (!$requested) {
+            if (!$input->getOption('empty-slugs-ok')) {
+                $this->log->error("No slugs specified -- exiting.");
+                return Command::FAILURE;
+            } else {
+                $this->log->info("No slugs specified -- exiting.");
+                return Command::SUCCESS;
+            }
+        }
+
         if ($requested) {
             $count = count($requested);
             $this->log->debug("Getting $count requested $category...");
             $toUpdate = $requested;
-        } else {
-            $this->log->debug("Getting list of $category...");
-            $toUpdate = $this->listService->getItems();
-            $this->log->debug("Items to update: " . count($toUpdate));
         }
         if ($pulledCutoff) {
             $toUpdate = array_diff_key($toUpdate, $this->meta->getPulledAfter($pulledCutoff));
@@ -150,16 +159,6 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $promise = $pool->send();
         $promise->wait();
 
-        $not_saving_revision_reason = '';
-        $this->limit !== null and $not_saving_revision_reason = "--limit was specified";
-        $slugs and $not_saving_revision_reason = "--slugs or --slugs-from was specified";
-
-        if ($not_saving_revision_reason) {
-            $this->log->info("Not saving revision: $not_saving_revision_reason");
-        } else {
-            $revision = $this->listService->preserveRevision();
-            $this->log->info("Updated current revision to $revision");
-        }
         $this->endTimer();
 
         return Command::SUCCESS;
