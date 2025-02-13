@@ -128,15 +128,15 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
             }
         }
 
-        if ($requested) {
-            $count = count($requested);
-            $this->log->debug("Getting $count requested $category...");
-            $toUpdate = $requested;
-        }
+        $count = count($requested);
+        $this->log->debug("Getting $count requested $category...");
+        $toUpdate = $requested;
+
         if ($pulledCutoff) {
             $toUpdate = array_diff_key($toUpdate, $this->meta->getPulledAfter($pulledCutoff));
             $this->log->debug("after --skip-pulled-after $pulledCutoff : " . count($toUpdate));
         }
+
         if ($checkedCutoff) {
             $toUpdate = array_diff_key($toUpdate, $this->meta->getCheckedAfter($checkedCutoff));
             $this->log->debug("after --skip-checked-after $checkedCutoff : " . count($toUpdate));
@@ -196,15 +196,6 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 'status' => 'open',
                 ...$metadata,
             ];
-            if (!empty($metadata['versions'])) {
-                $this->log->info("$slug ... [" . count($metadata['versions']) . ' versions]');
-            } elseif (isset($metadata['version'])) {
-                $this->log->info("$slug ... [1 version]");
-            } elseif (isset($metadata['skipped'])) {
-                $this->log->info((string) $metadata['skipped']);
-            } else {
-                $this->log->info("$slug ... No versions found");
-            }
             $this->meta->save($metadata, $this->clobber);
         } catch (Exception $e) {
             $this->log->error("$slug ... ERROR: {$e->getMessage()}");
@@ -225,7 +216,6 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
             $request = $saloonResponse->getRequest();
             $slug = $request->slug ?? throw new Exception('Missing slug in request');
             $code = $response->getStatusCode();
-            $reason = $response->getReasonPhrase();
 
             $metadata = json_decode($response->getBody()->getContents(), assoc: true);
             $error = $metadata['error'] ?? null;
@@ -235,13 +225,8 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 default => 'error',
             };
 
-            if ($status === 'closed') {
-                $this->log->info("$slug ... [closed]");
-            } else {
-                $this->log->error("$slug ... $code $reason");
-            }
-
             $this->meta->save(['slug' => $slug, 'name' => $slug, 'status' => $status, ...$metadata]);
+            $this->log->info("$slug ... [$status]");
         } catch (Exception $e) {
             $this->log->error("$slug ... ERROR: {$e->getMessage()}");
             return;

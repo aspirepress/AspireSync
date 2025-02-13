@@ -76,10 +76,12 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
                 'created' => time(),
             ]);
         }
-        $this->log->debug(
-            "Saved {$this->resource->value} with open status",
-            ['id' => $id, 'slug' => $metadata['slug'], 'status' => 'open', 'version_count' => count($versions)],
-        );
+
+        $slug = $metadata['slug'];
+        $type = $this->resource->value;
+        $status = 'open';
+        $version_count = count($versions);
+        $this->log->debug("saved $type: $slug", compact('slug', 'type', 'status', 'version_count', 'id'));
         return true;
     }
 
@@ -95,24 +97,30 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             return false;
         }
 
-        $row = [
-            'id' => Uuid::uuid7()->toString(),
-            'type' => $this->resource->value,
-            'slug' => $slug,
-            'name' => mb_substr($metadata['name'], 0, 255),
-            'status' => $status,
-            'version' => null,
-            'origin' => $this->origin,
-            'updated' => strtotime($metadata['closed_date'] ?? 'now'),
-            'pulled' => time(),
-            'checked' => time(),
-            'metadata' => $metadata,
-        ];
-        $this->insertSync($row);
-        $this->log->debug(
-            "Saved {$this->resource->value} with {$row['status']} status",
-            ['id' => $row['id'], 'slug' => $row['slug'], 'status' => $row['status']],
+        $id = Uuid::uuid7()->toString();
+        $type = $this->resource->value;
+        $name = mb_substr($metadata['name'], 0, 255);
+        $version = null;
+        $origin = $this->origin;
+        $updated = strtotime($metadata['closed_date'] ?? 'now');
+        $pulled = time();
+        $checked = time();
+
+        $row = compact(
+            'id',
+            'type',
+            'slug',
+            'name',
+            'status',
+            'version',
+            'origin',
+            'updated',
+            'pulled',
+            'checked',
+            'metadata',
         );
+        $this->insertSync($row);
+        $this->log->debug("saved $type: $slug", compact('slug', 'type', 'status', 'id'));
         return true;
     }
 
@@ -290,14 +298,14 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             );
 
         return $this
-            ->querySync()
-            ->select('1')
-            ->andWhere('slug = :slug')
-            ->andWhere('version = :version')
-            ->setParameter('slug', $slug)
-            ->setParameter('version', $version)
-            ->executeQuery()
-            ->fetchOne() !== false;
+                ->querySync()
+                ->select('1')
+                ->andWhere('slug = :slug')
+                ->andWhere('version = :version')
+                ->setParameter('slug', $slug)
+                ->setParameter('version', $version)
+                ->executeQuery()
+                ->fetchOne() !== false;
     }
 
     private function slugAndStatusExists(string $slug, string $status): bool
@@ -309,14 +317,14 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         );
 
         return $this
-            ->querySync()
-            ->select('1')
-            ->andWhere('slug = :slug')
-            ->andWhere('status = :status')
-            ->setParameter('slug', $slug)
-            ->setParameter('status', $status)
-            ->executeQuery()
-            ->fetchOne() !== false;
+                ->querySync()
+                ->select('1')
+                ->andWhere('slug = :slug')
+                ->andWhere('status = :status')
+                ->setParameter('slug', $slug)
+                ->setParameter('status', $status)
+                ->executeQuery()
+                ->fetchOne() !== false;
     }
 
     //endregion
