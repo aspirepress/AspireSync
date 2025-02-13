@@ -13,9 +13,8 @@ bin/console list sync
 
 To upload metadata to AspireCloud, use the
 `meta/bin/push-to-aspirecloud` script, which requires two environment variables:
-*
-*NOTE:
-** these variables must be set in your actual environment: putting them only in a .env file will not work!
+
+**NOTE**: these variables must be set in your actual environment: putting them only in a .env file will not work!
 
 | Env Variable              | Description                                                                                            |
 |---------------------------|--------------------------------------------------------------------------------------------------------|
@@ -24,7 +23,4 @@ To upload metadata to AspireCloud, use the
 
 ## Version Stability
 
-AspireSync does
-*
-*not
-** follow semantic versioning, and compatibility between versions is not guaranteed.  
+AspireSync does **not** follow semantic versioning, and compatibility between versions is not guaranteed.  
