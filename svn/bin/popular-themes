@@ -1,0 +1,5 @@
+#!/bin/sh
+
+baseUrl=https://api.wordpress.org/themes/info/1.2/
+exec http "$baseUrl?action=query_themes&browse=popular&per_page=100" | jq -r '.themes[] | "\(.slug)/\(.version)"'
+

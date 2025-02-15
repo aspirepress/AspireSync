@@ -1,0 +1,4 @@
+#!/bin/sh
+. $(dirname $0)/prelude.bash
+use_themes
+

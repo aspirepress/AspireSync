@@ -1,12 +1,21 @@
 # This file should be sourced, not run
-# This is svn/bin/prelude.sh: all operations keep us rooted in the svn/ subdir, not the project root
 
 [[ -n $TRACE ]] && [[ $TRACE != 0 ]] && set -x
 
 set -o errexit
 
+orig_pwd=$(pwd)
 cd $(dirname $0)/..
-base=$(pwd)
+BASE_DIR=$(pwd)
+
+
+DATA_DIR=${DATA_DIR:-$HOME/svn-data} # should NOT be under the project root, it freaks IDEA out even if its excluded
+ARCHIVE_DIR=${ARCHIVE_DIR:-$DATA_DIR/archive}
+
+mkdir -p $DATA_DIR $ARCHIVE_DIR
+
+PLUGINS_REMOTE=${PLUGINS_REMOTE:-https://plugins.svn.wordpress.org}
+THEMES_REMOTE=${THEMES_REMOTE:-https://themes.svn.wordpress.org}
 
 function warn {
     echo "$@" >&2
@@ -22,3 +31,28 @@ function RUN() {
   $_run "$@"
 }
 
+function enforce_svn_root() {
+  [[ -d .svn ]] || die "$(pwd) does not look like a svn checkout -- exiting"
+}
+
+function _use_checkout() {
+  type=$1
+  remote=$2
+
+  cd $DATA_DIR
+  mkdir -p svn/$type
+  cd svn/$type
+  if [[ -d .svn ]]; then
+    $BASE_DIR/bin/svn-get-immediates
+  else
+    svn checkout --ignore-externals --depth=immediates $remote
+  fi
+}
+
+function use_plugins() {
+  _use_checkout plugins $PLUGINS_REMOTE
+}
+
+function use_themes() {
+  _use_checkout themes $THEMES_REMOTE
+}
