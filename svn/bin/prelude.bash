@@ -4,18 +4,21 @@
 
 set -o errexit
 
-orig_pwd=$(pwd)
+ORIG_PWD=$(pwd)
 cd $(dirname $0)/..
 BASE_DIR=$(pwd)
 
-
 DATA_DIR=${DATA_DIR:-$HOME/svn-data} # should NOT be under the project root, it freaks IDEA out even if its excluded
 ARCHIVE_DIR=${ARCHIVE_DIR:-$DATA_DIR/archive}
+
+TMPDIR=${TMPDIR:-/tmp} # no underscore on this one, it's an old unixism
 
 mkdir -p $DATA_DIR $ARCHIVE_DIR
 
 PLUGINS_REMOTE=${PLUGINS_REMOTE:-https://plugins.svn.wordpress.org}
 THEMES_REMOTE=${THEMES_REMOTE:-https://themes.svn.wordpress.org}
+
+YMD=$(date +%Y-%m-%d)
 
 function warn {
     echo "$@" >&2

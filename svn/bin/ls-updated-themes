@@ -5,12 +5,9 @@
 date=$1
 [[ -n $date ]] || die "usage: $0 <date>"
 
-ymd=$(php -r "echo date('Y-m-d', strtotime('$date'));")
-tmp=${TMPDIR:-/tmp}
-
-checkout=$(mktemp -d $tmp/themes-svn.XXXXXXXX)
+checkout=$(mktemp -d $TMPDIR/themes-svn.XXXXXXXX)
 trap "rm -rf $checkout" EXIT
 
 RUN cd $checkout
 RUN svn co https://themes.svn.wordpress.org --depth empty > /dev/null
-RUN $base/bin/svn-changed-slugs $ymd
+RUN $BASE_DIR/bin/svn-changed-slugs $YMD

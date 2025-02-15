@@ -1,12 +1,8 @@
 #!/bin/bash
 
-pwd=$(pwd)
-
 . $(dirname $0)/prelude.bash
-
-cd $pwd
-
-[[ -d .svn ]] || die "Current directory does not appear to be a svn checkout"
+cd $ORIG_PWD
+enforce_svn_root
 
 date=$1
 [[ -n $date ]] || die "Usage: $0 yyyy-mm-dd"
