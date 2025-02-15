@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\Sync\Meta;
+namespace App\Commands\Sync;
 
 use App\Commands\AbstractBaseCommand;
 use App\Services\Metadata\PluginMetadataService;
@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class MetaDumpPluginsCommand extends AbstractBaseCommand
+class DumpPluginsCommand extends AbstractBaseCommand
 {
     public function __construct(
         private PluginMetadataService $meta,
@@ -21,7 +21,8 @@ class MetaDumpPluginsCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('sync:meta:dump:plugins')
+        $this
+            ->setName('sync:dump:plugins')
             ->setDescription('Dumps metadata of all plugins in jsonl format')
             ->addOption('after', null, InputOption::VALUE_REQUIRED, 'Dump only plugins synced after this date');
     }

@@ -6,8 +6,6 @@ namespace App\Entity;
 
 use App\Repository\SyncResourceRepository;
 use App\ResourceType;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
@@ -58,11 +56,5 @@ class SyncResource
         public readonly ?int $updated,
         #[ORM\Column(nullable: true)]
         public readonly ?array $metadata = null,
-    ) {
-        $this->assets = new ArrayCollection();
-    }
-
-    /** @var Collection<int, SyncAsset> */
-    #[ORM\OneToMany(targetEntity: SyncAsset::class, mappedBy: 'resource')]
-    public readonly Collection $assets;
+    ) {}
 }

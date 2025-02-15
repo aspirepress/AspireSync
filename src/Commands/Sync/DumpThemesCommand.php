@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\Sync\Meta;
+namespace App\Commands\Sync;
 
 use App\Commands\AbstractBaseCommand;
 use App\Services\Metadata\ThemeMetadataService;
@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class MetaDumpThemesCommand extends AbstractBaseCommand
+class DumpThemesCommand extends AbstractBaseCommand
 {
     public function __construct(
         private ThemeMetadataService $meta,
@@ -21,7 +21,8 @@ class MetaDumpThemesCommand extends AbstractBaseCommand
 
     protected function configure(): void
     {
-        $this->setName('sync:meta:dump:themes')
+        $this
+            ->setName('sync:dump:themes')
             ->setDescription('Dumps metadata of all themes in jsonl format')
             ->addOption('after', null, InputOption::VALUE_REQUIRED, 'Dump only plugins synced after this date');
     }

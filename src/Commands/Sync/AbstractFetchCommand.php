@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\Sync\Meta;
+namespace App\Commands\Sync;
 
 use App\Commands\AbstractBaseCommand;
 use App\Integrations\Wordpress\WordpressApiConnector;
 use App\ResourceType;
-use App\Services\List\ListServiceInterface;
 use App\Services\Metadata\MetadataServiceInterface;
 use App\Utilities\RegexUtil;
 use App\Utilities\StringUtil;
@@ -23,17 +22,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use function Safe\json_decode;
 
-abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
+abstract class AbstractFetchCommand extends AbstractBaseCommand
 {
     public const MAX_CONCURRENT_REQUESTS = 10;
-
-    private bool $clobber = false;
 
     private ?int $limit = null;
     private int $generated = 0;
 
     public function __construct(
-        protected readonly ListServiceInterface $listService,
         protected readonly MetadataServiceInterface $meta,
         protected readonly WordpressApiConnector $api,
         protected readonly ResourceType $resource,
@@ -47,13 +43,25 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
     {
         $category = $this->resource->plural();
         $this
-            ->setName("sync:meta:fetch:$category")
+            ->setName("sync:fetch:$category")
             ->setDescription("Fetches meta data of all new and changed $category")
             ->addOption(
-                'update-all',
+                'slugs',
+                null,
+                InputOption::VALUE_REQUIRED,
+                "List of $category (separated by commas) to explicitly update",
+            )
+            ->addOption(
+                'slugs-from',
+                null,
+                InputOption::VALUE_REQUIRED,
+                "File containing list of $category to explicitly update (one per line)",
+            )
+            ->addOption(
+                'empty-slugs-ok',
                 null,
                 InputOption::VALUE_NONE,
-                'Update all metadata; otherwise, we only update what has changed',
+                'Exit successfully if slugs list is empty',
             )
             ->addOption(
                 'skip-pulled-after',
@@ -72,20 +80,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 null,
                 InputOption::VALUE_REQUIRED,
                 "Stop after fetching N $category",
-            )
-            ->addOption(
-                'slugs',
-                null,
-                InputOption::VALUE_REQUIRED,
-                "List of $category (separated by commas) to explicitly update",
-            )
-            ->addOption(
-                'slugs-from',
-                null,
-                InputOption::VALUE_REQUIRED,
-                "File containing list of $category to explicitly update (one per line)",
             );
-        $this->listService->setName($this->getName());
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -94,7 +89,6 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $this->log->notice("Running command {$this->getName()}");
         $this->startTimer();
 
-        $this->clobber = (bool) $input->getOption('update-all');
         $limit = $input->getOption('limit');
         $this->limit = ($limit === null) ? null : (int) $limit; // don't convert null to 0
 
@@ -115,19 +109,25 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
 
         $requested = array_fill_keys(StringUtil::explodeAndTrim($slugs), []);
 
-        if ($requested) {
-            $count = count($requested);
-            $this->log->debug("Getting $count requested $category...");
-            $toUpdate = $requested;
-        } else {
-            $this->log->debug("Getting list of $category...");
-            $toUpdate = $this->listService->getItems();
-            $this->log->debug("Items to update: " . count($toUpdate));
+        if (!$requested) {
+            if (!$input->getOption('empty-slugs-ok')) {
+                $this->log->error("No slugs specified -- exiting.");
+                return Command::FAILURE;
+            } else {
+                $this->log->info("No slugs specified -- exiting.");
+                return Command::SUCCESS;
+            }
         }
+
+        $count = count($requested);
+        $this->log->debug("Getting $count requested $category...");
+        $toUpdate = $requested;
+
         if ($pulledCutoff) {
             $toUpdate = array_diff_key($toUpdate, $this->meta->getPulledAfter($pulledCutoff));
             $this->log->debug("after --skip-pulled-after $pulledCutoff : " . count($toUpdate));
         }
+
         if ($checkedCutoff) {
             $toUpdate = array_diff_key($toUpdate, $this->meta->getCheckedAfter($checkedCutoff));
             $this->log->debug("after --skip-checked-after $checkedCutoff : " . count($toUpdate));
@@ -150,16 +150,6 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
         $promise = $pool->send();
         $promise->wait();
 
-        $not_saving_revision_reason = '';
-        $this->limit !== null and $not_saving_revision_reason = "--limit was specified";
-        $slugs and $not_saving_revision_reason = "--slugs or --slugs-from was specified";
-
-        if ($not_saving_revision_reason) {
-            $this->log->info("Not saving revision: $not_saving_revision_reason");
-        } else {
-            $revision = $this->listService->preserveRevision();
-            $this->log->info("Updated current revision to $revision");
-        }
         $this->endTimer();
 
         return Command::SUCCESS;
@@ -197,16 +187,7 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 'status' => 'open',
                 ...$metadata,
             ];
-            if (!empty($metadata['versions'])) {
-                $this->log->info("$slug ... [" . count($metadata['versions']) . ' versions]');
-            } elseif (isset($metadata['version'])) {
-                $this->log->info("$slug ... [1 version]");
-            } elseif (isset($metadata['skipped'])) {
-                $this->log->info((string) $metadata['skipped']);
-            } else {
-                $this->log->info("$slug ... No versions found");
-            }
-            $this->meta->save($metadata, $this->clobber);
+            $this->meta->save($metadata);
         } catch (Exception $e) {
             $this->log->error("$slug ... ERROR: {$e->getMessage()}");
             return;
@@ -226,7 +207,6 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
             $request = $saloonResponse->getRequest();
             $slug = $request->slug ?? throw new Exception('Missing slug in request');
             $code = $response->getStatusCode();
-            $reason = $response->getReasonPhrase();
 
             $metadata = json_decode($response->getBody()->getContents(), assoc: true);
             $error = $metadata['error'] ?? null;
@@ -236,13 +216,8 @@ abstract class AbstractMetaFetchCommand extends AbstractBaseCommand
                 default => 'error',
             };
 
-            if ($status === 'closed') {
-                $this->log->info("$slug ... [closed]");
-            } else {
-                $this->log->error("$slug ... $code $reason");
-            }
-
             $this->meta->save(['slug' => $slug, 'name' => $slug, 'status' => $status, ...$metadata]);
+            $this->log->info("$slug ... [$status]");
         } catch (Exception $e) {
             $this->log->error("$slug ... ERROR: {$e->getMessage()}");
             return;

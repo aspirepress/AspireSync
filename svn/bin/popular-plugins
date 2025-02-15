@@ -1,0 +1,5 @@
+#!/bin/sh
+
+endpoint=https://api.wordpress.org/plugins/info/1.2/
+exec curl --silent "$endpoint?action=query_plugins&browse=popular&per_page=100" | jq -r '.plugins[] | "\(.slug)/\(.version)"'
+

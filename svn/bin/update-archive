@@ -1,0 +1,72 @@
+#!/bin/bash
+
+. $(dirname $0)/prelude.bash
+cd $ORIG_PWD
+
+enforce_svn_root
+
+repo=$(basename $(pwd))
+mkdir -p $ARCHIVE_DIR/$repo
+
+# * a2-optimized-wp: corrupt, crashes svn every time
+# * all-in-one-contact-buttons-wpshare247: has so many recursively nested versions that it's effectively a zip bomb
+blacklist='a2-optimized-wp|all-in-one-contact-buttons-wpshare247'
+
+function main() {
+  for dir in $*
+  do
+    process $dir
+  done
+}
+
+function process() {
+  dir=$1
+
+  if ! [[ $dir =~ ^[-_A-Za-z0-9]+$ ]]; then
+    finalize $dir "malformed dir ignored"
+    return
+  fi
+
+  if [[ $dir =~ $blacklist ]]; then
+    finalize $dir "blacklisted dir skipped"
+    return
+  fi
+
+  local rev=$(svn info -r HEAD --show-item last-changed-revision $dir)
+  local tar=$ARCHIVE_DIR/$repo/$rev.$dir.tar
+  local ztar=$tar.lrz
+
+  if [[ -f $ztar ]]; then
+    finalize $dir "archive exists at revision $rev"
+    return
+  fi
+
+  update $dir
+  archive $dir $tar
+  finalize $dir "archived at revision $rev"
+}
+
+function update() {
+  svn update --ignore-externals --set-depth=infinity --force $1
+}
+
+function archive() {
+  dir=$1
+  tar=$2
+
+  rm -f $ARCHIVE_DIR/$repo/*.$dir.tar*
+
+  # could be one step, but I like seeing the progress
+  tar cf $tar ./$dir
+  lrzip --delete $tar
+
+}
+
+function finalize() {
+  dir=$1
+  message=$2
+  warn "$dir: $message"
+  [[ -n $KEEP_DIRS ]] || rm -rf $dir
+}
+
+main $*

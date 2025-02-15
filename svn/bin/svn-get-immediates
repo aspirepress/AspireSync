@@ -1,0 +1,8 @@
+#!/bin/sh
+
+. $(dirname $0)/prelude.bash
+cd $ORIG_PWD
+enforce_svn_root
+
+svn cleanup
+svn update --ignore-externals --set-depth=immediates .

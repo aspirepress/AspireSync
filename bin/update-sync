@@ -18,8 +18,8 @@ function main () {
   svn/bin/ls-updated-plugins "$LOOKBACK_INTERVAL" | sort > $plugins
   svn/bin/ls-updated-themes "$LOOKBACK_INTERVAL" | sort > $themes
 
-  bin/console sync:meta:fetch:plugins -vvv --slugs-from=$plugins --skip-checked-after="$RECHECK_INTERVAL"
-  bin/console sync:meta:fetch:themes -vvv --slugs-from=$themes --skip-checked-after="$RECHECK_INTERVAL"
+  bin/console sync:fetch:plugins -vvv --slugs-from=$plugins --skip-checked-after="$RECHECK_INTERVAL"
+  bin/console sync:fetch:themes -vvv --slugs-from=$themes --skip-checked-after="$RECHECK_INTERVAL"
 }
 
 main "$@"
