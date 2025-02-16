@@ -43,31 +43,53 @@ huge=$(echo '
   mailchimp-for-wp
   mailpoet
   meta-box
+  newsletter
   ninja-forms
   optinmonster
+  otter-blocks
+  photo-gallery
+  pixelyoursite
   polylang
   popup-maker
+  post-smtp
   premium-addons-for-elementor
   redux-framework
+  royal-elementor-addons
   seo-by-rank-math
+  shortcodes-ultimate
+  shortpixel-image-optimiser
   smart-slider-3
+  so-widgets-bundle
   the-events-calendar
+  translatepress-multilingual
   ultimate-addons-for-gutenberg
+  ultimate-member
   under-construction-page
+  unlimited-elements-for-elementor
   updraftplus
   w3-total-cache
+  woo-variation-swatches
   woocommerce
   woocommerce-gateway-stripe
+  woocommerce-google-analytics-integration
   woocommerce-payments
+  woocommerce-paypal-payments
+  woocommerce-pdf-invoices-packing-slips
   woocommerce-services
   wordfence
   wordpress-seo
   wp-fastest-cache
+  wp-google-maps
   wp-mail-smtp
   wp-optimize
+  wp-seopress
   wp-smushit
+  wp-statistics
+  wp-user-avatar
+  wp-whatsapp-chat
   wpforms-lite
   wpvivid-backuprestore
+  yith-woocommerce-compare
   yith-woocommerce-wishlist
 ' | xargs | sed 's/ /|/g')
 
