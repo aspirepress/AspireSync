@@ -8,12 +8,13 @@ enforce_svn_root
 repo=$(basename $(pwd))
 mkdir -p $ARCHIVE_DIR/$repo
 
-# * a2-optimized-wp: corrupt
-# * all-in-one-contact-buttons-wpshare247: has so many recursively nested versions that it's effectively a zip bomb
-# * better-links: corrupt
-# * biblesupersearch: recursive zip bomb
-# * countdown-timer: corrupt
-blacklist='a2-optimized-wp|all-in-one-contact-buttons-wpshare247|better-links|biblesupersearch|countdown-timer'
+# These have so many redundant files (usually from recursively nested tags) that they're effectively zip bombs
+bombs='all-in-one-contact-buttons-wpshare247|biblesupersearch'
+
+# These produce errors when svn attempts to update them
+corrupt='a2-optimized-wp|better-links|countdown-timer'
+
+blacklist="^($bombs|$corrupt)\$"
 
 function main() {
   for dir in $*
