@@ -8,9 +8,11 @@ enforce_svn_root
 repo=$(basename $(pwd))
 mkdir -p $ARCHIVE_DIR/$repo
 
-# * a2-optimized-wp: corrupt, crashes svn every time
+# * a2-optimized-wp: corrupt
 # * all-in-one-contact-buttons-wpshare247: has so many recursively nested versions that it's effectively a zip bomb
-blacklist='a2-optimized-wp|all-in-one-contact-buttons-wpshare247'
+# * better-links: corrupt
+# * biblesupersearch: recursive zip bomb
+blacklist='a2-optimized-wp|all-in-one-contact-buttons-wpshare247|better-links|biblesupersearch'
 
 function main() {
   for dir in $*
@@ -21,6 +23,8 @@ function main() {
 
 function process() {
   dir=$1
+
+  echo "========== PROCESSING: $dir"
 
   if ! [[ $dir =~ ^[-_A-Za-z0-9]+$ ]]; then
     finalize $dir "malformed dir ignored"
@@ -44,6 +48,7 @@ function process() {
 
   update $dir
   archive $dir $tar
+  ls -lh $ztar
   finalize $dir "archived at revision $rev"
 }
 
