@@ -14,6 +14,58 @@ bombs='all-in-one-contact-buttons-wpshare247|biblesupersearch'
 # These produce errors when svn attempts to update them
 corrupt='a2-optimized-wp|better-links|countdown-timer'
 
+# Many popular plugins are simply too big to work with the whole tree, so only get the trunk of these
+# note how many have "lite" in the name 🙄
+huge=$(echo '
+  advanced-custom-fields
+  all-in-one-seo-pack
+  all-in-one-wp-security-and-firewall
+  astra-sites
+  better-wp-security
+  duplicator
+  elementor
+  elementskit-lite
+  essential-addons-for-elementor-lite
+  ewww-image-optimizer
+  google-analytics-for-wordpress
+  google-listings-and-ads
+  google-site-kit
+  gtranslate
+  gutenberg
+  jetpack
+  mailchimp-for-wp
+  meta-box
+  ninja-forms
+  optinmonster
+  polylang
+  popup-maker
+  premium-addons-for-elementor
+  redux-framework
+  seo-by-rank-math
+  smart-slider-3
+  the-events-calendar
+  ultimate-addons-for-gutenberg
+  under-construction-page
+  updraftplus
+  w3-total-cache
+  woocommerce
+  woocommerce-gateway-stripe
+  woocommerce-payments
+  woocommerce-services
+  wordfence
+  wordpress-seo
+  wp-fastest-cache
+  wp-mail-smtp
+  wp-optimize
+  wp-smushit
+  wpforms-lite
+  wpvivid-backuprestore
+  yith-woocommerce-wishlist
+' | xargs | sed 's/ /|/g')
+
+TRUNK_ONLY=${TRUNK_ONLY:-$huge}
+
+# combined blacklist
 blacklist="^($bombs|$corrupt)\$"
 
 function main() {
@@ -24,9 +76,10 @@ function main() {
 }
 
 function process() {
-  dir=$1
+  local dir=$1
 
   echo -e "\n---------- $dir ----------"
+  is_trunk_only $dir && warn "WARNING: $dir marked as a trunk-only build"
 
   if ! [[ $dir =~ ^[-_A-Za-z0-9]+$ ]]; then
     finalize $dir "malformed dir ignored"
@@ -38,8 +91,11 @@ function process() {
     return
   fi
 
+  local suffix=''
+  is_trunk_only $dir && suffix='__trunk'
+
   local rev=$(svn info -r HEAD --show-item last-changed-revision $dir)
-  local tar=$ARCHIVE_DIR/$repo/$rev/$rev.$dir.tar
+  local tar=$ARCHIVE_DIR/$repo/$rev/$rev.$dir$suffix.tar
   local ztar=$tar.lrz
   mkdir -p $(dirname $tar)
 
@@ -55,12 +111,16 @@ function process() {
 }
 
 function update() {
-  svn update --ignore-externals --set-depth=infinity --force $1
+  local dir=$1
+
+  # sometimes it fails to find the trunk directory without checking out the parent first 🤷‍♂️
+  is_trunk_only $dir && { svn update --ignore-externals --set-depth=empty $dir; dir="$dir/trunk"; }
+  svn update --ignore-externals --set-depth=infinity --force $dir
 }
 
 function archive() {
-  dir=$1
-  tar=$2
+  local dir=$1
+  local tar=$2
 
   rm -f $ARCHIVE_DIR/$repo/*.$dir.tar*
 
@@ -70,10 +130,19 @@ function archive() {
 }
 
 function finalize() {
-  dir=$1
-  message=$2
+  local dir=$1
+  local message=$2
+
   warn "$dir: $message"
   [[ -n $KEEP_DIRS ]] || rm -rf "$dir"
+}
+
+function is_trunk_only() {
+  local dir=$1
+  if [[ -n $UPDATE_FORCE_TRUNK_ONLY ]]; then
+    return
+  fi
+  [[ -n $UPDATE_FORCE_FULL_CHECKOUT ]] || [[ $dir =~ ^($TRUNK_ONLY)$ ]]
 }
 
 main $*
