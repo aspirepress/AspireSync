@@ -71,7 +71,7 @@ function finalize() {
   dir=$1
   message=$2
   warn "$dir: $message"
-  [[ -n $KEEP_DIRS ]] || rm -rf $dir
+  [[ -n $KEEP_DIRS ]] || rm -rf "$dir"
 }
 
 main $*
