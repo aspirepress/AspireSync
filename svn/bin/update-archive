@@ -24,7 +24,7 @@ function main() {
 function process() {
   dir=$1
 
-  echo "\n---------- $dir ----------"
+  echo -e "\n---------- $dir ----------"
 
   if ! [[ $dir =~ ^[-_A-Za-z0-9]+$ ]]; then
     finalize $dir "malformed dir ignored"
