@@ -33,8 +33,9 @@ function process() {
   fi
 
   local rev=$(svn info -r HEAD --show-item last-changed-revision $dir)
-  local tar=$ARCHIVE_DIR/$repo/$rev.$dir.tar
+  local tar=$ARCHIVE_DIR/$repo/$rev/$rev.$dir.tar
   local ztar=$tar.lrz
+  mkdir -p $(dirname $tar)
 
   if [[ -f $ztar ]]; then
     finalize $dir "archive exists at revision $rev"
@@ -59,7 +60,6 @@ function archive() {
   # could be one step, but I like seeing the progress
   tar cf $tar ./$dir
   lrzip --delete $tar
-
 }
 
 function finalize() {
