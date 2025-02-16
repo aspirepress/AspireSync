@@ -27,13 +27,21 @@ huge=$(echo '
   elementskit-lite
   essential-addons-for-elementor-lite
   ewww-image-optimizer
+  forminator
+  google-analytics-dashboard-for-wp
   google-analytics-for-wordpress
   google-listings-and-ads
   google-site-kit
   gtranslate
   gutenberg
+  happy-elementor-addons
+  host-webfonts-local
+  jeg-elementor-kit
   jetpack
+  jetpack-boost
+  kadence-blocks
   mailchimp-for-wp
+  mailpoet
   meta-box
   ninja-forms
   optinmonster
