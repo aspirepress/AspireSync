@@ -12,7 +12,8 @@ mkdir -p $ARCHIVE_DIR/$repo
 # * all-in-one-contact-buttons-wpshare247: has so many recursively nested versions that it's effectively a zip bomb
 # * better-links: corrupt
 # * biblesupersearch: recursive zip bomb
-blacklist='a2-optimized-wp|all-in-one-contact-buttons-wpshare247|better-links|biblesupersearch'
+# * countdown-timer: corrupt
+blacklist='a2-optimized-wp|all-in-one-contact-buttons-wpshare247|better-links|biblesupersearch|countdown-timer'
 
 function main() {
   for dir in $*
