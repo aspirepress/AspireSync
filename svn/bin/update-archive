@@ -17,80 +17,389 @@ corrupt='a2-optimized-wp|better-links|countdown-timer'
 # Many popular plugins are simply too big to work with the whole tree, so only get the trunk of these
 # note how many have "lite" in the name 🙄
 huge=$(echo '
-  advanced-custom-fields
-  all-in-one-seo-pack
-  all-in-one-wp-security-and-firewall
-  astra-sites
-  better-wp-security
-  duplicator
-  elementor
-  elementskit-lite
-  essential-addons-for-elementor-lite
-  ewww-image-optimizer
-  forminator
-  google-analytics-dashboard-for-wp
-  google-analytics-for-wordpress
-  google-listings-and-ads
-  google-site-kit
-  gtranslate
-  gutenberg
-  happy-elementor-addons
-  host-webfonts-local
-  jeg-elementor-kit
-  jetpack
-  jetpack-boost
-  kadence-blocks
-  mailchimp-for-wp
-  mailpoet
-  meta-box
-  newsletter
-  ninja-forms
-  optinmonster
-  otter-blocks
-  photo-gallery
-  pixelyoursite
-  polylang
-  popup-maker
-  post-smtp
-  premium-addons-for-elementor
-  redux-framework
-  royal-elementor-addons
-  seo-by-rank-math
-  shortcodes-ultimate
-  shortpixel-image-optimiser
-  smart-slider-3
-  so-widgets-bundle
-  the-events-calendar
-  translatepress-multilingual
-  ultimate-addons-for-gutenberg
-  ultimate-member
-  under-construction-page
-  unlimited-elements-for-elementor
-  updraftplus
-  w3-total-cache
-  woo-variation-swatches
-  woocommerce
-  woocommerce-gateway-stripe
-  woocommerce-google-analytics-integration
-  woocommerce-payments
-  woocommerce-paypal-payments
-  woocommerce-pdf-invoices-packing-slips
-  woocommerce-services
-  wordfence
-  wordpress-seo
-  wp-fastest-cache
-  wp-google-maps
-  wp-mail-smtp
-  wp-optimize
-  wp-seopress
-  wp-smushit
-  wp-statistics
-  wp-user-avatar
-  wp-whatsapp-chat
-  wpforms-lite
-  wpvivid-backuprestore
-  yith-woocommerce-compare
-  yith-woocommerce-wishlist
+1-flash-gallery
+1000grad-epaper
+12-step-meeting-pdf-generator
+2fas-light
+2j-slideshow
+360-view
+3d-coming-soon-page
+51degreesmobi
+a2z-fedex-shipping
+a4-barcode-generator
+ab-testing-for-wp
+ablocks
+academy
+accelerated-mobile-pages
+accessibility-onetap
+acclectic-lightbox
+accordion-block
+accordions
+acymailing
+ad-block-guard
+addendio
+addons-for-beaver-builder
+addons-for-divi
+addonskit-for-elementor
+admin-custom-login
+admin-page-framework
+adminrocket
+ads-invalid-click-protection
+adsimple-cookie-manager-for-wp
+adv-geoip-redirect
+advamentor
+advanced-addons-for-elementor
+advanced-block-controls
+advanced-blog-post-block
+advanced-cf7-db
+advanced-coupons-for-woocommerce-free
+advanced-custom-fields
+advanced-emailing-for-woocommerce
+advanced-post-manager
+advanced-sidebar-menu
+advanced-team-showcase
+aesirx-analytics
+affiliatex
+agile-store-locator
+ai-auto-content-generator-for-elementor
+ai-comment-creator
+ai-image-alt-text-generator-for-wp
+ai-image-generator
+ai-media-studio-by-paradiso
+ai-muse
+ai-post-generator
+ai-post-visualizer
+ai-product-tools
+ai-workflow-automation-lite
+aipress
+aircash-for-woocommerce
+ajax-filter-posts
+ajmebc-gobi-photo-montage-animator
+albo-pretorio-on-line
+alfie-wp-weather
+all-bootstrap-blocks
+all-in-one-performance-accelerator
+all-in-one-seo-pack
+all-in-one-wp-security-and-firewall
+all-signs-options-free
+altis-accelerate
+amazon-auto-links
+amazon-polly
+amazon-s3-and-cloudfront
+ameliabooking
+ample-themes-demo-importer
+amy-chatbot
+animated-fullscreen-menu
+animated-live-wall
+animated-number-counters
+animations-for-blocks
+annoto
+anrghg
+answerforce
+anthologize
+anyclip-media
+ap-mega-menu
+api-for-htmx
+api-video
+apimo
+app-builder
+ar-model-viewer-for-woocommerce
+arforms-form-builder
+arile-extra
+aritize-3d
+armember-membership
+arprice-responsive-pricing-table
+artist-image-generator
+artistdatapress
+artistography
+artistpress
+as-create-pinterest-pinboard-pages
+astra-sites
+atarim-visual-collaboration
+atum-stock-manager-for-woocommerce
+audio-video-bonus-pack
+augmented-reality-product-visualizer-and-configurator-for-woocommerce
+authorizer
+auto-mail
+auto-post-thumbnail
+auto-set-first-image-as-featured
+automatic-internal-links-for-seo
+automatic-translations-for-polylang
+automation-web-platform
+avadanta-companion
+avantex-companion
+awesome-designer
+awesome-event-booking
+awesome-flickr-gallery-plugin
+awesome-studio
+awesome-support
+awp-companion
+axel-pro-for-woocommerce
+ays-facebook-popup-likebox
+ays-popup-box
+b-blocks
+b2app-no-code-mobile-app-builder
+ba-book-everything
+backwpup
+bakkbone-billing-at-registration
+bakkbone-florist-companion
+bangla-press
+banner-management-for-woocommerce
+bc-menu-cart-woo
+bdthemes-element-pack-lite
+bdthemes-prime-slider-lite
+bea-media-analytics
+beaf-before-and-after-gallery
+beagl
+beaver-builder-lite-version
+beeketing-for-woocommerce
+belingogeo
+bertha-ai-free
+best-photo-gallery
+best-woocommerce-feed
+better-redirects-for-gravity-forms
+better-wp-security
+betterdocs
+bg-biblie-references
+blogdog
+blogsqode-posts
+boldermail
+booking
+booking-and-rental-manager-for-woocommerce
+booking-calendar-with-availability-management
+bookingpress-appointment-booking
+bookly-responsive-appointment-booking-tool
+boom-fest
+botosub
+box-now-delivery
+bp-better-messages
+bp-check-in
+bp-job-manager
+bp-user-profile-reviews
+c9-blocks
+call-now-button
+cartflows
+cellarweb-privacy-and-security-options
+centralhubb-facebook-embeds-collection
+certishopping-social-reviews-for-woocommerce
+cf7-creamailer-extension
+cf7-google-sheets-connector
+cf7-styler
+chameleon
+charitable
+charitas-lite
+chart-builder
+chat-widgets-for-multivendor-marketplaces
+chatbot
+chatbot-chatgpt
+chatway-live-chat
+chaty
+checkout-mestres-wp
+checkout-paypal-woo
+chipbot
+christmas-greetings
+christmas-snow-effects
+church-admin
+civic-sip
+classified-ads
+classified-listing
+cleantalk-spam-protect
+clever-fox
+clickhome-myhome
+client-dash
+clientpoint-customeros
+clippp-thumbnail-by-e3s
+cliptakes
+clock-in-portal
+cm-blocks
+cmmntz
+cmp-coming-soon-maintenance
+co2ok-for-woocommerce
+coblocks
+codeswholesale-for-woocommerce
+collect-and-deliver-interface-for-woocommerce
+collect-and-pay-in-store-payment-gateway
+coming-soon
+coming-soon-blocks
+coming-soon-by-supsystic
+coming-soon-counter-page-maintenance-mode-lacoming-soon
+commenting-feature
+commons-in-a-box
+conditional-logic-for-woo-product-add-ons
+connect-to-edara
+connections
+contact-form-by-supsystic
+contact-form-maker
+contact-form-plugin
+contact-form-to-db
+contactsheets-lite
+content-bot
+content-mask
+content-views
+contlo-for-woocommerce
+control-listings
+contus-video-gallery
+convoworks-wp
+cool-accessibility
+cool-timeline
+corepayments-payment-gateway
+correos-express
+cosmic-blocks
+cost-calculator-builder
+courier-notices
+course-booking-system-extension
+coursepress
+cozy-addons
+cozy-essential-addons
+creative-blocks
+crony
+crowdcue
+cryptocurrency-payment-gateway
+cryptocurrency-rocket-tools
+cryptocurrency-widgets-for-elementor
+cryptopay-wc-lite
+ct-commerce
+cta
+cubewp-framework
+custom-html-block-extension
+custom-registration-form-builder-with-submission-manager
+custom-search-plugin
+customer-area
+customer-reviews-woocommerce
+customerly
+customize-facebook-feed
+customizer-login-page
+dc-woocommerce-multi-vendor
+duplicator
+easy-accordion-free
+easy-affiliate-cloaker
+easy-announcements
+easy-blocks-pro
+easy-coming-soon
+easy-courses
+easy-digital-downloads
+easy-elementor-addons
+easy-elements-hider
+easy-events-manager
+easy-facebook-likebox
+easy-fullscreen-slider
+easy-paypal-lte
+easy-populate-posts
+easy-tiktok-feed
+easy-upload-files-during-checkout
+easync-booking
+eazydocs
+ebanx-payment-gateway-for-woocommerce
+ebook-create-using-post
+echo-knowledge-base
+ecommerce-companion
+ecommerce24-woocommerce
+ecwid-shopping-cart
+edd-enhanced-sales-reports
+editor-beautifier
+editorplus
+edukit-assessed-posts
+edwiser-bridge
+efigerencianet-por-aireset
+eflyermaker-sign-up-form-builder
+ele-blog
+ele-slider-and-post-addon
+elegant-blocks
+element-ready-lite
+elementor
+elementskit-lite
+elevate-seo
+email-customizer-woocommerce
+email-list-builder-by-social-intents
+email-marketing-crm-for-woocommerce
+email-subscribers
+enblocks
+engage-by-zubi
+entro-coming-soon-per-postpage-or-global
+envite
+enwikuna-license-manager
+epdf-support-elements-pdf-creator-addon-for-elementor-lite
+eroom-zoom-meetings-webinar
+erp
+erp-pdf-invoice
+essential-addons-for-elementor-lite
+ewww-image-optimizer
+extendify
+fluentform
+forminator
+google-analytics-dashboard-for-wp
+google-analytics-for-wordpress
+google-listings-and-ads
+google-site-kit
+gtranslate
+gutenberg
+happy-elementor-addons
+host-webfonts-local
+jeg-elementor-kit
+jetpack
+jetpack-boost
+kadence-blocks
+loginpress
+mailchimp-for-wp
+mailpoet
+maintenance
+malcare-security
+meta-box
+ml-slider
+newsletter
+ninja-forms
+optimole-wp
+optinmonster
+otter-blocks
+pagelayer
+photo-gallery
+pixelyoursite
+polylang
+popup-maker
+post-smtp
+premium-addons-for-elementor
+pretty-link
+redux-framework
+royal-elementor-addons
+seo-by-rank-math
+shortcodes-ultimate
+shortpixel-image-optimiser
+smart-slider-3
+so-widgets-bundle
+templately
+the-events-calendar
+translatepress-multilingual
+ultimate-addons-for-gutenberg
+ultimate-member
+under-construction-page
+unlimited-elements-for-elementor
+updraftplus
+w3-total-cache
+woo-variation-swatches
+woocommerce
+woocommerce-gateway-stripe
+woocommerce-google-analytics-integration
+woocommerce-payments
+woocommerce-paypal-payments
+woocommerce-pdf-invoices-packing-slips
+woocommerce-services
+wordfence
+wordpress-seo
+wp-fastest-cache
+wp-file-manager
+wp-google-maps
+wp-mail-smtp
+wp-maintenance-mode
+wp-optimize
+wp-seopress
+wp-smushit
+wp-statistics
+wp-user-avatar
+wp-whatsapp-chat
+wpforms-lite
+wpvivid-backuprestore
+yith-woocommerce-compare
+yith-woocommerce-wishlist
 ' | xargs | sed 's/ /|/g')
 
 TRUNK_ONLY=${TRUNK_ONLY:-$huge}
@@ -176,3 +485,4 @@ function is_trunk_only() {
 }
 
 main $*
+
