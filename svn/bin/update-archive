@@ -638,7 +638,12 @@ wp-statistics
 wp-user-avatar
 ' | xargs | sed 's/ /|/g')
 
-TRUNK_ONLY=${TRUNK_ONLY:-$huge}
+# these get under the 5M mark, but are still gigantic and update annoyingly often
+others=$(echo '
+woocommerce
+' | xargs | sed 's/ /|/g')
+
+TRUNK_ONLY=${TRUNK_ONLY:-"$huge|$others"}
 
 # combined blacklist
 blacklist="^($bombs|$corrupt)\$"
