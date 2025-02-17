@@ -2,7 +2,11 @@
 
 . $(dirname $0)/prelude.bash
 cd $ORIG_PWD
+
 enforce_svn_root
 
+# some scripts set this to 'empty'
+depth=${IMMEDIATES_DEPTH:-immediates}
+
 svn cleanup
-svn update --ignore-externals --set-depth=immediates .
+svn update --ignore-externals --set-depth=$depth .

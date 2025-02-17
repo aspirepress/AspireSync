@@ -48,7 +48,8 @@ function _use_checkout() {
   if [[ -d .svn ]]; then
     $BASE_DIR/bin/svn-get-immediates
   else
-    svn checkout --ignore-externals --depth=immediates $remote
+    depth=${IMMEDIATES_DEPTH:-immediates}
+    svn checkout --ignore-externals --depth=$depth $remote
   fi
 }
 
