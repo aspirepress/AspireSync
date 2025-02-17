@@ -666,6 +666,8 @@ function process() {
     return
   fi
 
+  [[ -d $dir ]] || svn update --ignore-externals --depth=immediates $dir
+
   local suffix=''
   is_trunk_only $dir && suffix='__trunk'
 
@@ -687,9 +689,7 @@ function process() {
 
 function update() {
   local dir=$1
-
-  # sometimes it fails to find the trunk directory without checking out the parent first 🤷‍♂️
-  is_trunk_only $dir && { svn update --ignore-externals --set-depth=empty $dir; dir="$dir/trunk"; }
+  is_trunk_only $dir && dir="$dir/trunk"
   svn update --ignore-externals --set-depth=infinity --force $dir
 }
 
