@@ -257,7 +257,6 @@ betterdocs
 betterlinks
 better-robots-txt
 better-wp-security
-better-wp-security__trunk
 bibleget-io
 blocksy-companion
 blog2social
@@ -504,7 +503,6 @@ ele-blog
 elegance-menu
 elemailer-lite
 elementor
-elementor__trunk
 element-ready-lite
 ele-slider-and-post-addon
 elespare
@@ -572,17 +570,11 @@ formidable
 forminator
 gdpr-cookie-compliance
 google-analytics-dashboard-for-wp
-google-analytics-dashboard-for-wp__trunk
-google-analytics-for-wordpress__trunk
-gutenberg__trunk
 happy-elementor-addons
-happy-elementor-addons__trunk
 header-footer-elementor
 instagram-feed
 jeg-elementor-kit
-jeg-elementor-kit__trunk
 jetpack-boost
-jetpack__trunk
 kadence-blocks
 kadence-starter-templates
 litespeed-cache
@@ -593,41 +585,31 @@ megamenu
 metform
 ml-slider
 newsletter
-newsletter__trunk
 nextgen-gallery
 ocean-extra
 optimole-wp
-optinmonster__trunk
 otter-blocks
 pagelayer
 password-protected
 photo-gallery
-photo-gallery__trunk
 pixelyoursite
 popup-builder
 post-smtp
-post-smtp__trunk
 pretty-link
 royal-elementor-addons
 shortcodes-ultimate
 so-widgets-bundle
 templately
 translatepress-multilingual
-ultimate-addons-for-gutenberg__trunk
 ultimate-member
-under-construction-page__trunk
 unlimited-elements-for-elementor
-w3-total-cache__trunk
 webp-express
 woocommerce-paypal-payments
 woocommerce-pdf-invoices-packing-slips
-woocommerce__trunk
 woo-variation-swatches
 wordpress-seo
 wp-file-manager
-wpforms-lite__trunk
 wp-google-maps
-wp-google-maps__trunk
 wp-headers-and-footers
 wp-mail-logging
 wp-maintenance-mode
@@ -638,12 +620,12 @@ wp-statistics
 wp-user-avatar
 ' | xargs | sed 's/ /|/g')
 
-# these get under the 5M mark, but are still gigantic and update annoyingly often
-others=$(echo '
-woocommerce
+# manual additions to trunk-only
+other_trunk_only=$(echo '
+your-spammy-plugin-slug-here
 ' | xargs | sed 's/ /|/g')
 
-TRUNK_ONLY=${TRUNK_ONLY:-"$huge|$others"}
+TRUNK_ONLY=${TRUNK_ONLY:-"$huge|$other_trunk_only"}
 
 # combined blacklist
 blacklist="^($bombs|$corrupt)\$"
