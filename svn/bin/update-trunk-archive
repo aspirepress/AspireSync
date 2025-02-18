@@ -64,8 +64,8 @@ function process() {
 
 function update() {
   local dir=$1
-  svn update --ignore-externals --set-depth=infinity --force $dir/trunk
   svn update --set-depth=immediates --force $dir/tags # the list of versions is lightweight and useful metadata
+  svn update --ignore-externals --set-depth=infinity --force $dir/trunk
 }
 
 function archive() {
