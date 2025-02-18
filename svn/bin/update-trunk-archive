@@ -31,7 +31,7 @@ function main() {
 function process() {
   local dir=$1
 
-  echo -e "\n---------- $dir [trunk] ----------"
+  echo -e "\nPROCESSING: $dir [trunk]"
 
   if ! [[ $dir =~ ^[-A-Za-z0-9]+$ ]]; then
     finalize $dir "malformed dir ignored"
