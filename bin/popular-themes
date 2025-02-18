@@ -1,0 +1,28 @@
+#!/bin/bash
+
+n=${1:-100}
+
+endpoint=https://api.wordpress.org/themes/info/1.2/
+
+fields=${FIELDS:-'slug,version,name'} # theme api doesn't even have a last_updated
+[[ -n $EXTRA_FIELDS ]] && fields="$fields,$EXTRA_FIELDS"
+
+exec curl --silent "$endpoint?action=query_themes&browse=popular&per_page=$n" | jq -r ".themes[] | {$fields}"
+
+# curl --silent "https://api.wordpress.org/themes/info/1.2/?action=query_themes&browse=popular&per_page=$n" | jq -r '.themes[0] | keys[]'
+# author
+# description
+# external_repository_url
+# external_support_url
+# homepage
+# is_commercial
+# is_community
+# name
+# num_ratings
+# preview_url
+# rating
+# requires
+# requires_php
+# screenshot_url
+# slug
+# version

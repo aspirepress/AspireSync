@@ -1,0 +1,37 @@
+#!/bin/bash
+
+n=${1:-100}
+
+endpoint=https://api.wordpress.org/plugins/info/1.2/
+
+fields=${FIELDS:-'slug,version,name,last_updated'}
+[[ -n $EXTRA_FIELDS ]] && fields="$fields,$EXTRA_FIELDS"
+
+exec curl --silent "$endpoint?action=query_plugins&browse=popular&per_page=$n" | jq -r ".plugins[] | {$fields}"
+
+# curl --silent "https://api.wordpress.org/plugins/info/1.2/?action=query_plugins&browse=popular&per_page=$n" | jq -r '.plugins[0] | keys[]'
+# active_installs
+# added
+# author
+# author_profile
+# description
+# donate_link
+# download_link
+# downloaded
+# homepage
+# icons
+# last_updated
+# name
+# num_ratings
+# rating
+# ratings
+# requires
+# requires_php
+# requires_plugins
+# short_description
+# slug
+# support_threads
+# support_threads_resolved
+# tags
+# tested
+# version

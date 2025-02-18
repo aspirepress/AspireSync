@@ -20,6 +20,12 @@ function main () {
 
   bin/console sync:fetch:plugins -vvv --slugs-from=$plugins --skip-checked-after="$RECHECK_INTERVAL"
   bin/console sync:fetch:themes -vvv --slugs-from=$themes --skip-checked-after="$RECHECK_INTERVAL"
+
+  bin/popular-plugins 100 | jq -r '.slug' | sort > $plugins
+  bin/popular-themes 100  | jq -r '.slug' | sort > $themes
+
+  bin/console sync:fetch:plugins -vvv --slugs-from=$plugins --skip-checked-after="$RECHECK_INTERVAL"
+  bin/console sync:fetch:themes -vvv --slugs-from=$themes --skip-checked-after="$RECHECK_INTERVAL"
 }
 
 main "$@"
