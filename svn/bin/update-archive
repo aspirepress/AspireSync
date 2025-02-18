@@ -12,7 +12,7 @@ mkdir -p $ARCHIVE_DIR/$repo
 bombs='all-in-one-contact-buttons-wpshare247|biblesupersearch'
 
 # These produce errors when svn attempts to update them
-corrupt='a2-optimized-wp|better-links|countdown-timer|facebook-album-sync'
+corrupt='a2-optimized-wp|better-links|countdown-timer|facebook-album-sync|font-awesome-the-easy-way'
 
 # combined blacklist
 blacklist="^($bombs|$corrupt)\$"
