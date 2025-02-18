@@ -29,8 +29,10 @@ function main() {
 function process() {
   local dir=$1
 
-  echo -e "\n---------- $dir ----------"
-  is_trunk_only $dir && warn "WARNING: $dir marked as a trunk-only build"
+  depth=full
+  is_trunk_only $dir && depth=trunk
+
+  echo -e "\n---------- $dir [$depth] ----------"
 
   if ! [[ $dir =~ ^[-_A-Za-z0-9]+$ ]]; then
     finalize $dir "malformed dir ignored"
