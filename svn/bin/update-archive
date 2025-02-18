@@ -17,8 +17,7 @@ corrupt='a2-optimized-wp|better-links|countdown-timer|facebook-album-sync'
 # combined blacklist
 blacklist="^($bombs|$corrupt)\$"
 
-# This list (too large to keep in the script anymore) will only have trunk archived at that version, no other branches
-TRUNK_ONLY=${TRUNK_ONLY:-$(cat $(dirname $0)/trunk-only.txt | perl -pE 's/\s+//g; s/#.*$//; print "$_|" if $_' )}
+trunk_only_file=$(dirname $0)/trunk-only.txt
 
 function main() {
   for dir in $*
@@ -94,7 +93,11 @@ function is_trunk_only() {
   if [[ -n $UPDATE_FORCE_TRUNK_ONLY ]]; then
     return
   fi
-  [[ -n $UPDATE_FORCE_FULL_CHECKOUT ]] || [[ $dir =~ ^($TRUNK_ONLY)$ ]]
+  if [[ -n $UPDATE_FORCE_FULL_CHECKOUT ]]; then
+    false
+  else
+    grep -q "^$dir\$" $trunk_only_file
+  fi
 }
 
 main $*
