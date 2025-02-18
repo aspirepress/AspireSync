@@ -1,6 +1,13 @@
 #!/bin/bash
 
 . $(dirname $0)/prelude.bash
+
+here=$(dirname $0)
+
+warn "!!!"
+warn "!!! DEPRECATED: use $here/update-trunk-archive instead"
+warn "!!!"
+
 cd $ORIG_PWD
 
 enforce_svn_root
