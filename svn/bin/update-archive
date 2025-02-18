@@ -46,8 +46,7 @@ function process() {
 
   [[ -d $dir ]] || svn update --ignore-externals --depth=immediates $dir
 
-  local suffix=''
-  is_trunk_only $dir && suffix='__trunk'
+  local suffix=$(dir_suffix $dir)
 
   local rev=$(svn info -r HEAD --show-item last-changed-revision $dir)
   local tar=$ARCHIVE_DIR/$repo/$rev/$rev.$dir$suffix.tar
@@ -100,6 +99,13 @@ function is_trunk_only() {
   else
     grep -q "^$dir\$" $trunk_only_file
   fi
+}
+
+function dir_suffix() {
+  local dir=$1
+  suffix=''
+  is_trunk_only $dir && suffix='__trunk'
+  echo $suffix
 }
 
 main $*
