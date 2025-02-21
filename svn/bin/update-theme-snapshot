@@ -39,7 +39,7 @@ function process() {
     return
   fi
 
-  [[ -d $dir ]] || svn update --ignore-externals --set-depth=immediates $dir
+  svn update --ignore-externals --set-depth=immediates $dir
 
   local rev=$(get_revision $dir)
   local ver=$(get_latest_version $dir)
