@@ -1,0 +1,108 @@
+#!/bin/bash
+
+# Must be run from within the svn checkout.  Will create or update the archive directory using the same name as the current
+
+. $(dirname $0)/prelude.bash
+cd $ORIG_PWD
+
+enforce_svn_root
+
+repo=$(basename $(pwd))
+mkdir -p $ARCHIVE_DIR/$repo/snapshots/
+
+# probably not needed for themes, keeping it around anyway
+bombs='xxxxxxxxxx'
+corrupt='yyyyyyyyyy'
+BLACKLIST="^($bombs|$corrupt)\$"
+
+####
+
+function main() {
+  for dir in $*
+  do
+    process $dir
+  done
+}
+
+function process() {
+  local dir=$1
+
+  echo -e "\nPROCESSING: $dir [trunk]"
+
+  if ! [[ $dir =~ ^[-A-Za-z0-9]+$ ]]; then
+    finalize $dir "malformed dir ignored"
+    return
+  fi
+
+  if [[ $dir =~ $BLACKLIST ]]; then
+    finalize $dir "blacklisted dir skipped"
+    return
+  fi
+
+  svn update --ignore-externals --set-depth=immediates $dir
+
+  local rev=$(get_revision $dir)
+  local ver=$(get_latest_version $dir)
+
+  if [[ -z $ver ]]; then
+    finalize $dir "could not find latest version"
+    return
+  fi
+
+  # not encoding $ver into filename, it should be stable at $rev anyway
+  local tar=$ARCHIVE_DIR/$repo/snapshots/$rev/$rev.$dir.snapshot.tar
+  local ztar=$tar.zst
+
+  if [[ -f $ztar ]]; then
+    finalize $dir "archive exists at revision $rev"
+    return
+  fi
+
+  mkdir -p $(dirname $tar)
+  update $dir $ver
+  archive $dir $ztar
+  ls -lh $ztar
+  finalize $dir "archived at revision $rev"
+}
+
+function update() {
+  local dir=$1
+  local ver=$2
+  svn update --ignore-externals --set-depth=infinity --force $dir/$ver
+}
+
+function archive() {
+  local dir=$1
+  local ztar=$2
+
+  tar cf - ./$dir | zstd --progress > $ztar.tmp
+  mv $ztar.tmp $ztar
+  rm -f $tar
+}
+
+function finalize() {
+  local dir=$1
+  local message=$2
+
+  warn "$dir: $message"
+  [[ -n $UPDATE_KEEP_DIRS ]] || rm -rf "$dir"
+}
+
+function get_revision() {
+  local dir=$1
+  local rev=$(svn info -r HEAD --show-item last-changed-revision $dir)
+  if [[ -z $rev ]]; then
+    die "fatal could not retrieve revision for $dir"
+  fi
+  echo $rev
+}
+
+function get_latest_version() {
+  local dir=$1
+  ls $dir | php -r '$vs = explode("\n", file_get_contents("php://stdin")); $vs = array_filter($vs, fn($s) => preg_match("/^[0-9]/", $s)); usort($vs, fn($a, $b) => version_compare($b, $a)); echo $vs[0] ?? "";'
+}
+
+################
+
+main $*
+
