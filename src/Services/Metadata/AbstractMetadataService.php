@@ -7,7 +7,6 @@ namespace App\Services\Metadata;
 use App\ResourceType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Doctrine\ORM\EntityManagerInterface;
 use Generator;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
@@ -19,7 +18,7 @@ use function Safe\strtotime;
 abstract readonly class AbstractMetadataService implements MetadataServiceInterface
 {
     public function __construct(
-        protected EntityManagerInterface $em,
+        protected Connection $connection,
         protected LoggerInterface $log,
         protected ResourceType $resource,
         protected string $origin = 'wp_org',
@@ -36,7 +35,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'open' => $this->saveOpen(...),
             default => $this->saveError(...),
         };
-        $this->connection()->transactional(fn() => $method($metadata));
+        $this->connection->transactional(fn() => $method($metadata));
     }
 
     /** @param array<string, mixed> $metadata */
@@ -168,7 +167,8 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     protected function querySync(): QueryBuilder
     {
         return $this
-            ->connection()->createQueryBuilder()
+            ->connection
+            ->createQueryBuilder()
             ->select('*')
             ->from('sync')
             ->andWhere('type = :type')
@@ -181,21 +181,16 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
     protected function insertSync(array $args): void
     {
         $args['metadata'] = json_encode($args['metadata']);
-        $conn = $this->connection();
+        $conn = $this->connection;
         $conn->delete('sync', ['slug' => $args['slug'], ...$this->stdArgs()]);
         $conn->insert('sync', $args);
-    }
-
-    private function connection(): Connection
-    {
-        return $this->em->getConnection();
     }
 
     private function slugAndVersionExists(string $slug, string $version): bool
     {
         // update checked timestamp
         $this
-            ->connection()
+            ->connection
             ->update(
                 'sync',
                 ['checked' => time()],
@@ -215,7 +210,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 
     private function slugAndStatusExists(string $slug, string $status): bool
     {
-        $this->connection()->update(
+        $this->connection->update(
             'sync',
             ['checked' => time()],
             ['slug' => $slug, 'status' => $status, ...$this->stdArgs()],
