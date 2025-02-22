@@ -45,15 +45,16 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         $id = Uuid::uuid7()->toString();
         $slug = mb_substr($metadata['slug'], 0, 255);
         $version = mb_substr((string) $metadata['version'], 0, 32);
+        $type = $this->resource->value;
 
         if ($this->slugAndVersionExists($slug, $version)) {
-            $this->log->debug("Not updating unmodified {$this->resource->value}", compact('slug', 'version'));
+            $this->log->debug("Not updating unmodified $type: $slug $version");
             return false;
         }
 
         $this->insertSync([
             'id' => $id,
-            'type' => $this->resource->value,
+            'type' => $type,
             'slug' => $slug,
             'name' => mb_substr($metadata['name'], 0, 255),
             'status' => 'open',
@@ -68,10 +69,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         $versions = $metadata['versions'] ?: [$metadata['version'] => $metadata['download_link']];
 
         $slug = $metadata['slug'];
-        $type = $this->resource->value;
-        $status = 'open';
-        $version_count = count($versions);
-        $this->log->debug("saved $type: $slug", compact('slug', 'type', 'status', 'version_count', 'id'));
+        $this->log->info("saved $type: $slug $version");
         return true;
     }
 
@@ -81,9 +79,10 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         $closed = $metadata['closed'] ?? false;
         $status = $closed ? 'closed' : $metadata['status'] ?? 'error';
         $slug = mb_substr($metadata['slug'], 0, 255);
+        $type = $this->resource->value;
 
         if ($this->slugAndStatusExists($slug, $status)) {
-            $this->log->debug("Not updating closed {$this->resource->value}", compact('slug', 'status'));
+            $this->log->debug("Not updating $status $type");
             return false;
         }
 
@@ -110,7 +109,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'metadata',
         );
         $this->insertSync($row);
-        $this->log->debug("saved $type: $slug", compact('slug', 'type', 'status', 'id'));
+        $this->log->info("saved $status $type: $slug");
         return true;
     }
 
