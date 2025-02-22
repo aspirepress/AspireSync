@@ -9,11 +9,7 @@
         "ext-iconv": "*",
         "doctrine/doctrine-bundle": ">=2.13.2",
         "doctrine/doctrine-migrations-bundle": "^3.4.1",
-        "doctrine/orm": ">=3.3.1",
         "guzzlehttp/guzzle": ">=7.9.2",
-        "league/flysystem": ">=3.29.1",
-        "league/flysystem-aws-s3-v3": ">=3.29",
-        "league/flysystem-bundle": ">=3.4.0",
         "ramsey/uuid": ">=4.7.6",
         "saloonphp/rate-limit-plugin": ">=2",
         "saloonphp/saloon": ">=3.10.1",
@@ -30,8 +26,8 @@
         "thecodingmachine/safe": ">=2.5"
     },
     "require-dev": {
-        "laravel/pint": "^1.20",
-        "phpstan/phpstan": ">=1.12.16",
+        "laravel/pint": "^1.21",
+        "phpstan/phpstan": ">=1.12.19",
         "phpunit/phpunit": ">=11.4.4",
         "rector/rector": "^1.2.10",
         "roave/security-advisories": "dev-latest",
