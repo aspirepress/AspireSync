@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+. $(dirname $0)/prelude.bash
+
+export LOOKBACK_INTERVAL=${LOOKBACK_INTERVAL:--2 days}
+export RECHECK_INTERVAL=${RECHECK_INTERVAL:--4 hours}
+
+SLEEP_MIN=${SLEEP_MIN:-900}  # 15 minutes
+SLEEP_MAX=${SLEEP_MAX:-3600} # 1 hour
+
+echo "==== Starting Job"
+
+bin/update-sync
+bin/push-sync
+
+echo "==== Job Complete"
+
+[[ -z $RUN_ONCE ]] || [[ $RUN_ONCE =~ ^[Nn0] ]] || exit 0
+
+interval=$(( (RANDOM % (SLEEP_MIN - SLEEP_MAX + 1)) + SLEEP_MIN ))
+
+echo "==== Sleeping for $interval seconds"
+sleep $interval
+exec $0
