@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 . $(dirname $0)/prelude.bash
 
@@ -10,4 +10,4 @@ trap "rm -rf $checkout" EXIT
 
 RUN cd $checkout
 RUN svn co https://themes.svn.wordpress.org --depth empty > /dev/null
-RUN $BASE_DIR/bin/svn-changed-slugs $YMD
+RUN $BASE_DIR/bin/svn-changed-slugs $date

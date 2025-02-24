@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 . $(dirname $0)/prelude.bash
 
@@ -15,8 +15,11 @@ function main () {
   # Doesn't really belong here, but it's cheap enough to run
   bin/console doctrine:migrations:migrate --quiet --no-interaction
 
-  svn/bin/ls-updated-plugins "$LOOKBACK_INTERVAL" | sort > $plugins
-  svn/bin/ls-updated-themes "$LOOKBACK_INTERVAL" | sort > $themes
+  ymd=$(php -r "echo date('Y-m-d', strtotime('$LOOKBACK_INTERVAL'));")
+  [[ -n "$ymd" ]] || die "Could not parse a date from '$LOOKBACK_INTERVAL'"
+
+  svn/bin/ls-updated-plugins $ymd | sort > $plugins
+  svn/bin/ls-updated-themes $ymd | sort > $themes
 
   bin/console sync:fetch:plugins -vvv --slugs-from=$plugins --skip-checked-after="$RECHECK_INTERVAL"
   bin/console sync:fetch:themes -vvv --slugs-from=$themes --skip-checked-after="$RECHECK_INTERVAL"
