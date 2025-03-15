@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:1.4.1-php8.4.3-bookworm@sha256:18a14f07c085a83e0c7d6c833f64d8733a78e656c0f2911400f9c6bc99ac3fd0 AS base
+FROM dunglas/frankenphp:1.4.2-php8.4.3-bookworm@sha256:7a45fd0a4114256cc49da94503e6c60c88e491f2ef74fee983887bfd0a271af2 AS base
 
 COPY --from=composer:2.8.5 /usr/bin/composer /usr/bin/composer
 ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/download/2.7.14/install-php-extensions /usr/local/bin/
