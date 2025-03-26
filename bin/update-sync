@@ -7,6 +7,8 @@ TMPDIR=${TMPDIR:-/tmp}
 LOOKBACK_INTERVAL=${LOOKBACK_INTERVAL:--2 days}
 RECHECK_INTERVAL=${RECHECK_INTERVAL:--4 hours}
 
+verbosity=-vv
+
 function main () {
   plugins=$(mktemp $TMPDIR/plugins.list.XXXXXXXX)
   themes=$(mktemp $TMPDIR/themes.list.XXXXXXXX)
@@ -21,14 +23,14 @@ function main () {
   svn/bin/ls-updated-plugins $ymd | sort > $plugins
   svn/bin/ls-updated-themes $ymd | sort > $themes
 
-  bin/console sync:fetch:plugins -vvv --slugs-from=$plugins --skip-checked-after="$RECHECK_INTERVAL"
-  bin/console sync:fetch:themes -vvv --slugs-from=$themes --skip-checked-after="$RECHECK_INTERVAL"
+  bin/console sync:fetch:plugins $verbosity --slugs-from=$plugins --skip-checked-after="$RECHECK_INTERVAL"
+  bin/console sync:fetch:themes $verbosity --slugs-from=$themes --skip-checked-after="$RECHECK_INTERVAL"
 
   bin/popular-plugins 100 | jq -r '.slug' | sort > $plugins
   bin/popular-themes 100  | jq -r '.slug' | sort > $themes
 
-  bin/console sync:fetch:plugins -vvv --slugs-from=$plugins --skip-checked-after="$RECHECK_INTERVAL"
-  bin/console sync:fetch:themes -vvv --slugs-from=$themes --skip-checked-after="$RECHECK_INTERVAL"
+  bin/console sync:fetch:plugins $verbosity --slugs-from=$plugins --skip-checked-after="$RECHECK_INTERVAL"
+  bin/console sync:fetch:themes $verbosity --slugs-from=$themes --skip-checked-after="$RECHECK_INTERVAL"
 }
 
 main "$@"
