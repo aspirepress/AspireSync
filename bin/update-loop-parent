@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# For some reason, the update-loop job in kubernetes sometimes just quits silently.
+# Possibly k8s doesn't like self-exec loops: this loop exists to supervise that one so that the PID remains static.
+
+cd $(dirname $0)
+
+while true
+do
+  ./update-loop || true
+  echo "********** $(date) Update loop exited -- restarting in 60s **********" >&2
+  sleep 60 # in case update-loop crashes instantly
+done
+
+# let's hope we never get here
+echo "WTF: true is no longer true?" >&2
+exit 1
