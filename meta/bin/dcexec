@@ -1,0 +1,10 @@
+#!/bin/bash
+
+. $(dirname $0)/prelude.bash
+
+if which docker >/dev/null 2>&1; then
+  exec docker compose exec $APP_SERVICE "$@"
+else
+  # no docker means we're probably already in docker
+  exec "$@"
+fi

@@ -34,6 +34,11 @@ services:
       aspire-net:
         aliases:
           - 'db.sync.aspiredev.org'
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 networks:
   app-net: ~
