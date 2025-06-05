@@ -1,6 +1,8 @@
 # This file should be sourced, not run
 [[ -n $TRACE ]] && [[ $TRACE != 0 ]] && set -x
 
+APP_SERVICE=${APP_SERVICE:-webapp}
+
 set -o errexit
 
 cd $(dirname $0)/../..
