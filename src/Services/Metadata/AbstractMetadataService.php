@@ -47,7 +47,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         $type = $this->resource->value;
 
         if ($this->slugAndVersionExists($slug, $version)) {
-            $this->log->debug("Not updating unmodified $type: $slug $version");
+            // $this->log->debug("Not updating unmodified $type: $slug $version");  // too spammy even for debug
             return false;
         }
 
