@@ -16,7 +16,9 @@ CHUNK_SIZE=${CHUNK_SIZE:-100} # values > 100 are likely to run into POST size li
 CURL_ARGS=${CURL_ARGS:-'--compressed'}
 
 function main() {
-  local buffer=$(mktemp)
+  local buffer
+  buffer=$(mktemp)
+
   trap 'rm -f "$buffer"' EXIT
 
   local count=0
