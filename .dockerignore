@@ -11,7 +11,6 @@
 
 # Copy these files
 !.env
-!.env.*
 !README.md
 !composer.json
 !composer.lock
