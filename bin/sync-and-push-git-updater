@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+. $(dirname $0)/prelude.bash
+
+TMPDIR=${TMPDIR:-/tmp}
+
+function main () {
+  plugins=$(mktemp $TMPDIR/plugins.XXXXXXXX.jsonl)
+  trap "rm -f $plugins" EXIT
+
+  bin/console sync:dump:git-updater-list etc/git-updater-plugins.list > $plugins
+  cat $plugins | bin/push-to-aspirecloud
+}
+
+main "$@"
