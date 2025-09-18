@@ -4,6 +4,7 @@
 # Copy these directories
 !bin/
 !config/
+!etc/
 !migrations/
 !public/
 !src/
