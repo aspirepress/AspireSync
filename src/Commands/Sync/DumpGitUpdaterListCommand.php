@@ -52,6 +52,7 @@ class DumpGitUpdaterListCommand extends AbstractBaseCommand
         return Command::SUCCESS;
     }
 
+    /** @return array<string, array<string>> */
     private function updatesFromFile(string $filename): array
     {
         $raw = \Safe\file_get_contents($filename);
