@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Integrations\GitUpdater;
 
-
-use Override;
-
 class UpdateApiRequest extends AbstractGitUpdaterRequest
 {
     public function __construct(public readonly string $slug) {}
