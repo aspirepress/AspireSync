@@ -4,6 +4,7 @@
 # Copy these directories
 !bin/
 !config/
+!etc/
 !migrations/
 !public/
 !src/
@@ -11,7 +12,6 @@
 
 # Copy these files
 !.env
-!.env.*
 !README.md
 !composer.json
 !composer.lock

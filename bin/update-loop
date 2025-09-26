@@ -13,6 +13,8 @@ echo "==== Starting Job"
 bin/update-sync
 bin/push-sync
 
+bin/sync-and-push-git-updater    # fetches and pushes in one action
+
 echo "==== Job Complete"
 
 [[ -z $RUN_ONCE ]] || [[ $RUN_ONCE =~ ^[Nn0] ]] || exit 0

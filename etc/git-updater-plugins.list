@@ -1,0 +1,6 @@
+# one GU url per line.  Blank lines and lines starting with # are ignored
+# urls must contain 'git-updater/v1/update-api' to be recognized
+
+https://api.fair.pm/wp-json/git-updater/v1/update-api/?slug=fair-plugin
+https://fair.git-updater.com/wp-json/git-updater/v1/update-api/?slug=git-updater
+https://fair.git-updater.com/wp-json/git-updater/v1/update-api/?slug=handbook-callout-blocks
