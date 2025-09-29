@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Integrations\Wordpress;
+namespace App\Integrations\Wordpress\Legacy;
 
 class PluginRequest extends AbstractWordpressApiRequest
 {

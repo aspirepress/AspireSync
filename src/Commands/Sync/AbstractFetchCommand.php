@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Sync;
 
 use App\Commands\AbstractBaseCommand;
-use App\Integrations\Wordpress\WordpressLegacyApiConnector;
+use App\Integrations\Wordpress\Legacy\WordpressLegacyApiConnector;
 use App\ResourceType;
 use App\Services\Metadata\MetadataServiceInterface;
 use App\Utilities\RegexUtil;
@@ -19,7 +19,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-
 use function Safe\json_decode;
 
 abstract class AbstractFetchCommand extends AbstractBaseCommand

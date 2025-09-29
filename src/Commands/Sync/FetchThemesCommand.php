@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\Sync;
 
-use App\Integrations\Wordpress\ThemeRequest;
-use App\Integrations\Wordpress\WordpressLegacyApiConnector;
+use App\Integrations\Wordpress\Legacy\ThemeRequest;
+use App\Integrations\Wordpress\Legacy\WordpressLegacyApiConnector;
 use App\ResourceType;
 use App\Services\Metadata\ThemeMetadataService;
 use Saloon\Http\Request;
