@@ -7,7 +7,7 @@ namespace App\Integrations\Wordpress;
 use Saloon\Http\Connector;
 use Saloon\Traits\Plugins\HasTimeout;
 
-class WordpressApiConnector extends Connector
+class WordpressLegacyApiConnector extends Connector
 {
     use HasTimeout;
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Sync;
 
 use App\Commands\AbstractBaseCommand;
-use App\Integrations\Wordpress\WordpressApiConnector;
+use App\Integrations\Wordpress\WordpressLegacyApiConnector;
 use App\ResourceType;
 use App\Services\Metadata\MetadataServiceInterface;
 use App\Utilities\RegexUtil;
@@ -31,7 +31,7 @@ abstract class AbstractFetchCommand extends AbstractBaseCommand
 
     public function __construct(
         protected readonly MetadataServiceInterface $meta,
-        protected readonly WordpressApiConnector $api,
+        protected readonly WordpressLegacyApiConnector $api,
         protected readonly ResourceType $resource,
     ) {
         parent::__construct();
