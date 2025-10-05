@@ -10,7 +10,6 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Generator;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
-
 use function Safe\json_decode;
 use function Safe\json_encode;
 use function Safe\strtotime;
@@ -36,80 +35,6 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             default => $this->saveError(...),
         };
         $this->connection->transactional(fn() => $method($metadata));
-    }
-
-    /** @param array<string, mixed> $metadata */
-    protected function saveOpen(array $metadata): bool
-    {
-        $id = Uuid::uuid7()->toString();
-        $slug = mb_substr($metadata['slug'], 0, 255);
-        $version = mb_substr((string) $metadata['version'], 0, 32);
-        $type = $this->resource->value;
-
-        if ($this->slugAndVersionExists($slug, $version)) {
-            // $this->log->debug("Not updating unmodified $type: $slug $version");  // too spammy even for debug
-            return false;
-        }
-
-        $this->insertSync([
-            'id' => $id,
-            'type' => $type,
-            'slug' => $slug,
-            'name' => mb_substr($metadata['name'], 0, 255),
-            'status' => 'open',
-            'version' => $version,
-            'origin' => $this->origin,
-            'updated' => strtotime($metadata['last_updated'] ?? 'now'),
-            'pulled' => time(),
-            'checked' => time(),
-            'metadata' => $metadata,
-        ]);
-
-        $versions = $metadata['versions'] ?: [$metadata['version'] => $metadata['download_link']];
-
-        $slug = $metadata['slug'];
-        $this->log->debug("saved $type: $slug $version");
-        return true;
-    }
-
-    /** @param array<string, mixed> $metadata */
-    protected function saveError(array $metadata): bool
-    {
-        $closed = $metadata['closed'] ?? false;
-        $status = $closed ? 'closed' : $metadata['status'] ?? 'error';
-        $slug = mb_substr($metadata['slug'], 0, 255);
-        $type = $this->resource->value;
-
-        if ($this->slugAndStatusExists($slug, $status)) {
-            $this->log->debug("Not updating $status $type");
-            return false;
-        }
-
-        $id = Uuid::uuid7()->toString();
-        $type = $this->resource->value;
-        $name = mb_substr($metadata['name'], 0, 255);
-        $version = null;
-        $origin = $this->origin;
-        $updated = strtotime($metadata['closed_date'] ?? 'now');
-        $pulled = time();
-        $checked = time();
-
-        $row = compact(
-            'id',
-            'type',
-            'slug',
-            'name',
-            'status',
-            'version',
-            'origin',
-            'updated',
-            'pulled',
-            'checked',
-            'metadata',
-        );
-        $this->insertSync($row);
-        $this->log->debug("saved $status $type: $slug");
-        return true;
     }
 
     /** @return array<string,int> */
@@ -158,6 +83,80 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 
     //region Protected/Private API
 
+    /** @param array<string, mixed> $metadata */
+    protected function saveOpen(array $metadata): bool
+    {
+        $id = Uuid::uuid7()->toString();
+        $type = $this->resource->value;
+        $slug = mb_substr($metadata['slug'], 0, 255);
+        $name = mb_substr($metadata['name'], 0, 255);
+        $version = mb_substr((string)$metadata['version'], 0, 32);
+        $updated = strtotime($metadata['last_updated'] ?? 'now');
+
+        if ($this->slugAndVersionExists($slug, $version)) {
+            // $this->log->debug("NOT SAVING (unmodified): type=$type slug=$slug version=$version");  // too spammy even for debug
+            return false;
+        }
+
+        $this->log->debug("SAVING: type=$type slug=$slug version=$version");
+
+        $this->insertSync([
+            'id' => $id,
+            'type' => $type,
+            'slug' => $slug,
+            'name' => $name,
+            'status' => 'open',
+            'version' => $version,
+            'origin' => $this->origin,
+            'updated' => $updated,
+            'pulled' => time(),
+            'checked' => time(),
+            'metadata' => $metadata,
+        ]);
+
+        return true;
+    }
+
+    /** @param array<string, mixed> $metadata */
+    protected function saveError(array $metadata): bool
+    {
+        $closed = $metadata['closed'] ?? false;
+        $status = $closed ? 'closed' : $metadata['status'] ?? 'error';
+        $slug = mb_substr($metadata['slug'], 0, 255);
+        $type = $this->resource->value;
+
+        if ($this->slugAndStatusExists($slug, $status)) {
+            $this->log->debug("Not updating $status $type");
+            return false;
+        }
+
+        $id = Uuid::uuid7()->toString();
+        $type = $this->resource->value;
+        $name = mb_substr($metadata['name'], 0, 255);
+        $version = null;
+        $origin = $this->origin;
+        $updated = strtotime($metadata['closed_date'] ?? 'now');
+        $pulled = time();
+        $checked = time();
+
+        $row = compact(
+            'id',
+            'type',
+            'slug',
+            'name',
+            'status',
+            'version',
+            'origin',
+            'updated',
+            'pulled',
+            'checked',
+            'metadata',
+        );
+        $this->insertSync($row);
+        $this->log->debug("saved $status $type: $slug");
+        return true;
+    }
+
     /** @return array{type: string, origin: string} */
     protected function stdArgs(): array
     {
@@ -188,7 +187,16 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 
     private function slugAndVersionExists(string $slug, string $version): bool
     {
-        // update checked timestamp
+        $result = $this
+                ->querySync()
+                ->select('1')
+                ->andWhere('slug = :slug')
+                ->andWhere('version = :version')
+                ->setParameter('slug', $slug)
+                ->setParameter('version', $version)
+                ->executeQuery()
+            ->fetchOne();
+
         $this
             ->connection
             ->update(
@@ -197,34 +205,28 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
                 ['slug' => $slug, 'version' => $version, ...$this->stdArgs()],
             );
 
-        return $this
-                ->querySync()
-                ->select('1')
-                ->andWhere('slug = :slug')
-                ->andWhere('version = :version')
-                ->setParameter('slug', $slug)
-                ->setParameter('version', $version)
-                ->executeQuery()
-                ->fetchOne() !== false;
+        return $result !== false;
     }
 
     private function slugAndStatusExists(string $slug, string $status): bool
     {
+        $result = $this
+            ->querySync()
+            ->select('1')
+            ->andWhere('slug = :slug')
+            ->andWhere('status = :status')
+            ->setParameter('slug', $slug)
+            ->setParameter('status', $status)
+            ->executeQuery()
+            ->fetchOne();
+
         $this->connection->update(
             'sync',
             ['checked' => time()],
             ['slug' => $slug, 'status' => $status, ...$this->stdArgs()],
         );
 
-        return $this
-                ->querySync()
-                ->select('1')
-                ->andWhere('slug = :slug')
-                ->andWhere('status = :status')
-                ->setParameter('slug', $slug)
-                ->setParameter('status', $status)
-                ->executeQuery()
-                ->fetchOne() !== false;
+        return $result !== false;
     }
 
     //endregion
