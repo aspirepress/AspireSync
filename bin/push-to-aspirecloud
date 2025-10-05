@@ -28,8 +28,8 @@ function main() {
     echo "$line" >> $buffer
     (( count += 1 ))
     (( total += 1 ))
-    echo -e -n "\rbuffering $count ($total total)... "
     if [[ $count -ge $CHUNK_SIZE ]];then
+      echo -e "uploading $count items (total $total) ..."
       upload $buffer
       count=0
       echo ""
@@ -42,7 +42,6 @@ function main() {
 }
 
 function upload() {
-  echo "uploading... "
 
   buffer=$1
   [[ -s $buffer ]] && curl \

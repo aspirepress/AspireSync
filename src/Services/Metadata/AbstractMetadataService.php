@@ -10,7 +10,6 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Generator;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
-
 use function Safe\json_decode;
 use function Safe\json_encode;
 use function Safe\strtotime;
@@ -38,37 +37,85 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         $this->connection->transactional(fn() => $method($metadata));
     }
 
+    /** @return array<string,int> */
+    public function getPulledAfter(int $timestamp): array
+    {
+        return $this
+            ->querySync()
+            ->select('slug', 'pulled')
+            ->andWhere('pulled > :timestamp')
+            ->setParameter('timestamp', $timestamp)
+            ->executeQuery()
+            ->fetchAllKeyValue();
+    }
+
+    /** @return array<string,int> */
+    public function getCheckedAfter(int $timestamp): array
+    {
+        return $this
+            ->querySync()
+            ->select('slug', 'checked')
+            ->andWhere('checked > :timestamp')
+            ->setParameter('timestamp', $timestamp)
+            ->executeQuery()
+            ->fetchAllKeyValue();
+    }
+
+    public function getAllSlugs(): array
+    {
+        return $this->querySync()->select('slug')->executeQuery()->fetchFirstColumn() ?: [];
+    }
+
+    public function exportAllMetadata(int $after = 0): Generator
+    {
+        $query = $this->querySync()->select('*');
+        $after > 0 and $query->andWhere('pulled > :after')->setParameter('after', $after);
+        $query->andWhere("status != 'not-found'");
+        $query->orderBy('slug', 'ASC');
+        $rows = $query->executeQuery();
+        while ($row = $rows->fetchAssociative()) {
+            $metadata = json_decode($row['metadata'], true);
+            unset($row['metadata']);
+            $metadata['aspiresync_meta'] = $row;
+            yield json_encode($metadata);
+        }
+    }
+
+    //endregion
+
+    //region Protected/Private API
+
     /** @param array<string, mixed> $metadata */
     protected function saveOpen(array $metadata): bool
     {
         $id = Uuid::uuid7()->toString();
-        $slug = mb_substr($metadata['slug'], 0, 255);
-        $version = mb_substr((string) $metadata['version'], 0, 32);
         $type = $this->resource->value;
+        $slug = mb_substr($metadata['slug'], 0, 255);
+        $name = mb_substr($metadata['name'], 0, 255);
+        $version = mb_substr((string)$metadata['version'], 0, 32);
+        $updated = strtotime($metadata['last_updated'] ?? 'now');
 
         if ($this->slugAndVersionExists($slug, $version)) {
-            // $this->log->debug("Not updating unmodified $type: $slug $version");  // too spammy even for debug
+            // $this->log->debug("NOT SAVING (unmodified): type=$type slug=$slug version=$version");  // too spammy even for debug
             return false;
         }
+
+        $this->log->debug("SAVING: type=$type slug=$slug version=$version");
 
         $this->insertSync([
             'id' => $id,
             'type' => $type,
             'slug' => $slug,
-            'name' => mb_substr($metadata['name'], 0, 255),
+            'name' => $name,
             'status' => 'open',
             'version' => $version,
             'origin' => $this->origin,
-            'updated' => strtotime($metadata['last_updated'] ?? 'now'),
+            'updated' => $updated,
             'pulled' => time(),
             'checked' => time(),
             'metadata' => $metadata,
         ]);
 
-        $versions = $metadata['versions'] ?: [$metadata['version'] => $metadata['download_link']];
-
-        $slug = $metadata['slug'];
-        $this->log->info("saved $type: $slug $version");
         return true;
     }
 
@@ -108,55 +155,9 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'metadata',
         );
         $this->insertSync($row);
-        $this->log->info("saved $status $type: $slug");
+        $this->log->debug("saved $status $type: $slug");
         return true;
     }
-
-    /** @return array<string,int> */
-    public function getPulledAfter(int $timestamp): array
-    {
-        return $this
-            ->querySync()
-            ->select('slug', 'pulled')
-            ->andWhere('pulled > :timestamp')
-            ->setParameter('timestamp', $timestamp)
-            ->executeQuery()
-            ->fetchAllKeyValue();
-    }
-
-    /** @return array<string,int> */
-    public function getCheckedAfter(int $timestamp): array
-    {
-        return $this
-            ->querySync()
-            ->select('slug', 'checked')
-            ->andWhere('checked > :timestamp')
-            ->setParameter('timestamp', $timestamp)
-            ->executeQuery()
-            ->fetchAllKeyValue();
-    }
-
-    public function getAllSlugs(): array
-    {
-        return $this->querySync()->select('slug')->executeQuery()->fetchFirstColumn() ?: [];
-    }
-
-    public function exportAllMetadata(int $after = 0): Generator
-    {
-        $query = $this->querySync()->select('*');
-        $after > 0 and $query->andWhere('pulled > :after')->setParameter('after', $after);
-        $rows = $query->executeQuery();
-        while ($row = $rows->fetchAssociative()) {
-            $metadata = json_decode($row['metadata'], true);
-            unset($row['metadata']);
-            $metadata['aspiresync_meta'] = $row;
-            yield json_encode($metadata);
-        }
-    }
-
-    //endregion
-
-    //region Protected/Private API
 
     /** @return array{type: string, origin: string} */
     protected function stdArgs(): array
@@ -188,7 +189,16 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
 
     private function slugAndVersionExists(string $slug, string $version): bool
     {
-        // update checked timestamp
+        $result = $this
+                ->querySync()
+                ->select('1')
+                ->andWhere('slug = :slug')
+                ->andWhere('version = :version')
+                ->setParameter('slug', $slug)
+                ->setParameter('version', $version)
+                ->executeQuery()
+            ->fetchOne();
+
         $this
             ->connection
             ->update(
@@ -197,34 +207,28 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
                 ['slug' => $slug, 'version' => $version, ...$this->stdArgs()],
             );
 
-        return $this
-                ->querySync()
-                ->select('1')
-                ->andWhere('slug = :slug')
-                ->andWhere('version = :version')
-                ->setParameter('slug', $slug)
-                ->setParameter('version', $version)
-                ->executeQuery()
-                ->fetchOne() !== false;
+        return $result !== false;
     }
 
     private function slugAndStatusExists(string $slug, string $status): bool
     {
+        $result = $this
+            ->querySync()
+            ->select('1')
+            ->andWhere('slug = :slug')
+            ->andWhere('status = :status')
+            ->setParameter('slug', $slug)
+            ->setParameter('status', $status)
+            ->executeQuery()
+            ->fetchOne();
+
         $this->connection->update(
             'sync',
             ['checked' => time()],
             ['slug' => $slug, 'status' => $status, ...$this->stdArgs()],
         );
 
-        return $this
-                ->querySync()
-                ->select('1')
-                ->andWhere('slug = :slug')
-                ->andWhere('status = :status')
-                ->setParameter('slug', $slug)
-                ->setParameter('status', $status)
-                ->executeQuery()
-                ->fetchOne() !== false;
+        return $result !== false;
     }
 
     //endregion
