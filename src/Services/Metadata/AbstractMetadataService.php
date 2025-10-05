@@ -68,7 +68,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         $versions = $metadata['versions'] ?: [$metadata['version'] => $metadata['download_link']];
 
         $slug = $metadata['slug'];
-        $this->log->info("saved $type: $slug $version");
+        $this->log->debug("saved $type: $slug $version");
         return true;
     }
 
@@ -108,7 +108,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
             'metadata',
         );
         $this->insertSync($row);
-        $this->log->info("saved $status $type: $slug");
+        $this->log->debug("saved $status $type: $slug");
         return true;
     }
 

@@ -85,6 +85,7 @@ abstract class AbstractFetchCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        ini_set('memory_limit', -1);
         $category = $this->resource->plural();
         $this->log->notice("Running command {$this->getName()}");
         $this->startTimer();
@@ -188,6 +189,7 @@ abstract class AbstractFetchCommand extends AbstractBaseCommand
                 ...$metadata,
             ];
             $this->meta->save($metadata);
+            $this->log->info("[open  ] $slug");
         } catch (Exception $e) {
             $this->log->error("$slug ... ERROR: {$e->getMessage()}");
             return;
@@ -217,7 +219,7 @@ abstract class AbstractFetchCommand extends AbstractBaseCommand
             };
 
             $this->meta->save(['slug' => $slug, 'name' => $slug, 'status' => $status, ...$metadata]);
-            $this->log->info("$slug ... [$status]");
+            $this->log->info("[$status] $slug");
         } catch (Exception $e) {
             $this->log->error("$slug ... ERROR: {$e->getMessage()}");
             return;
