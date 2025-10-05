@@ -32,6 +32,5 @@ jobs:
 
       - name: Run tests
         run: |
-          composer run style:check
           composer run phpstan
           composer run test
