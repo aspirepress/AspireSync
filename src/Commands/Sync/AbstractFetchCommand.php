@@ -85,7 +85,7 @@ abstract class AbstractFetchCommand extends AbstractBaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        ini_set('memory_limit', -1);
+        \Safe\ini_set('memory_limit', -1);
         $category = $this->resource->plural();
         $this->log->notice("Running command {$this->getName()}");
         $this->startTimer();
