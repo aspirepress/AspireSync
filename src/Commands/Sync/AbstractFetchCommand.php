@@ -175,30 +175,39 @@ abstract class AbstractFetchCommand extends AbstractBaseCommand
     protected function onResponse(Response $saloonResponse): void
     {
         $slug = null;
+        $type = $this->resource->singular();
+        $status = 'open';
 
         try {
             $response = $saloonResponse->getPsrResponse();
             $request = $saloonResponse->getRequest();
             $slug = $request->slug ?? throw new Exception('Missing slug in request');
 
-            $metadata = json_decode($response->getBody()->getContents(), assoc: true);
             $metadata = [
                 'slug' => $slug,
                 'name' => $slug,
-                'status' => 'open',
-                ...$metadata,
+                'status' => $status,
+                ...json_decode($response->getBody()->getContents(), assoc: true),
             ];
             $this->meta->save($metadata);
-            $this->log->info("[open  ] $slug");
+            $this->logResource($slug, $type, $status);
         } catch (Exception $e) {
-            $this->log->error("$slug ... ERROR: {$e->getMessage()}");
+            $this->log->error("ERROR FETCHING $slug: {$e->getMessage()}");
             return;
         }
+    }
+
+    protected function logResource(string $slug, string $type, string $status): void
+    {
+        $line = sprintf("[type=%-6s status=%-9s] %s", $type, $status, $slug);
+        $this->log->info($line);
     }
 
     protected function onError(Exception $exception): void
     {
         $slug = null;
+        $type = $this->resource->singular();
+
         try {
             if (!$exception instanceof RequestException) {
                 $this->log->error($exception->getMessage());
@@ -219,9 +228,9 @@ abstract class AbstractFetchCommand extends AbstractBaseCommand
             };
 
             $this->meta->save(['slug' => $slug, 'name' => $slug, 'status' => $status, ...$metadata]);
-            $this->log->info("[$status] $slug");
+            $this->logResource($slug, $type, $status);
         } catch (Exception $e) {
-            $this->log->error("$slug ... ERROR: {$e->getMessage()}");
+            $this->log->error("ERROR FETCHING $slug: {$e->getMessage()}");
             return;
         }
     }
