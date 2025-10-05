@@ -71,6 +71,7 @@ abstract readonly class AbstractMetadataService implements MetadataServiceInterf
         $query = $this->querySync()->select('*');
         $after > 0 and $query->andWhere('pulled > :after')->setParameter('after', $after);
         $query->andWhere("status != 'not-found'");
+        $query->orderBy('slug', 'ASC');
         $rows = $query->executeQuery();
         while ($row = $rows->fetchAssociative()) {
             $metadata = json_decode($row['metadata'], true);
