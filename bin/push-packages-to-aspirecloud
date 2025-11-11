@@ -1,0 +1,55 @@
+#!/bin/bash
+
+. $(dirname $0)/prelude.bash
+
+URL=${ASPIRECLOUD_ADMIN_API_URL:?variable not defined}
+KEY=${ASPIRECLOUD_ADMIN_API_KEY:?variable not defined}
+
+echo "Pushing to $URL"
+
+CHUNK_SIZE=${CHUNK_SIZE:-100} # values > 100 are likely to run into POST size limits
+
+CURL_ARGS=${CURL_ARGS:-'--compressed'}
+
+function main() {
+  local buffer
+  buffer=$(mktemp)
+
+  trap 'rm -f "$buffer"' EXIT
+
+  local count=0
+  local total=0
+
+  while IFS= read -r line || [[ -n $line ]]; do
+    echo "$line" >> $buffer
+    (( count += 1 ))
+    (( total += 1 ))
+    if [[ $count -ge $CHUNK_SIZE ]];then
+      echo -e "uploading $count items (total $total) ..."
+      upload $buffer
+      count=0
+      echo ""
+    fi
+  done
+
+  upload $buffer
+
+  echo "done"
+}
+
+function upload() {
+
+  buffer=$1
+  [[ -s $buffer ]] && curl \
+    --header "Authorization: Bearer $KEY" \
+    --header 'Content-Type: application/nljson' \
+    --header 'Accept: application/json' \
+    --data-binary @"$buffer" \
+    $CURL_ARGS \
+    "$URL/v1/packages/import"
+  cp /dev/null $buffer
+
+  echo ""
+}
+
+main "$@"
