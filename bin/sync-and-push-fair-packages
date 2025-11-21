@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+. $(dirname $0)/prelude.bash
+
+TMPDIR=${TMPDIR:-/tmp}
+
+function main () {
+  packages=$(mktemp $TMPDIR/packages.XXXXXXXX.jsonl)
+  trap "rm -f $packages" EXIT
+
+  grep '^https:' etc/fair-packages.list | while read -r url; do
+    curl -s $url >> $packages
+  done
+
+  cat $packages | bin/push-packages-to-aspirecloud
+}
+
+main "$@"

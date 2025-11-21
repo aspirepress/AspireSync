@@ -4,3 +4,11 @@
 https://api.fair.pm/wp-json/git-updater/v1/update-api/?slug=fair-plugin
 https://fair.git-updater.com/wp-json/git-updater/v1/update-api/?slug=git-updater
 https://fair.git-updater.com/wp-json/git-updater/v1/update-api/?slug=handbook-callout-blocks
+https://stats.pods.io/wp-json/git-updater/v1/update-api/?slug=pods
+
+# did:plc:afjf7gsjzsqmgc7dlhb553mv  - Git Updater
+# did:plc:deoui6ztyx6paqajconl67rz  - Handbook Callout Blocks
+# did:plc:e3rm6t7cspgpzaf47kn3nnsl  - Pods
+
+# https://fair.git-updater.com/wp-json/minifair/v1/packages/did:plc:afjf7gsjzsqmgc7dlhb553mv
+# https://stats.pods.io/wp-json/minifair/v1/packages/did:plc:e3rm6t7cspgpzaf47kn3nnsl

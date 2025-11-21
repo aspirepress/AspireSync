@@ -13,7 +13,8 @@ echo "==== Starting Job"
 bin/update-sync
 bin/push-sync
 
-bin/sync-and-push-git-updater    # fetches and pushes in one action
+bin/sync-and-push-git-updater
+bin/sync-and-push-fair-packages
 
 echo "==== Job Complete"
 
