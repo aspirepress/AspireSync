@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+. $(dirname $0)/prelude.bash
+
+TMPDIR=${TMPDIR:-/tmp}
+
+function main () {
+  bin/update-sync
+  bin/push-sync
+}
+
+main "$@"
