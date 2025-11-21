@@ -9,7 +9,7 @@ function main () {
   trap "rm -f $packages" EXIT
 
   grep '^https:' etc/fair-packages.list | while read -r url; do
-    curl -s $url >> $packages
+    curl -s $url | jq -c >> $packages
   done
 
   cat $packages | bin/push-packages-to-aspirecloud
