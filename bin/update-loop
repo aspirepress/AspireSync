@@ -10,11 +10,9 @@ SLEEP_MAX=${SLEEP_MAX:-3600} # 1 hour
 
 echo "==== Starting Job"
 
-bin/update-sync
-bin/push-sync
-
 bin/sync-and-push-git-updater
 bin/sync-and-push-fair-packages
+bin/sync-and-push-dotorg
 
 echo "==== Job Complete"
 
