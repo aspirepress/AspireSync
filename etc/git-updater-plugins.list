@@ -5,7 +5,7 @@ https://api.fair.pm/wp-json/git-updater/v1/update-api/?slug=fair-plugin
 https://fair.git-updater.com/wp-json/git-updater/v1/update-api/?slug=git-updater
 https://fair.git-updater.com/wp-json/git-updater/v1/update-api/?slug=handbook-callout-blocks
 https://stats.pods.io/wp-json/git-updater/v1/update-api/?slug=pods
-https://progressplanner.com/wp-json/git-updater/v1/update-api/?slug=pp-glossary
+https://fair.progressplanner.com/wp-json/git-updater/v1/update-api/?slug=pp-glossary
 
 # did:plc:afjf7gsjzsqmgc7dlhb553mv  - Git Updater
 # did:plc:deoui6ztyx6paqajconl67rz  - Handbook Callout Blocks
