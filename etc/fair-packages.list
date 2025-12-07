@@ -1,11 +1,13 @@
 # one package url per line.  Blank lines and lines starting with # are ignored
 
 # Git Updater
-https://fair.git-updater.com/wp-json/minifair/v1/packages/did:plc:afjf7gsjzsqmgc7dlhb553mv
+https://fair.git-updater.com/wp-json/fair-beacon/v1/packages/did:plc:afjf7gsjzsqmgc7dlhb553mv
 
 # Handbook Callout Blocks
-https://fair.git-updater.com/wp-json/minifair/v1/packages/did:plc:deoui6ztyx6paqajconl67rz
+https://fair.git-updater.com/wp-json/fair-beacon/v1/packages/did:plc:deoui6ztyx6paqajconl67rz
+
+# Pods
+https://stats.pods.io/wp-json/fair-beacon/v1/packages/did:plc:e3rm6t7cspgpzaf47kn3nnsl
 
 # Progress Planner
 https://fair.progressplanner.com/wp-json/fair-beacon/v1/packages/did:plc:m5tfrwxd3btacxlstcvop2ib
-
