@@ -5,11 +5,24 @@
 TMPDIR=${TMPDIR:-/tmp}
 
 function main () {
-  packages=$(mktemp $TMPDIR/packages.XXXXXXXX.jsonl)
-  trap "rm -f $packages" EXIT
+  packages=$(mktemp $TMPDIR/packages.jsonl.XXXXXXXX)
+  trap "rm -f $packages $packages.*" EXIT
 
+  count=0
   grep '^https:' etc/fair-packages.list | while read -r url; do
-    curl -s $url | jq -c >> $packages
+    out=$packages.$count
+    curl -s $url >> $out
+
+    # sigh.  we should be using guzzle.
+    status=$(jq .data.status < $out)
+    if [[ $status =~ null|200 ]]; then
+      jq -c < $out >> $packages
+    else
+      message=$(jq -r .message < $out)
+      warn "ERROR FETCHING $url: unexpected status $status: $message"
+    fi
+
+    count=$(( ++count ))
   done
 
   cat $packages | bin/push-packages-to-aspirecloud
