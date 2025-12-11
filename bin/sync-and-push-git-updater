@@ -5,7 +5,7 @@
 TMPDIR=${TMPDIR:-/tmp}
 
 function main () {
-  plugins=$(mktemp $TMPDIR/plugins.XXXXXXXX.jsonl)
+  plugins=$(mktemp $TMPDIR/plugins.jsonl.XXXXXXXX)
   trap "rm -f $plugins" EXIT
 
   bin/console sync:dump:git-updater-list etc/git-updater-plugins.list > $plugins
