@@ -1,3 +1,9 @@
+# This repository has moved to https://github.com/fairpm/aspiresync
+
+Historical README below:
+
+----
+
 # AspireSync
 
 AspireSync is designed to scrape the WordPress API for plugin and theme metadata, storing the API responses which are eventually pushed to [AspireCloud](https://github.com/aspiresync/AspireCloud).
